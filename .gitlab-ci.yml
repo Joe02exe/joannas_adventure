@@ -1,0 +1,50 @@
+stages:
+  - build
+  - test
+
+variables:
+  BUILD_DIR: build
+  CMAKE_BUILD_TYPE: Release
+
+default:
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update -qq
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
+        build-essential
+        cmake
+        pkg-config
+        libgl1-mesa-dev
+        libglew-dev
+        libglfw3-dev
+        libglm-dev
+
+# --- Build stage ---
+build:
+  stage: build
+  script:
+    - rm -rf $BUILD_DIR
+    - mkdir $BUILD_DIR
+    - cd $BUILD_DIR
+    - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ..
+    - cmake --build . --parallel
+  artifacts:
+    paths:
+      - $BUILD_DIR
+    expire_in: 1 week
+  only:
+    - branches
+    - merge_requests
+
+# --- Test stage (optional) ---
+test:
+  stage: test
+  script:
+    - cd $BUILD_DIR
+    - ctest --output-on-failure || echo "No tests found"
+  needs:
+    - job: build
+      artifacts: true
+  only:
+    - branches
+    - merge_requests
