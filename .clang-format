@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM
+
+AlignEscapedNewlines: DontAlign
+AlignAfterOpenBracket: BlockIndent
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Attach
+ColumnLimit: 80 # 100
+Cpp11BracedListStyle: false
+IndentCaseLabels: true
+IndentWidth: 4
+PointerAlignment: Left
+SpaceBeforeParens: ControlStatements
+TabWidth: 4
+UseTab: Never # ForIndentation
+SeparateDefinitionBlocks: Always
+SpaceBeforeInheritanceColon: false
