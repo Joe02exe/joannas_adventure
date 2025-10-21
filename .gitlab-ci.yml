@@ -41,8 +41,6 @@ setup:
     # Clone vcpkg if not cached
     - if [ ! -d "$VCPKG_ROOT" ]; then git clone https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"; fi
     - ./vcpkg/bootstrap-vcpkg.sh
-    # Install SFML (and any other libs you need)
-    - ./vcpkg/vcpkg install sfml
   cache:
     key: vcpkg-cache
     paths:
