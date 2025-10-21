@@ -15,24 +15,24 @@ default:
   before_script:
     - apt-get update -qq
     - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      build-essential \
-      cmake \
-      git \
-      curl \
-      ca-certificates \
-      pkg-config \
-      zip \
-      unzip \
-      tar \
-      libxrandr-dev \
-      libxcursor-dev \
-      libxi-dev \
-      libudev-dev \
-      libfreetype-dev \
-      libflac-dev \
-      libvorbis-dev \
-      libgl1-mesa-dev \
-      libegl1-mesa-dev
+        build-essential \
+        cmake \
+        git \
+        curl \
+        ca-certificates \
+        pkg-config \
+        zip \
+        unzip \
+        tar \
+        libxrandr-dev \
+        libxcursor-dev \
+        libxi-dev \
+        libudev-dev \
+        libfreetype-dev \
+        libflac-dev \
+        libvorbis-dev \
+        libgl1-mesa-dev \
+        libegl1-mesa-dev
 
 # --- Setup vcpkg and dependencies ---
 setup:
