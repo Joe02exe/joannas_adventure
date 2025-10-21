@@ -14,18 +14,44 @@ git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg && ./bootstrap-vcpkg.sh
 ```
 
+Create a file 'CMakeUserPresets.json'
+
+```json
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "inherits": "vcpkg",
+      "environment": {
+        "VCPKG_ROOT": "<path to vcpkg>"
+      }
+    }
+  ]
+}
+```
+
 ### Ubuntu
 
 ```bash
-sudo apt install libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-utils mesa-common-dev libglew-dev libglfw3-dev
+sudo apt install \
+    libxrandr-dev \
+    libxcursor-dev \
+    libxi-dev \
+    libudev-dev \
+    libfreetype-dev \
+    libflac-dev \
+    libvorbis-dev \
+    libgl1-mesa-dev \
+    libegl1-mesa-dev \
+    libfreetype-dev
 ```
 
 ## Build
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
+cmake --preset=default
+cmake --build build
 ```
 
 ## Roadmap
