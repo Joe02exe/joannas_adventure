@@ -1,9 +1,11 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 int main()
 {
+    spdlog::info("Game started!");
     sf::RenderWindow window(sf::VideoMode({1920u, 1080u}), "SFML 3.0 Discrete Movement");
     window.setFramerateLimit(144);
 
