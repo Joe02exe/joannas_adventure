@@ -76,6 +76,8 @@ sudo apt install \
 
 ## Build
 
+Before building, make sure you have a C++ compiler installed. You can use [Clang](https://releases.llvm.org/download.html), [GCC](https://gcc.gnu.org/install/) or [MSVC](https://code.visualstudio.com/docs/cpp/config-msvc) and follow their setup guide.
+
 ```bash
 mkdir build && cd build
 ```
