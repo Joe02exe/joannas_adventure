@@ -4,34 +4,61 @@
 
 ## Setup
 
-### Install vcpkg
+### Pull & Update vcpkg submodule
 
 ```bash
-git clone https://github.com/microsoft/vcpkg.git
+git submodule update --init --recursive
 ```
+
+### CMake
+
+CMake is required to configure and build this project.  
+You’ll need **CMake ≥ 3.10** (newer recommended).
+
+#### Windows
+
+1. Go to: [https://cmake.org/download/](https://cmake.org/download/)
+2. Download the latest **Windows x64 Installer (.msi)**.
+3. During installation, **check** the box to “Add CMake to system PATH”.
+
+#### Linux
+
+##### Debian/Ubuntu
 
 ```bash
-cd vcpkg && ./bootstrap-vcpkg.sh
+sudo apt install cmake
 ```
 
-Create a file 'CMakeUserPresets.json'
+##### Fedora
 
-```json
-{
-  "version": 3,
-  "configurePresets": [
-    {
-      "name": "default",
-      "inherits": "vcpkg",
-      "environment": {
-        "VCPKG_ROOT": "<path to vcpkg>"
-      }
-    }
-  ]
-}
+```bash
+sudo dnf install cmake
 ```
 
-### Ubuntu
+##### Arch/Manjaro
+
+```bash
+sudo pacman -S cmake
+```
+
+##### From Source
+
+```
+wget https://cmake.org/files/latest/cmake.tar.gz
+tar -xvf cmake.tar.gz
+cd cmake-*
+./bootstrap && make && sudo make install
+```
+
+#### MacOS
+
+Install with brew:
+
+```bash
+brew install cmake
+```
+
+### Additional Packages
 
 ```bash
 sudo apt install \
@@ -50,8 +77,28 @@ sudo apt install \
 ## Build
 
 ```bash
-cmake --preset=default
-cmake --build build
+mkdir build && cd build
+```
+
+```bash
+cmake --preset=default ..
+cmake --build .
+```
+
+## Play
+
+Start the game by executing the generated executable:
+
+**Linux/MacOS**
+
+```
+./main
+```
+
+**Windows** (MSVC Compiler)
+
+```
+./main.exe
 ```
 
 ## Roadmap
@@ -74,7 +121,7 @@ cmake --build build
   - Turn-based
   - Player selects which attacks, spells, items, etc. to use on which target
   - Enemies use attacks, spells, items, etc. to combat the player
-  - *Game Over* when all of player's combatants are dead
+  - _Game Over_ when all of player's combatants are dead
 - (1) Save points
   - Player can save her progress at specific points in the game
   - Saved progress is persistent across play sessions (application termination)
