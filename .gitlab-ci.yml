@@ -16,24 +16,24 @@ default:
   before_script:
     - apt-get update -qq
     - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-        build-essential
-        cmake
-        git
-        curl
-        ca-certificates
-        pkg-config
-        zip
-        unzip
-        tar
-        libxrandr-dev
-        libxcursor-dev
-        libxi-dev
-        libudev-dev
-        libfreetype-dev
-        libflac-dev
-        libvorbis-dev
-        libgl1-mesa-dev
-        libegl1-mesa-dev
+      build-essential
+      cmake
+      git
+      curl
+      ca-certificates
+      pkg-config
+      zip
+      unzip
+      tar
+      libxrandr-dev
+      libxcursor-dev
+      libxi-dev
+      libudev-dev
+      libfreetype-dev
+      libflac-dev
+      libvorbis-dev
+      libgl1-mesa-dev
+      libegl1-mesa-dev
 
 # --- Setup vcpkg and dependencies ---
 setup:
@@ -46,10 +46,15 @@ setup:
   cache:
     key: vcpkg-cache
     paths:
-      - vcpkg/
+      # Only cache the useful parts, not the whole folder
+      - vcpkg/installed/
+      - vcpkg/downloads/
+      - vcpkg/bincache/
   artifacts:
+    # Keep only bootstrap result for next job, not all builds
     paths:
-      - vcpkg/
+      - vcpkg/bootstrap-vcpkg.sh
+      - vcpkg/vcpkg
     expire_in: 1 week
   only:
     - branches
@@ -68,13 +73,14 @@ build:
     - job: setup
       artifacts: true
   cache:
-    key: vcpkg-installed
+    key: vcpkg-cache
     paths:
       - vcpkg/installed/
+      - vcpkg/downloads/
+      - vcpkg/bincache/
   artifacts:
     paths:
       - $BUILD_DIR
-      - vcpkg/
     expire_in: 1 week
   only:
     - branches
