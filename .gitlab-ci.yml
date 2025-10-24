@@ -9,45 +9,52 @@ variables:
   VCPKG_ROOT: "$CI_PROJECT_DIR/vcpkg"
   VCPKG_DEFAULT_TRIPLET: "x64-linux"
   CMAKE_TOOLCHAIN_FILE: "$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+  VCPKG_BINARY_SOURCES: "clear;files,${CI_PROJECT_DIR}/vcpkg/bincache,readwrite"
 
 default:
   image: ubuntu:22.04
   before_script:
     - apt-get update -qq
     - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-        build-essential
-        cmake
-        git
-        curl
-        ca-certificates
-        pkg-config
-        zip
-        unzip
-        tar
-        libxrandr-dev
-        libxcursor-dev
-        libxi-dev
-        libudev-dev
-        libfreetype-dev
-        libflac-dev
-        libvorbis-dev
-        libgl1-mesa-dev
-        libegl1-mesa-dev
+      build-essential
+      cmake
+      git
+      curl
+      ca-certificates
+      pkg-config
+      zip
+      unzip
+      tar
+      libxrandr-dev
+      libxcursor-dev
+      libxi-dev
+      libudev-dev
+      libfreetype-dev
+      libflac-dev
+      libvorbis-dev
+      libgl1-mesa-dev
+      libegl1-mesa-dev
 
 # --- Setup vcpkg and dependencies ---
 setup:
   stage: setup
   script:
-    # Clone vcpkg if not cached
-    - if [ ! -d "$VCPKG_ROOT" ]; then git clone https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"; fi
+    # Initialize and update submodules (including vcpkg)
+    - git submodule update --init --recursive
+    # Bootstrap vcpkg
     - ./vcpkg/bootstrap-vcpkg.sh
   cache:
     key: vcpkg-cache
     paths:
-      - vcpkg/
+      # Only cache the useful parts, not the whole folder
+      - vcpkg/installed/
+      - vcpkg/downloads/
+      - vcpkg/bincache/
   artifacts:
+    # Keep only bootstrap result for next job, not all builds
     paths:
-      - vcpkg/
+      - vcpkg/bootstrap-vcpkg.sh
+      - vcpkg/vcpkg
     expire_in: 1 week
   only:
     - branches
@@ -57,6 +64,11 @@ setup:
 build:
   stage: build
   script:
+    # Ensure vcpkg and submodules exist again
+    - git submodule update --init --recursive
+    # Restore and confirm vcpkg binary
+    - if [ ! -f vcpkg/vcpkg ]; then ./vcpkg/bootstrap-vcpkg.sh; fi
+    # Continue with build
     - rm -rf $BUILD_DIR
     - mkdir $BUILD_DIR
     - cd $BUILD_DIR
@@ -68,7 +80,9 @@ build:
   cache:
     key: vcpkg-cache
     paths:
-      - vcpkg/
+      - vcpkg/installed/
+      - vcpkg/downloads/
+      - vcpkg/bincache/
   artifacts:
     paths:
       - $BUILD_DIR
