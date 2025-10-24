@@ -81,7 +81,7 @@ mkdir build && cd build
 ```
 
 ```bash
-cmake ..
+cmake --preset=default ..
 cmake --build .
 ```
 
