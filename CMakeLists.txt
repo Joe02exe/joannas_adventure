@@ -9,10 +9,18 @@ project(
 
 find_package(SFML CONFIG REQUIRED COMPONENTS Graphics)
 find_package(spdlog CONFIG REQUIRED)
+find_package(RapidJSON CONFIG REQUIRED)
 
 find_package(GTest CONFIG REQUIRED)
 
-add_executable(main src/main.cpp)
+# add all sources from src/ (re-evaluated on CMake configure)
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_SOURCE_DIR}/src/*.h"
+)
+
+add_executable(main ${SRC_FILES})
+target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/src")
 add_executable(test_all test/test.cpp)
 
 enable_testing()
@@ -21,11 +29,12 @@ target_link_libraries(main PRIVATE SFML::Graphics)
 
 target_link_libraries(main PRIVATE spdlog::spdlog)
 
+target_link_libraries(main PRIVATE rapidjson)
+
 target_link_libraries(test_all PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 
 add_test(AllTestsInMain test_all)
 
-#
 add_custom_target(copy_assets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/assets
