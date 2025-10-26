@@ -39,9 +39,12 @@ default:
 setup:
   stage: setup
   script:
-    # If vcpkg folder doesn't exist, clone it
-    - if [ ! -d vcpkg ]; then git clone https://github.com/microsoft/vcpkg.git vcpkg; fi
-    - if [ ! -f vcpkg/vcpkg ]; then ./vcpkg/bootstrap-vcpkg.sh; fi
+    # Clean any leftover vcpkg folder from previous runs
+    - rm -rf vcpkg
+    # Initialize and update submodules (including vcpkg)
+    - git submodule update --init --recursive
+    # Bootstrap vcpkg
+    - ./vcpkg/bootstrap-vcpkg.sh
   cache:
     key: vcpkg-cache
     paths:
@@ -63,12 +66,15 @@ setup:
 build:
   stage: build
   script:
+    # Ensure vcpkg and submodules exist again
+    - git submodule update --init --recursive
+    # Restore and confirm vcpkg binary
     - if [ ! -f vcpkg/vcpkg ]; then ./vcpkg/bootstrap-vcpkg.sh; fi
     # Continue with build
     - rm -rf $BUILD_DIR
     - mkdir $BUILD_DIR
     - cd $BUILD_DIR
-    - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE ..
+    - cmake --preset=default ..
     - cmake --build . --parallel
   needs:
     - job: setup
