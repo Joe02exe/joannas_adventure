@@ -4,8 +4,6 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "spdlog/spdlog.h"
 
-#define LOGGING_ENABLED true
-
 Game::Game() = default;
 
 void Game::run() {

@@ -1,8 +1,8 @@
 #pragma once
 #include "string"
 
-#include "../../include/tileson.hpp"
 #include "SFML/Graphics/Sprite.hpp"
+#include "tileson.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Window/Window.hpp>
