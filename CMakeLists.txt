@@ -7,25 +7,46 @@ project(
         LANGUAGES CXX
 )
 
-if(POLICY CMP0072)
-    cmake_policy(SET CMP0072 NEW)
-endif()
-set(OpenGL_GL_PREFERENCE GLVND)
+find_package(SFML CONFIG REQUIRED COMPONENTS Graphics)
+find_package(spdlog CONFIG REQUIRED)
+find_package(RapidJSON CONFIG REQUIRED)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+find_package(GTest CONFIG REQUIRED)
 
-# --- Dependencies ---
-find_package(OpenGL REQUIRED)
-find_package(glfw3 CONFIG REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(glm CONFIG REQUIRED)
-
-# --- Application ---
-add_executable(main
-        src/main.cpp
+# add all sources from src/ (re-evaluated on CMake configure)
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_SOURCE_DIR}/src/*.h"
 )
-target_include_directories(main PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(main PRIVATE GLEW::GLEW OpenGL::GL glfw glm::glm)
 
+add_executable(main ${SRC_FILES})
+target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/src")
+add_executable(test_all test/test.cpp)
+
+# define macros
+target_compile_definitions(main PRIVATE
+    LOGGING_ENABLED=1
+    GOD_MODE_ENABLED=1
+    INFINITE_RESOURCES_ENABLED=1
+)
+
+enable_testing()
+
+target_link_libraries(main PRIVATE SFML::Graphics)
+
+target_link_libraries(main PRIVATE spdlog::spdlog)
+
+target_link_libraries(main PRIVATE rapidjson)
+
+target_link_libraries(test_all PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+
+add_test(AllTestsInMain test_all)
+
+add_custom_target(copy_assets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/assets
+    ${CMAKE_BINARY_DIR}/assets
+)
+
+add_dependencies(main copy_assets)

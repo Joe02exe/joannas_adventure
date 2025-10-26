@@ -4,28 +4,103 @@
 
 ## Setup
 
-### Install vcpkg
+### Pull & Update vcpkg submodule
 
 ```bash
-git clone https://github.com/microsoft/vcpkg.git
+git submodule update --init --recursive
 ```
 
+### CMake
+
+CMake is required to configure and build this project.  
+You’ll need **CMake ≥ 3.10** (newer recommended).
+
+#### Windows
+
+1. Go to: [https://cmake.org/download/](https://cmake.org/download/)
+2. Download the latest **Windows x64 Installer (.msi)**.
+3. During installation, **check** the box to “Add CMake to system PATH”.
+
+#### Linux
+
+##### Debian/Ubuntu
+
 ```bash
-cd vcpkg && ./bootstrap-vcpkg.sh
+sudo apt install cmake
 ```
 
-### Ubuntu
+##### Fedora
 
 ```bash
-sudo apt install libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-utils mesa-common-dev libglew-dev libglfw3-dev
+sudo dnf install cmake
+```
+
+##### Arch/Manjaro
+
+```bash
+sudo pacman -S cmake
+```
+
+##### From Source
+
+```
+wget https://cmake.org/files/latest/cmake.tar.gz
+tar -xvf cmake.tar.gz
+cd cmake-*
+./bootstrap && make && sudo make install
+```
+
+#### MacOS
+
+Install with brew:
+
+```bash
+brew install cmake
+```
+
+### Additional Packages
+
+```bash
+sudo apt install \
+    libxrandr-dev \
+    libxcursor-dev \
+    libxi-dev \
+    libudev-dev \
+    libfreetype-dev \
+    libflac-dev \
+    libvorbis-dev \
+    libgl1-mesa-dev \
+    libegl1-mesa-dev \
+    libfreetype-dev
 ```
 
 ## Build
 
+Before building, make sure you have a C++ compiler installed. You can use [Clang](https://releases.llvm.org/download.html), [GCC](https://gcc.gnu.org/install/) or [MSVC](https://code.visualstudio.com/docs/cpp/config-msvc) and follow their setup guide.
+
 ```bash
 mkdir build && cd build
-cmake ..
-make
+```
+
+```bash
+cmake --preset=default ..
+cmake --build . --parallel
+```
+
+## Play
+
+Start the game by executing the generated executable:
+
+**Linux/MacOS**
+
+```
+./main
+```
+
+**Windows** (MSVC Compiler)
+
+```
+./main.exe
 ```
 
 ## Roadmap
@@ -48,7 +123,7 @@ make
   - Turn-based
   - Player selects which attacks, spells, items, etc. to use on which target
   - Enemies use attacks, spells, items, etc. to combat the player
-  - *Game Over* when all of player's combatants are dead
+  - _Game Over_ when all of player's combatants are dead
 - (1) Save points
   - Player can save her progress at specific points in the game
   - Saved progress is persistent across play sessions (application termination)

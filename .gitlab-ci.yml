@@ -1,23 +1,66 @@
 stages:
+  - setup
   - build
   - test
 
 variables:
   BUILD_DIR: build
   CMAKE_BUILD_TYPE: Release
+  VCPKG_ROOT: "$CI_PROJECT_DIR/vcpkg"
+  VCPKG_DEFAULT_TRIPLET: "x64-linux"
+  CMAKE_TOOLCHAIN_FILE: "$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+  VCPKG_BINARY_SOURCES: "clear;files,${CI_PROJECT_DIR}/vcpkg/bincache,readwrite"
 
 default:
   image: ubuntu:22.04
   before_script:
     - apt-get update -qq
     - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-        build-essential
-        cmake
-        pkg-config
-        libgl1-mesa-dev
-        libglew-dev
-        libglfw3-dev
-        libglm-dev
+      build-essential
+      cmake
+      git
+      curl
+      ca-certificates
+      pkg-config
+      zip
+      unzip
+      tar
+      libxrandr-dev
+      libxcursor-dev
+      libxi-dev
+      libudev-dev
+      libfreetype-dev
+      libflac-dev
+      libvorbis-dev
+      libgl1-mesa-dev
+      libegl1-mesa-dev
+
+# --- Setup vcpkg and dependencies ---
+setup:
+  stage: setup
+  script:
+    # Clean any leftover vcpkg folder from previous runs
+    - rm -rf vcpkg
+    # Initialize and update submodules (including vcpkg)
+    - git submodule update --init --recursive
+    # Bootstrap vcpkg
+    - ./vcpkg/bootstrap-vcpkg.sh
+  cache:
+    key: vcpkg-cache
+    paths:
+      # Only cache the useful parts, not the whole folder
+      - vcpkg/installed/
+      - vcpkg/downloads/
+      - vcpkg/bincache/
+  artifacts:
+    # Keep only bootstrap result for next job, not all builds
+    paths:
+      - vcpkg/bootstrap-vcpkg.sh
+      - vcpkg/vcpkg
+    expire_in: 1 week
+  only:
+    - branches
+    - merge_requests
 
 # --- Build stage ---
 build:
@@ -26,8 +69,17 @@ build:
     - rm -rf $BUILD_DIR
     - mkdir $BUILD_DIR
     - cd $BUILD_DIR
-    - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ..
+    - cmake --preset=default ..
     - cmake --build . --parallel
+  needs:
+    - job: setup
+      artifacts: true
+  cache:
+    key: vcpkg-cache
+    paths:
+      - vcpkg/installed/
+      - vcpkg/downloads/
+      - vcpkg/bincache/
   artifacts:
     paths:
       - $BUILD_DIR
@@ -36,7 +88,7 @@ build:
     - branches
     - merge_requests
 
-# --- Test stage (optional) ---
+# --- Test stage ---
 test:
   stage: test
   script:
