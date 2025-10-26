@@ -69,6 +69,11 @@ void Game::run() {
             state = Character::State::Running;
         }
 
+        // normalize the diagonal movement
+        if (dir.x != 0.f && dir.y != 0.f) {
+            dir *= 0.7071f; // approx 1/sqrt(2)
+        }
+
         camera.move(dir * speedMul);
         window.setView(camera);
         player.setPosition(
