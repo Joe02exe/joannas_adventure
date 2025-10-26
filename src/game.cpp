@@ -9,10 +9,12 @@ Game::Game() = default;
 
 void Game::run() {
 
-    sf::RenderWindow window(sf::VideoMode({ 900, 600 }), "RPG Game");
+    sf::Vector2u windowSize(1200, 900);
+    sf::RenderWindow window(
+        sf::VideoMode({ windowSize.x, windowSize.y }), "RPG Game"
+    );
 
-    TileManager tileManager;
-    sf::Vector2f playerScreenPos(500.f, 900.f);
+    sf::Vector2f playerScreenPos(560.f, 850.f);
     Character player(
         "assets/idle.png", "assets/walk.png", "assets/run.png", playerScreenPos
     );
@@ -21,6 +23,7 @@ void Game::run() {
     camera.setCenter(playerScreenPos);
     camera.zoom(0.25f);
 
+    TileManager tileManager;
     sf::Clock clock;
 
     bool facingLeft = false;
@@ -68,7 +71,9 @@ void Game::run() {
 
         camera.move(dir * speedMul);
         window.setView(camera);
-        player.setPosition(camera.getCenter());
+        player.setPosition(
+            { camera.getCenter().x - 48.f, camera.getCenter().y - 32.f }
+        ); // subtract half the size of character
 
         if (printLog) {
             spdlog::info(
