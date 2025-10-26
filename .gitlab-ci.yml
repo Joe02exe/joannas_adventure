@@ -39,9 +39,6 @@ default:
 setup:
   stage: setup
   script:
-setup:
-  stage: setup
-  script:
     # If vcpkg folder doesn't exist, clone it
     - if [ ! -d vcpkg ]; then git clone https://github.com/microsoft/vcpkg.git vcpkg; fi
     - if [ ! -f vcpkg/vcpkg ]; then ./vcpkg/bootstrap-vcpkg.sh; fi
@@ -66,7 +63,6 @@ setup:
 build:
   stage: build
   script:
-
     - if [ ! -f vcpkg/vcpkg ]; then ./vcpkg/bootstrap-vcpkg.sh; fi
     # Continue with build
     - rm -rf $BUILD_DIR
