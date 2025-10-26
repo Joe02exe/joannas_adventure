@@ -39,6 +39,8 @@ default:
 setup:
   stage: setup
   script:
+    # Clean any leftover vcpkg folder from previous runs
+    - rm -rf vcpkg
     # Initialize and update submodules (including vcpkg)
     - git submodule update --init --recursive
     # Bootstrap vcpkg
