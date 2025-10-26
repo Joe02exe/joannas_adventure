@@ -1,4 +1,5 @@
 #include "game.h"
+#include "./sprites/character.h"
 #include "tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -8,41 +9,53 @@ Game::Game() = default;
 
 void Game::run() {
 
-    sf::RenderWindow window(
-        sf::VideoMode({ 900, 600 }), "RPG Game"
-    );
-    
+    sf::RenderWindow window(sf::VideoMode({ 900, 600 }), "RPG Game");
+
     TileManager tileManager;
+    sf::Vector2f playerScreenPos(500.f, 900.f);
+    Character player("assets/idle.png", "assets/walk.png", playerScreenPos);
 
     sf::View camera = window.getDefaultView();
-    camera.setCenter(sf::Vector2f(560.f, 850.f));
-    camera.zoom(.5f);
+    camera.setCenter(playerScreenPos);
+    camera.zoom(0.25f);
 
+    sf::Clock clock;
+
+    bool facingLeft = false;
+    int factor = 3;
     while (window.isOpen()) {
-        while (const std::optional event = window.pollEvent()) {
+        float dt = clock.restart().asSeconds();
+        while (const std::optional<sf::Event> event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 window.close();
             }
         }
 
         bool printLog = false;
-        // WASD movement
+        bool moving = false;
+
         sf::Vector2f dir{ 0.f, 0.f };
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-            dir.x -= 1.f;
+            dir.x -= 1.f * factor;
             printLog = true;
+            facingLeft = true;
+            moving = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-            dir.x += 1.f;
+            dir.x += 1.f * factor;
             printLog = true;
+            facingLeft = false;
+            moving = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-            dir.y -= 1.f;
+            dir.y -= 1.f * factor;
             printLog = true;
+            moving = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-            dir.y += 1.f;
+            dir.y += 1.f * factor;
             printLog = true;
+            moving = true;
         }
 
         float speedMul =
@@ -50,6 +63,7 @@ void Game::run() {
 
         camera.move(dir * speedMul);
         window.setView(camera);
+        player.setPosition(camera.getCenter());
 
         if (printLog) {
             spdlog::info(
@@ -60,7 +74,9 @@ void Game::run() {
         }
 
         window.clear();
-        tileManager.loadMap("map.json", window);
+        player.update(dt, moving, facingLeft);
+        tileManager.loadMap("./assets/map.json", window);
+        player.draw(window);
         window.display();
     }
 }
