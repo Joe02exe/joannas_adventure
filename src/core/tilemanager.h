@@ -1,17 +1,20 @@
+#pragma once
 #include "string"
 
+#include "SFML/Graphics/Sprite.hpp"
 #include "tileson.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Window/Window.hpp>
-#include "SFML/Graphics/Sprite.hpp"
 
-class TileManager{
-public:
+class TileManager {
+  public:
     TileManager();
     bool loadMap(const std::string& path, sf::RenderWindow& window);
-    sf::Sprite* storeAndLoadImage(const std::string &image, const sf::Vector2f &position);
-private:
+    sf::Sprite*
+    storeAndLoadImage(const std::string& image, const sf::Vector2f& position);
+
+  private:
     tson::Tileson tsonParser;
     tson::Map* map = nullptr;
     std::map<std::string, std::unique_ptr<sf::Texture>> m_textures;

@@ -1,4 +1,4 @@
-#include "tilemanager.h"
+#include "./tilemanager.h"
 
 #include "spdlog/spdlog.h"
 #include <SFML/Graphics/Rect.hpp>
@@ -112,7 +112,6 @@ bool TileManager::loadMap(const std::string& path, sf::RenderWindow& window) {
                 }
             }
         }
-
 
         tson::Layer* tileLayerG =
             map->getLayer("ground"); // This is a Tile Layer.

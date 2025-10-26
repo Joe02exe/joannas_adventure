@@ -20,8 +20,16 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
 )
 
 add_executable(main ${SRC_FILES})
+target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/src")
 add_executable(test_all test/test.cpp)
+
+# define macros
+target_compile_definitions(main PRIVATE
+    LOGGING_ENABLED=1
+    GOD_MODE_ENABLED=1
+    INFINITE_RESOURCES_ENABLED=1
+)
 
 enable_testing()
 

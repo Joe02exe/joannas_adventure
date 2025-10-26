@@ -84,7 +84,7 @@ mkdir build && cd build
 
 ```bash
 cmake --preset=default ..
-cmake --build .
+cmake --build . --parallel
 ```
 
 ## Play
