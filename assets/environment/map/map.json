@@ -1726,7 +1726,7 @@
 		{
 			"columns": 40,
 			"firstgid": 1,
-			"image": "./map2.png",
+			"image": "./assets/environment/map/map2.png",
 			"imageheight": 640,
 			"imagewidth": 640,
 			"margin": 0,
@@ -1739,7 +1739,7 @@
 		{
 			"columns": 64,
 			"firstgid": 1601,
-			"image": "./map1.png",
+			"image": "./assets/environment/map/map1.png",
 			"imageheight": 1024,
 			"imagewidth": 1024,
 			"margin": 0,
