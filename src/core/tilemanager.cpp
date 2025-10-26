@@ -9,6 +9,7 @@
 
 TileManager::TileManager() = default;
 
+// TODO : Refactor loadMap
 bool TileManager::loadMap(const std::string& path, sf::RenderWindow& window) {
     std::unique_ptr<tson::Map> map = tsonParser.parse(fs::path(path));
     if (map->getStatus() == tson::ParseStatus::OK) {
