@@ -1,9 +1,10 @@
 #include "game.h"
-#include "./sprites/character.h"
-#include "tilemanager.h"
-
+#include "../entities/player/player.h"
+#include "./tilemanager.h"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "spdlog/spdlog.h"
+
+#define LOGGING_ENABLED true
 
 Game::Game() = default;
 
@@ -15,8 +16,9 @@ void Game::run() {
     );
 
     sf::Vector2f playerScreenPos(560.f, 850.f);
-    Character player(
-        "assets/idle.png", "assets/walk.png", "assets/run.png", playerScreenPos
+    Player player(
+        "assets/player/main/idle.png", "assets/player/main/walk.png",
+        "assets/player/main/run.png", playerScreenPos
     );
 
     sf::View camera = window.getDefaultView();
@@ -36,37 +38,32 @@ void Game::run() {
             }
         }
 
-        bool printLog = false;
-        Character::State state = Character::State::Idle;
+        Player::State state = Player::State::Idle;
         float speedMul = 1.f;
 
         sf::Vector2f dir{ 0.f, 0.f };
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
             dir.x -= 1.f * factor;
-            printLog = true;
             facingLeft = true;
-            state = Character::State::Walking;
+            state = Player::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
             dir.x += 1.f * factor;
-            printLog = true;
             facingLeft = false;
-            state = Character::State::Walking;
+            state = Player::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
             dir.y -= 1.f * factor;
-            printLog = true;
-            state = Character::State::Walking;
+            state = Player::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
             dir.y += 1.f * factor;
-            printLog = true;
-            state = Character::State::Walking;
+            state = Player::State::Walking;
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
             speedMul = 2.f;
-            state = Character::State::Running;
+            state = Player::State::Running;
         }
 
         // normalize the diagonal movement
@@ -80,17 +77,16 @@ void Game::run() {
             { camera.getCenter().x - 48.f, camera.getCenter().y - 32.f }
         ); // subtract half the size of character
 
-        if (printLog) {
+        if (LOGGING_ENABLED) {
             spdlog::info(
                 "Camera position: x={}, y={}", camera.getCenter().x,
                 camera.getCenter().y
             );
-            printLog = false;
         }
 
         window.clear();
         player.update(dt, state, facingLeft);
-        tileManager.loadMap("./assets/map.json", window);
+        tileManager.loadMap("./assets/environment/map/map.json", window);
         player.draw(window);
         window.display();
     }
