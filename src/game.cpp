@@ -13,7 +13,9 @@ void Game::run() {
 
     TileManager tileManager;
     sf::Vector2f playerScreenPos(500.f, 900.f);
-    Character player("assets/idle.png", "assets/walk.png", playerScreenPos);
+    Character player(
+        "assets/idle.png", "assets/walk.png", "assets/run.png", playerScreenPos
+    );
 
     sf::View camera = window.getDefaultView();
     camera.setCenter(playerScreenPos);
@@ -32,34 +34,37 @@ void Game::run() {
         }
 
         bool printLog = false;
-        bool moving = false;
+        Character::State state = Character::State::Idle;
+        float speedMul = 1.f;
 
         sf::Vector2f dir{ 0.f, 0.f };
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
             dir.x -= 1.f * factor;
             printLog = true;
             facingLeft = true;
-            moving = true;
+            state = Character::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
             dir.x += 1.f * factor;
             printLog = true;
             facingLeft = false;
-            moving = true;
+            state = Character::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
             dir.y -= 1.f * factor;
             printLog = true;
-            moving = true;
+            state = Character::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
             dir.y += 1.f * factor;
             printLog = true;
-            moving = true;
+            state = Character::State::Walking;
         }
 
-        float speedMul =
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift) ? 2.f : 1.f;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
+            speedMul = 2.f;
+            state = Character::State::Running;
+        }
 
         camera.move(dir * speedMul);
         window.setView(camera);
@@ -74,7 +79,7 @@ void Game::run() {
         }
 
         window.clear();
-        player.update(dt, moving, facingLeft);
+        player.update(dt, state, facingLeft);
         tileManager.loadMap("./assets/map.json", window);
         player.draw(window);
         window.display();

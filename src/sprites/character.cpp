@@ -6,7 +6,7 @@
 
 Character::Character(
     const std::string& idlePath, const std::string& walkPath,
-    const sf::Vector2f& startPos
+    const std::string& runPath, const sf::Vector2f& startPos
 ) {
     // Load Idle animation
     Animation idleAnim;
@@ -24,21 +24,26 @@ Character::Character(
         walkAnim.frames.emplace_back(sf::IntRect({ i * 96, 0 }, { 96, 64 }));
     animations[State::Walking] = std::move(walkAnim);
 
+    // Load Run Animation
+    Animation runAnim;
+    if (!runAnim.texture.loadFromFile(runPath))
+        spdlog::error("Failed to load {}", runPath);
+    for (int i = 0; i < 8; i++)
+        runAnim.frames.emplace_back(sf::IntRect({ i * 96, 0 }, { 96, 64 }));
+    animations[State::Running] = std::move(runAnim);
+
     //  Construct sprite dynamically
     sprite = std::make_unique<sf::Sprite>(animations[State::Idle].texture);
     sprite->setTextureRect(animations[State::Idle].frames[0]);
     sprite->setPosition(startPos);
 }
 
-void Character::update(float dt, bool moving, bool facingLeft) {
+void Character::update(float dt, State state, bool facingLeft) {
     // Determine state and facing
     facing = facingLeft ? Direction::Left : Direction::Right;
 
-    if (moving) {
-        switchState(State::Walking);
-    } else {
-        switchState(State::Idle);
-    }
+    switchState(state);
+
     // Update animation frame
     frameTimer += dt;
     const auto& anim = animations[currentState];

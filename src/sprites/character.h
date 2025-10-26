@@ -1,5 +1,5 @@
-// character.h
 #pragma once
+
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <string>
@@ -8,15 +8,15 @@
 
 class Character {
   public:
-    enum class State { Idle, Walking };
+    enum class State { Idle, Walking, Running };
     enum class Direction { Left, Right };
 
     Character(
         const std::string& idlePath, const std::string& walkPath,
-        const sf::Vector2f& startPos
+        const std::string& runPath, const sf::Vector2f& startPos
     );
 
-    void update(float dt, bool movingLeft, bool movingRight);
+    void update(float dt, State state, bool movingRight);
     void draw(sf::RenderWindow& window);
 
     void setPosition(const sf::Vector2f& pos);
