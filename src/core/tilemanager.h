@@ -1,22 +1,38 @@
 #pragma once
-#include "string"
 
-#include "SFML/Graphics/Sprite.hpp"
 #include "tileson.hpp"
+#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <SFML/Window/Window.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <filesystem>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace fs = std::filesystem;
+
+struct TileRenderInfo {
+    std::string texturePath;
+    sf::IntRect textureRect;
+    sf::Vector2f position;
+};
 
 class TileManager {
   public:
     TileManager();
-    bool loadMap(const std::string& path, sf::RenderWindow& window);
-    sf::Sprite*
-    storeAndLoadImage(const std::string& image, const sf::Vector2f& position);
+
+    bool loadMap(const std::string& path);
+    void render(sf::RenderWindow& window);
+    void clear();
 
   private:
+    void processLayer(const std::string& layerName);
+    void loadTexture(const std::string& imagePath);
+
     tson::Tileson tsonParser;
-    tson::Map* map = nullptr;
+    std::unique_ptr<tson::Map> m_currentMap;
     std::map<std::string, std::unique_ptr<sf::Texture>> m_textures;
-    std::map<std::string, std::unique_ptr<sf::Sprite>> m_sprites;
+    std::vector<TileRenderInfo> m_tiles;
 };
