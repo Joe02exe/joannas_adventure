@@ -24,7 +24,7 @@ void Game::run() {
 
     // Load the map ONCE before the game loop
     TileManager tileManager;
-    if (!tileManager.loadMap("./assets/environment/map/map_villages.json")) {
+    if (!tileManager.loadMap("./assets/environment/map/map_village.json")) {
         spdlog::error("Failed to load map!");
         return;
     }
@@ -44,7 +44,6 @@ void Game::run() {
         }
 
         Player::State state = Player::State::Idle;
-        float speedMul = 1.f;
         sf::Vector2f dir{ 0.f, 0.f };
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
@@ -66,7 +65,7 @@ void Game::run() {
             state = Player::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
-            speedMul = 2.f;
+            dir *= 1.5f;
             state = Player::State::Running;
         }
 
@@ -75,7 +74,7 @@ void Game::run() {
             dir *= 0.7071f; // approx 1/sqrt(2)
         }
 
-        camera.move(dir * speedMul);
+        camera.move(dir);
         window.setView(camera);
 
         player.setPosition(

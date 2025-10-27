@@ -23,13 +23,8 @@ class TileManager {
   public:
     TileManager();
 
-    // Load a map from file
     bool loadMap(const std::string& path);
-
-    // Render all tiles to the window
     void render(sf::RenderWindow& window);
-
-    // Clear all loaded map data
     void clear();
 
   private:

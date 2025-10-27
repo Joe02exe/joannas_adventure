@@ -7,7 +7,7 @@
 struct Animation {
     sf::Texture texture;
     std::vector<sf::IntRect> frames;
-    static constexpr float frameTime = 0.05f;
+    static constexpr float frameTime = 0.08f;
     static constexpr int frameCount = 8;
 
     Animation();

@@ -16,7 +16,6 @@ bool TileManager::loadMap(const std::string& path) {
         return false;
     }
 
-    // Store the map for later use
     m_currentMap = std::move(map);
 
     // Process all tile layers and prepare rendering data
