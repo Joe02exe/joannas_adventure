@@ -151,7 +151,16 @@
 	"tilesets": [
 		{
 			"firstgid": 1,
-			"source": "./tileset.tsx"
+			"image": "./assets/environment/map/tileset.png",
+			"imageheight": 1024,
+			"imagewidth": 1024,
+			"columns": 64,
+			"tilecount": 4096,
+			"tileheight": 16,
+			"tilewidth": 16,
+			"margin": 0,
+			"spacing": 0,
+			"name": "tileset"
 		}
 	],
 	"tilewidth": 16,
