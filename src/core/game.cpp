@@ -7,13 +7,12 @@
 Game::Game() = default;
 
 void Game::run() {
-
     sf::Vector2u windowSize(1200, 900);
     sf::RenderWindow window(
         sf::VideoMode({ windowSize.x, windowSize.y }), "RPG Game"
     );
 
-    sf::Vector2f playerScreenPos(560.f, 850.f);
+    sf::Vector2f playerScreenPos(150.f, 165.f);
     Player player(
         "assets/player/main/idle.png", "assets/player/main/walk.png",
         "assets/player/main/run.png", playerScreenPos
@@ -23,13 +22,21 @@ void Game::run() {
     camera.setCenter(playerScreenPos);
     camera.zoom(0.25f);
 
+    // Load the map ONCE before the game loop
     TileManager tileManager;
-    sf::Clock clock;
+    if (!tileManager.loadMap("./assets/environment/map/map_villages.json")) {
+        spdlog::error("Failed to load map!");
+        return;
+    }
+    spdlog::info("Map loaded successfully");
 
+    sf::Clock clock;
     bool facingLeft = false;
-    int factor = 3;
+    float factor = .15f;
+
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
+
         while (const std::optional<sf::Event> event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 window.close();
@@ -38,8 +45,8 @@ void Game::run() {
 
         Player::State state = Player::State::Idle;
         float speedMul = 1.f;
-
         sf::Vector2f dir{ 0.f, 0.f };
+
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
             dir.x -= 1.f * factor;
             facingLeft = true;
@@ -58,7 +65,6 @@ void Game::run() {
             dir.y += 1.f * factor;
             state = Player::State::Walking;
         }
-
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
             speedMul = 2.f;
             state = Player::State::Running;
@@ -71,6 +77,7 @@ void Game::run() {
 
         camera.move(dir * speedMul);
         window.setView(camera);
+
         player.setPosition(
             { camera.getCenter().x - 48.f, camera.getCenter().y - 32.f }
         ); // subtract half the size of character
@@ -83,9 +90,14 @@ void Game::run() {
         }
 
         window.clear();
+
+        // Render the tilemap FIRST (background)
+        tileManager.render(window);
+
+        // Update and draw the player AFTER (foreground)
         player.update(dt, state, facingLeft);
-        tileManager.loadMap("./assets/environment/map/map.json", window);
         player.draw(window);
+
         window.display();
     }
 }
