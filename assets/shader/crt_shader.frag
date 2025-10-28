@@ -9,7 +9,6 @@ uniform float scanlines_intensity;
 uniform float flicker_speed;
 uniform float flicker_intensity;
 uniform float color_offset;
-uniform float blur;
 uniform float time;
 uniform vec2 texture_size; // size of the input texture
 

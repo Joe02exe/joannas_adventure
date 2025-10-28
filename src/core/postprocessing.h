@@ -15,6 +15,8 @@ class PostProcessing {
     // Apply post-processing effects and render to target
     void apply(sf::RenderTarget& target, float time);
 
+    void resize(unsigned int width, unsigned int height);
+
     // Get the internal render texture (if needed for direct access)
     sf::RenderTexture& getRenderTexture() { return m_sceneTexture; }
 
