@@ -36,7 +36,7 @@ void Game::run() {
 
     sf::Clock clock;
     bool facingLeft = false;
-    float factor = .15f;
+    float factor = 60.0f * 0.5f;
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
@@ -51,21 +51,21 @@ void Game::run() {
         sf::Vector2f dir{ 0.f, 0.f };
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-            dir.x -= 1.f * factor;
+            dir.x -= 1.f * factor * dt;
             facingLeft = true;
             state = Player::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-            dir.x += 1.f * factor;
+            dir.x += 1.f * factor * dt;
             facingLeft = false;
             state = Player::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-            dir.y -= 1.f * factor;
+            dir.y -= 1.f * factor * dt;
             state = Player::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-            dir.y += 1.f * factor;
+            dir.y += 1.f * factor * dt;
             state = Player::State::Walking;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
