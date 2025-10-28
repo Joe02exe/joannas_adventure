@@ -18,7 +18,7 @@ class Player {
     );
 
     void update(float dt, State state, bool movingRight);
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderTarget& target);
 
     void setPosition(const sf::Vector2f& pos);
     sf::Vector2f getPosition() const;

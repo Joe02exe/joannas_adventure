@@ -24,7 +24,7 @@ class TileManager {
     TileManager();
 
     bool loadMap(const std::string& path);
-    void render(sf::RenderWindow& window);
+    void render(sf::RenderTarget& target);
     void clear();
 
   private:

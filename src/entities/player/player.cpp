@@ -54,8 +54,8 @@ void Player::switchState(State newState) {
     }
 }
 
-void Player::draw(sf::RenderWindow& window) {
-    window.draw(*sprite);
+void Player::draw(sf::RenderTarget& target) {
+    target.draw(*sprite);
 }
 
 void Player::setPosition(const sf::Vector2f& pos) {

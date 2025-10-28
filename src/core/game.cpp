@@ -1,6 +1,8 @@
 #include "game.h"
 #include "../entities/player/player.h"
 #include "./tilemanager.h"
+#include "./postprocessing.h"
+
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "spdlog/spdlog.h"
 
@@ -29,6 +31,8 @@ void Game::run() {
         return;
     }
     spdlog::info("Map loaded successfully");
+
+    PostProcessing postProc(1200, 900);
 
     sf::Clock clock;
     bool facingLeft = false;
@@ -88,15 +92,18 @@ void Game::run() {
             );
         }
 
-        window.clear();
-
-        // Render the tilemap FIRST (background)
-        tileManager.render(window);
-
         // Update and draw the player AFTER (foreground)
         player.update(dt, state, facingLeft);
-        player.draw(window);
 
+        // Rendering
+        postProc.drawScene([&](sf::RenderTarget& rt) {
+            tileManager.render(rt);
+            player.draw(rt);
+        });
+
+        // Clean up.
+        window.clear();
+        postProc.apply(window, clock.getElapsedTime().asSeconds());
         window.display();
     }
 }

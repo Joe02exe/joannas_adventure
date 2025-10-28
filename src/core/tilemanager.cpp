@@ -78,14 +78,14 @@ void TileManager::loadTexture(const std::string& imagePath) {
     m_textures[imagePath] = std::move(tex);
 }
 
-void TileManager::render(sf::RenderWindow& window) {
+void TileManager::render(sf::RenderTarget& target) {
     for (const auto& tile : m_tiles) {
         auto it = m_textures.find(tile.texturePath);
         if (it != m_textures.end()) {
             sf::Sprite sprite(*it->second);
             sprite.setTextureRect(tile.textureRect);
             sprite.setPosition(tile.position);
-            window.draw(sprite);
+            target.draw(sprite);
         }
     }
 }
