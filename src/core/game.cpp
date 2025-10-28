@@ -47,6 +47,7 @@ void Game::run() {
             }
         }
 
+        // TODO move to separate class.
         Player::State state = Player::State::Idle;
         sf::Vector2f dir{ 0.f, 0.f };
 
@@ -85,6 +86,7 @@ void Game::run() {
             { camera.getCenter().x - 48.f, camera.getCenter().y - 32.f }
         ); // subtract half the size of character
 
+        // TODO don't use if around every log statement, find a better way.
         if (LOGGING_ENABLED) {
             spdlog::info(
                 "Camera position: x={}, y={}", camera.getCenter().x,

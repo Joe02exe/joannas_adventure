@@ -2,15 +2,13 @@
 
 PostProcessing::PostProcessing(unsigned int width, unsigned int height)
     : m_width(width), m_height(height),
-      m_sceneTexture(sf::Vector2u(width, height)),  // RenderTexture constructor takes size
-      m_sceneSprite(m_sceneTexture.getTexture())    // Sprite requires texture in constructor
+      m_sceneTexture(sf::Vector2u(width, height)),
+      m_sceneSprite(m_sceneTexture.getTexture())
 {
-    // Load CRT shader (SFML 3.0 uses sf::Shader::Type enum)
     if (!m_shader.loadFromFile("assets/shader/crt_shader.frag", sf::Shader::Type::Fragment)) {
-        throw std::runtime_error("Failed to load CRT shader");
+        throw std::runtime_error("Failed to load CRT shader.");
     }
 
-    // Set static shader uniforms
     m_shader.setUniform("scanline_color", sf::Glsl::Vec4(0.f, 0.f, 0.f, 1.f));
     m_shader.setUniform("flicker_color", sf::Glsl::Vec4(0.f, 0.f, 0.f, 1.f));
     m_shader.setUniform("scanlines_count", 10.f);
