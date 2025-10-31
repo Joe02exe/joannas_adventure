@@ -1,10 +1,11 @@
 #include "game.h"
 #include "../entities/player/player.h"
-#include "./tilemanager.h"
+#include "../entities/utils/controller.h"
 #include "./postprocessing.h"
+#include "./tilemanager.h"
+#include "logger.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "spdlog/spdlog.h"
 
 Game::Game() = default;
 
@@ -21,25 +22,27 @@ void Game::run() {
     );
 
     sf::View camera = window.getDefaultView();
+
+    Controller controller(player, camera);
+
     camera.setCenter(playerScreenPos);
     camera.zoom(0.25f);
 
-    const float targetAspectRatio = static_cast<float>(windowSize.x) / windowSize.y;
+    const float targetAspectRatio =
+        static_cast<float>(windowSize.x) / windowSize.y;
     sf::Vector2f viewSize = camera.getSize();
 
     // Load the map ONCE before the game loop
     TileManager tileManager;
     if (!tileManager.loadMap("./assets/environment/map/map_village.json")) {
-        spdlog::error("Failed to load map!");
+        Logger::error("Failed to load map!");
         return;
     }
-    spdlog::info("Map loaded successfully");
+    Logger::info("Map loaded successfully");
 
     PostProcessing postProc(900, 900);
 
     sf::Clock clock;
-    bool facingLeft = false;
-    float factor = 60.0f * 0.5f;
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
@@ -51,18 +54,25 @@ void Game::run() {
 
             if (const auto* resized = event->getIf<sf::Event::Resized>()) {
                 sf::Vector2u newSize(resized->size.x, resized->size.y);
-                float newAspectRatio = static_cast<float>(newSize.x) / static_cast<float>(newSize.y);
+                float newAspectRatio = static_cast<float>(newSize.x) /
+                                       static_cast<float>(newSize.y);
 
                 sf::FloatRect viewport;
 
                 if (newAspectRatio > targetAspectRatio) {
                     // Window is too wide - add letterboxing on sides
                     float width = targetAspectRatio / newAspectRatio;
-                    viewport = sf::FloatRect(sf::Vector2f((1.f - width) / 2.f, 0.f), sf::Vector2f(width, 1.f));
+                    viewport = sf::FloatRect(
+                        sf::Vector2f((1.f - width) / 2.f, 0.f),
+                        sf::Vector2f(width, 1.f)
+                    );
                 } else {
                     // Window is too tall - add letterboxing on top/bottom
                     float height = newAspectRatio / targetAspectRatio;
-                    viewport = sf::FloatRect(sf::Vector2f(0.f, (1.f - height) / 2.f), sf::Vector2f(1.f, height));
+                    viewport = sf::FloatRect(
+                        sf::Vector2f(0.f, (1.f - height) / 2.f),
+                        sf::Vector2f(1.f, height)
+                    );
                 }
 
                 camera.setViewport(viewport);
@@ -72,60 +82,14 @@ void Game::run() {
             }
         }
 
-        // TODO move to separate class.
-        Player::State state = Player::State::Idle;
-        sf::Vector2f dir{ 0.f, 0.f };
+        controller.getInput(dt, window);
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-            dir.x -= 1.f * factor * dt;
-            facingLeft = true;
-            state = Player::State::Walking;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-            dir.x += 1.f * factor * dt;
-            facingLeft = false;
-            state = Player::State::Walking;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-            dir.y -= 1.f * factor * dt;
-            state = Player::State::Walking;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-            dir.y += 1.f * factor * dt;
-            state = Player::State::Walking;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
-            dir *= 1.5f;
-            state = Player::State::Running;
-        }
-
-        // normalize the diagonal movement
-        if (dir.x != 0.f && dir.y != 0.f) {
-            dir *= 0.7071f; // approx 1/sqrt(2)
-        }
-
-        camera.move(dir);
-        window.setView(camera);
-
-        player.setPosition(
-            { camera.getCenter().x - 48.f, camera.getCenter().y - 32.f }
-        ); // subtract half the size of character
-
-        // TODO don't use if around every log statement, find a better way.
-        if (LOGGING_ENABLED) {
-            spdlog::info(
-                "Camera position: x={}, y={}", camera.getCenter().x,
-                camera.getCenter().y
-            );
-        }
-
-        // Update and draw the player AFTER (foreground)
-        player.update(dt, state, facingLeft);
+        window.setView(controller.getCamera());
 
         // Rendering
         postProc.drawScene([&](sf::RenderTarget& rt) {
             tileManager.render(rt);
-            player.draw(rt);
+            controller.getPlayer().draw(rt);
         });
 
         // Clean up.
