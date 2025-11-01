@@ -107,32 +107,32 @@ Start the game by executing the generated executable:
 
 ## Specifications
 
-- (2) Overworld with **3** different sections:
+- (2) Overworld with **3** different sections (Philipp)
   - Each with its own tone (architecture, sprites, music, enemies, …)
   - The second is only accessible after some story progress
   - Player can roam the world and interact with other entities
-- (1) Characters
+- (1) Characters (Philipp)
   - Player can talk to other characters
-- (1) Resources
+- (1) Resources / Inventory (Martin)
   - Player can manage acquired resources through dedicated menus
-- (1) Stats
+- (1) Stats (Philipp)
   - Player's combatants have stats that influence the combat
   - Player's combatants get experience from combat, increasing their stats
   - Stats are influenced by equipment
-- (3) Combat
+- (3) Combat (Leonhard)
   - Turn-based
   - Player selects which attacks, spells, items, etc. to use on which target
   - Enemies use attacks, spells, items, etc. to combat the player
   - _Game Over_ when all of player's combatants are dead
-- (1) Save points
+- (1) Save points (Johannes)
   - Player can save her progress at specific points in the game
   - Saved progress is persistent across play sessions (application termination)
-- (1) Audio
+- (1) Audio (Johannes)
   - Background music
   - Sound effects
-- (1) Main menu
+- (1) Main menu (Martin)
   - New game
   - Load game
   - Exit
-- (2) Map
-- (1) Minimap
+- (2) Map (Martin)
+- (1) Minimap (Leonhard)
