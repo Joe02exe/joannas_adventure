@@ -37,6 +37,10 @@ void Controller::getInput(float dt, sf::RenderWindow& window) {
         dir *= 1.5f;
         state = Player::State::Running;
     }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+        Menu menu(window);
+        menu.show();
+    }
 
     // normalize the diagonal movement
     if (dir.x != 0.f && dir.y != 0.f) {

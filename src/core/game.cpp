@@ -4,8 +4,11 @@
 #include "./postprocessing.h"
 #include "./tilemanager.h"
 #include "logger.h"
+#include "menu.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Event.hpp>
 
 Game::Game() = default;
 
@@ -44,6 +47,11 @@ void Game::run() {
 
     sf::Clock clock;
 
+    resize(window.getSize(), targetAspectRatio, camera, window, postProc);
+
+    Menu menu(window);
+    menu.show();
+
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
 
@@ -53,32 +61,7 @@ void Game::run() {
             }
 
             if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-                sf::Vector2u newSize(resized->size.x, resized->size.y);
-                float newAspectRatio = static_cast<float>(newSize.x) /
-                                       static_cast<float>(newSize.y);
-
-                sf::FloatRect viewport;
-
-                if (newAspectRatio > targetAspectRatio) {
-                    // Window is too wide - add letterboxing on sides
-                    float width = targetAspectRatio / newAspectRatio;
-                    viewport = sf::FloatRect(
-                        sf::Vector2f((1.f - width) / 2.f, 0.f),
-                        sf::Vector2f(width, 1.f)
-                    );
-                } else {
-                    // Window is too tall - add letterboxing on top/bottom
-                    float height = newAspectRatio / targetAspectRatio;
-                    viewport = sf::FloatRect(
-                        sf::Vector2f(0.f, (1.f - height) / 2.f),
-                        sf::Vector2f(1.f, height)
-                    );
-                }
-
-                camera.setViewport(viewport);
-                window.setView(camera);
-
-                postProc.resize(newSize.x, newSize.y);
+                resize(resized->size, targetAspectRatio, camera, window, postProc);
             }
         }
 
@@ -97,4 +80,31 @@ void Game::run() {
         postProc.apply(window, clock.getElapsedTime().asSeconds());
         window.display();
     }
+}
+
+void Game::resize(const sf::Vector2u size, float targetAspectRatio, sf::View& camera, sf::RenderWindow& window, PostProcessing& postProc) {
+    sf::Vector2u newSize(size.x, size.y);
+    float newAspectRatio =
+        static_cast<float>(newSize.x) / static_cast<float>(newSize.y);
+
+    sf::FloatRect viewport;
+
+    if (newAspectRatio > targetAspectRatio) {
+        // Window is too wide - add letterboxing on sides
+        float width = targetAspectRatio / newAspectRatio;
+        viewport = sf::FloatRect(
+            sf::Vector2f((1.f - width) / 2.f, 0.f), sf::Vector2f(width, 1.f)
+        );
+    } else {
+        // Window is too tall - add letterboxing on top/bottom
+        float height = newAspectRatio / targetAspectRatio;
+        viewport = sf::FloatRect(
+            sf::Vector2f(0.f, (1.f - height) / 2.f), sf::Vector2f(1.f, height)
+        );
+    }
+
+    camera.setViewport(viewport);
+    window.setView(camera);
+
+    postProc.resize(newSize.x, newSize.y);
 }
