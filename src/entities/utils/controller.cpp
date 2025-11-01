@@ -2,7 +2,6 @@
 
 #include "controller.h"
 #include "../../core/logger.h"
-#include "../../core/menu.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
