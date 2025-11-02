@@ -10,30 +10,32 @@ variables:
   VCPKG_DEFAULT_TRIPLET: "x64-linux"
   CMAKE_TOOLCHAIN_FILE: "$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
   VCPKG_BINARY_SOURCES: "clear;files,${CI_PROJECT_DIR}/vcpkg/bincache,readwrite"
+  VCPKG_CACHE_KEY: "vcpkg-cache-${CI_COMMIT_REF_SLUG}"
 
 default:
   image: ubuntu:22.04
   before_script:
     - apt-get update -qq
-    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-      build-essential
-      cmake
-      git
-      curl
-      ca-certificates
-      pkg-config
-      zip
-      unzip
-      tar
-      libxrandr-dev
-      libxcursor-dev
-      libxi-dev
-      libudev-dev
-      libfreetype-dev
-      libflac-dev
-      libvorbis-dev
-      libgl1-mesa-dev
-      libegl1-mesa-dev
+    - |
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        curl \
+        ca-certificates \
+        pkg-config \
+        zip \
+        unzip \
+        tar \
+        libxrandr-dev \
+        libxcursor-dev \
+        libxi-dev \
+        libudev-dev \
+        libfreetype-dev \
+        libflac-dev \
+        libvorbis-dev \
+        libgl1-mesa-dev \
+        libegl1-mesa-dev
 
 # --- Setup vcpkg and dependencies ---
 setup:
@@ -46,7 +48,7 @@ setup:
     # Bootstrap vcpkg
     - ./vcpkg/bootstrap-vcpkg.sh
   cache:
-    key: vcpkg-cache
+    key: "$VCPKG_CACHE_KEY"
     paths:
       # Only cache the useful parts, not the whole folder
       - vcpkg/installed/
@@ -55,8 +57,7 @@ setup:
   artifacts:
     # Keep only bootstrap result for next job, not all builds
     paths:
-      - vcpkg/bootstrap-vcpkg.sh
-      - vcpkg/vcpkg
+      - vcpkg/
     expire_in: 1 week
   only:
     - branches
@@ -69,13 +70,14 @@ build:
     - rm -rf $BUILD_DIR
     - mkdir $BUILD_DIR
     - cd $BUILD_DIR
+    - ls -la $CI_PROJECT_DIR/vcpkg || true
     - cmake --preset=default ..
     - cmake --build . --parallel
   needs:
     - job: setup
       artifacts: true
   cache:
-    key: vcpkg-cache
+    key: "$VCPKG_CACHE_KEY"
     paths:
       - vcpkg/installed/
       - vcpkg/downloads/
