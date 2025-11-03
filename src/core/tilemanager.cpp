@@ -47,6 +47,7 @@ void TileManager::processLayer(const std::string& layerName) {
         // Store tile rendering info
         TileRenderInfo info;
         info.texturePath = imagePath;
+        info.layer = layerName;
         info.textureRect = sf::IntRect(
             { drawingRect.x, drawingRect.y },
             { drawingRect.width, drawingRect.height }
@@ -78,15 +79,15 @@ void TileManager::loadTexture(const std::string& imagePath) {
     m_textures[imagePath] = std::move(tex);
 }
 
-void TileManager::render(sf::RenderTarget& target) {
+void TileManager::render(sf::RenderTarget& target, std::string layer) {
     for (const auto& tile : m_tiles) {
-        auto it = m_textures.find(tile.texturePath);
-        if (it != m_textures.end()) {
-            sf::Sprite sprite(*it->second);
-            sprite.setTextureRect(tile.textureRect);
-            sprite.setPosition(tile.position);
-            target.draw(sprite);
-        }
+    auto it = m_textures.find(tile.texturePath);
+    if (it != m_textures.end() && tile.layer == layer) {
+        sf::Sprite sprite(*it->second);
+        sprite.setTextureRect(tile.textureRect);
+        sprite.setPosition(tile.position);
+        target.draw(sprite);
+    }
     }
 }
 

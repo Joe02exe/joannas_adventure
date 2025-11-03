@@ -71,8 +71,10 @@ void Game::run() {
 
         // Rendering
         postProc.drawScene([&](sf::RenderTarget& rt) {
-            tileManager.render(rt);
+            tileManager.render(rt, "background");
+            tileManager.render(rt, "ground");
             controller.getPlayer().draw(rt);
+            tileManager.render(rt, "decorations");
         });
 
         // Clean up.

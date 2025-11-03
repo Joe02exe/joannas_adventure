@@ -2,13 +2,12 @@
 #include "logger.h"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Window.hpp>
 
-Menu::Menu(sf::RenderWindow& window) : window(window) {
+Menu::Menu(sf::RenderWindow& window) : window(window){
     this->font.openFromFile("assets/font/Pixellari.ttf");
-
+    this->image.loadFromFile("assets/images/background.png");
     pos = 0;
     pressed = theselect = false;
 
@@ -19,7 +18,7 @@ void Menu::set_values() {
     pos_mouse = { 0, 0 };
     mouse_coord = { 0, 0 };
 
-    options = { "Joe's Farm", "Resume", "Save", "Options", "About", "Quit" };
+    options = { "Joe's Farm", "Play", "Save", "Options", "About", "Quit" };
     sizes = { 24, 20, 20, 20, 20, 20 };
 
     texts.clear();        // just in case
@@ -38,6 +37,7 @@ void Menu::set_values() {
         sf::Text text(font);
         text.setString(options[i]);
         text.setCharacterSize(sizes[i]);
+        text.setLetterSpacing(1.5f);
         text.setOutlineColor(sf::Color::Black);
 
         // Horizontal centering
@@ -56,8 +56,9 @@ void Menu::set_values() {
     }
 
     // Highlight first selectable option (skip "War Game" title)
+    texts[0].setOutlineThickness(2);
     pos = 1;
-    texts[pos].setOutlineThickness(4);
+    texts[pos].setOutlineThickness(2);
 
     pressed = theselect = false;
 }
@@ -74,7 +75,7 @@ void Menu::loop_events() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && !pressed) {
             if (pos < 5) {
                 ++pos;
-                texts[pos].setOutlineThickness(4);
+                texts[pos].setOutlineThickness(2);
                 texts[pos - 1].setOutlineThickness(0);
                 theselect = false;
                 pressed = true;
@@ -84,7 +85,7 @@ void Menu::loop_events() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && !pressed) {
             if (pos > 1) {
                 --pos;
-                texts[pos].setOutlineThickness(4);
+                texts[pos].setOutlineThickness(2);
                 texts[pos + 1].setOutlineThickness(0);
                 theselect = false;
                 pressed = true;
@@ -137,6 +138,10 @@ void Menu::loop_events() {
  
 void Menu::draw_all() {
     window.clear(sf::Color(216,189,138));
+    sf::Sprite bg(this->image);
+    bg.setPosition({window.getView().getCenter().x - window.getSize().x / 2, window.getView().getCenter().y - window.getSize().y / 2});
+    bg.scale({1.f, 1.f});
+    window.draw(bg);
 
     for (const auto& t : texts) {
         window.draw(t);

@@ -15,6 +15,7 @@ namespace fs = std::filesystem;
 
 struct TileRenderInfo {
     std::string texturePath;
+    std::string layer;
     sf::IntRect textureRect;
     sf::Vector2f position;
 };
@@ -24,7 +25,7 @@ class TileManager {
     TileManager();
 
     bool loadMap(const std::string& path);
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderTarget& target, std::string layer);
     void clear();
 
   private:
