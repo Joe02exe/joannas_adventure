@@ -4,9 +4,10 @@
 #include "../../core/logger.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/View.hpp>
 
-Controller::Controller(Player& player, sf::View& camera)
-    : player(&player), camera(&camera) {}
+Controller::Controller(Player& player, sf::View& camera, sf::View& miniMapView)
+    : player(&player), camera(&camera), miniMapView(&miniMapView) {}
 
 void Controller::getInput(float dt, sf::RenderWindow& window) {
     float factor = 60.0f * 0.5f;
@@ -43,17 +44,18 @@ void Controller::getInput(float dt, sf::RenderWindow& window) {
     }
 
     camera->move(dir);
+    miniMapView->move(dir);
 
     player->setPosition(
         { camera->getCenter().x - 48.f, camera->getCenter().y - 32.f }
     ); // subtract half the size of character
 
-    if (dir.x != 0.f || dir.y != 0.f) {
-        Logger::info(
-            "Camera position: x={}, y={}", camera->getCenter().x,
-            camera->getCenter().y
-        );
-    }
+    // if (dir.x != 0.f || dir.y != 0.f) {
+    //     Logger::info(
+    //         "Camera position: x={}, y={}", camera->getCenter().x,
+    //         camera->getCenter().y
+    //     );
+    // }
 
     // Update and draw the player AFTER (foreground)
     player->update(dt, state, facingLeft);
