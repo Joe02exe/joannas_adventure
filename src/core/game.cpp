@@ -3,39 +3,38 @@
 #include "../entities/utils/controller.h"
 #include "./postprocessing.h"
 #include "./tilemanager.h"
+#include "./windowmanager.h"
 #include "logger.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/System/Vector2.hpp>
 
 Game::Game() = default;
 
 void Game::run() {
-    sf::Vector2u windowSize(900, 900);
-    sf::RenderWindow window(
-        sf::VideoMode({ windowSize.x, windowSize.y }), "RPG Game"
-    );
+
+    WindowManager windowManager(900,900, "Game");
 
     sf::Vector2f playerScreenPos(150.f, 165.f);
+
+    windowManager.setCenter(playerScreenPos);
+    
+    sf::RenderWindow& window = windowManager.getWindow();
+
+    sf::Vector2u windowSize = window.getSize();
+
     Player player(
         "assets/player/main/idle.png", "assets/player/main/walk.png",
         "assets/player/main/run.png", playerScreenPos
     );
 
-    sf::View camera(playerScreenPos, {
-        static_cast<float>(windowSize.x),
-        static_cast<float>(windowSize.y)
-    });
-    sf::View miniMapView(playerScreenPos, {250.f, 250.f});
-    miniMapView.setViewport(
-        sf::FloatRect({0.75f, 0.f}, {0.25f, 0.25f})
-    ); // Top-right corner
+    sf::View camera = windowManager.getMainView();
+    sf::View miniMapView = windowManager.getMiniMapView();
 
     Controller controller(player, camera, miniMapView);
-
-    camera.zoom(0.15f);
 
     const float targetAspectRatio =
         static_cast<float>(windowSize.x) / static_cast<float>(windowSize.y);
@@ -54,62 +53,34 @@ void Game::run() {
     sf::Clock clock;
 
     while (window.isOpen()) {
+        // handle resizing events
+        windowManager.pollEvents();
         float dt = clock.restart().asSeconds();
-
-        while (const std::optional<sf::Event> event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) {
-                window.close();
-            }
-
-            // if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-            //     sf::Vector2u newSize(resized->size.x, resized->size.y);
-            //     float newAspectRatio = static_cast<float>(newSize.x) /
-            //                            static_cast<float>(newSize.y);
-
-            //     sf::FloatRect viewport;
-
-            //     if (newAspectRatio > targetAspectRatio) {
-            //         // Window is too wide - add letterboxing on sides
-            //         float width = targetAspectRatio / newAspectRatio;
-            //         viewport = sf::FloatRect(
-            //             sf::Vector2f((1.f - width) / 2.f, 0.f),
-            //             sf::Vector2f(width, 1.f)
-            //         );
-            //     } else {
-            //         // Window is too tall - add letterboxing on top/bottom
-            //         float height = newAspectRatio / targetAspectRatio;
-            //         viewport = sf::FloatRect(
-            //             sf::Vector2f(0.f, (1.f - height) / 2.f),
-            //             sf::Vector2f(1.f, height)
-            //         );
-            //     }
-
-            //     camera.setViewport(viewport);
-            //     window.setView(camera);
-
-            //     postProc.resize(newSize.x, newSize.y);
-            // }
-        }
-        
+         
         // TODO move to WindowManager
-        controller.getInput(dt, window);
-        
-        window.clear();
+        controller.getInput(dt, windowManager.getWindow());
+        windowManager.getWindow().clear();
+        controller.getCamera().setViewport(windowManager.getMainView().getViewport());
 
-        window.setView(controller.getCamera());
+        windowManager.getWindow().setView(controller.getCamera());
 
         // render map and player in main view
-        tileManager.render(window);
-        controller.getPlayer().draw(window);
+        tileManager.render(windowManager.getWindow());
+        controller.getPlayer().draw(windowManager.getWindow());
 
-        window.setView(miniMapView);
+        auto miniMapView = windowManager.getMiniMapView();
+        miniMapView.setCenter(
+            controller.getCamera().getCenter()
+        ); // center minimap on player
+
+        windowManager.getWindow().setView(miniMapView);
 
         // render minimap
-        tileManager.render(window);
-        controller.getPlayer().draw(window);
+        tileManager.render(windowManager.getWindow());
+        controller.getPlayer().draw(windowManager.getWindow());
 
-        window.setView(window.getDefaultView());
-
+        windowManager.getWindow().setView(windowManager.getDefaultView());
+        
         // render text in default view
         sf::Font font("assets/minecraft.ttf");
         sf::Text debugText(font);
@@ -119,9 +90,9 @@ void Game::run() {
         debugText.setStyle(sf::Text::Bold);
         debugText.setPosition({window.getView().getCenter().x - debugText.getLocalBounds().size.x / 2,
                               window.getView().getCenter().y + windowSize.y / 2 - 50});
+        
+        windowManager.getWindow().draw(debugText);
 
-        window.draw(debugText);
-
-        window.display();
+        windowManager.getWindow().display();
     }
 }
