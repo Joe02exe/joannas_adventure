@@ -42,7 +42,7 @@ void Game::run() {
 
     // Load the map ONCE before the game loop
     TileManager tileManager;
-    if (!tileManager.loadMap("./assets/environment/map/map_village2.json")) {
+    if (!tileManager.loadMap("./assets/environment/map/map_village.json")) {
         Logger::error("Failed to load map!");
         return;
     }

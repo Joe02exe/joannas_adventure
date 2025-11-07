@@ -11,15 +11,16 @@ Controller::Controller(Player& player, sf::View& camera, sf::View& miniMapView)
 
 // clang-format off
 const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
-    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x/2.f >= box.position.x + box.size.x/2.f;
-    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x/2.f <= box.position.x - box.size.x/2.f;
-    const bool AIsBelowB   = nextPlayerBox.position.y - nextPlayerBox.size.y/2.f >= box.position.y + box.size.y/2.f;
-    const bool AIsAboveB   = nextPlayerBox.position.y + nextPlayerBox.size.y/2.f <= box.position.y - box.size.y/2.f;
+    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f >= box.position.x + box.size.x;
+    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f <= box.position.x;
+    
+    // create small illusion of depth (therefore we don't use box.size.y / 2.f)
+    const bool AIsBelowB = nextPlayerBox.position.y >= box.position.y + box.size.y;
+    const bool AIsAboveB = nextPlayerBox.position.y <= box.position.y;
     return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
 }
 
 
-// Axis-separated collision movement
 sf::Vector2f moveWithCollisions(
     const sf::Vector2f& dir, const sf::FloatRect& playerBox,
     const std::vector<sf::FloatRect>& collisions
@@ -28,27 +29,22 @@ sf::Vector2f moveWithCollisions(
     sf::Vector2f result = dir;
     sf::FloatRect nextPlayerBox = playerBox;
     nextPlayerBox.position.x += dir.x;
-    bool blockedX = false;
+    nextPlayerBox.position.y += dir.y;
     for (const auto& box : collisions) {
-
         if (isColliding(nextPlayerBox, box)) {
-            // if B.left- A.right = 0, only move along y axis or if B.right - A.left = 0
-            if ((box.position.x + box.size.x/2.f - (nextPlayerBox.position.x - nextPlayerBox.size.x/2.f) < 0.01f) ||
-                (box.position.x - box.size.x/2.f - (nextPlayerBox.position.x + nextPlayerBox.size.x/2.f ) < 0.01f)) {
-                Logger::info(
-                    "Collision on X axis detected at object x={}, y={}",
-                    box.position.x, box.position.y
-                );
-                result.x = 0.f;
+            if (dir.x != 0.f) {
+                // if B.left- A.right = 0, only move along y axis or if A.left - B.right = 0
+                if ((box.position.x - (nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f) < 0.01f) ||
+                        ((nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f) - box.position.x + box.size.x < 0.01f)) {
+                    result.x = 0.f;
+                }
             }
-            // if B.above - A.bottom = 0, only move along x axis or if B.bottom - A.top = 0
-            if ((box.position.y + box.size.y/2.f - (nextPlayerBox.position.y - nextPlayerBox.size.y/2.f) < 0.01f) ||
-                (box.position.y - box.size.y/2.f - (nextPlayerBox.position.y + nextPlayerBox.size.y/2.f) < 0.01f)) {
-                Logger::info(
-                    "Collision on Y axis detected at object x={}, y={}",
-                    box.position.x, box.position.y
-                );
-                result.y = 0.f;
+            if (dir.y != 0.f) {
+                // if B.above - A.bottom = 0, only move along x axis or if A.top - B.bottom  = 0
+                if ((box.position.y - (nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f) < 0.01f) ||
+                        ((nextPlayerBox.position.y - nextPlayerBox.size.y / 2.f) - box.position.y + box.size.y < 0.01f)) {
+                    result.y = 0.f;
+                }
             }
         }
     }
@@ -96,8 +92,7 @@ void Controller::getInput(
 
     // maybe in the future make this less static
     sf::FloatRect playerBox(
-        { camera->getCenter().x - 48.f, camera->getCenter().y - 32.f },
-        { 96.f, 64.f }
+        { camera->getCenter().x, camera->getCenter().y }, { 16.f, 16.f }
     );
 
     sf::Vector2f allowedMove = moveWithCollisions(dir, playerBox, collisions);
