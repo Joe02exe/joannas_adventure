@@ -27,11 +27,16 @@ class TileManager {
     void render(sf::RenderTarget& target);
     void clear();
 
+    const std::vector<sf::FloatRect>& getCollisionRects() const {
+        return m_collisionRects;
+    }
+
   private:
     void processLayer(const std::string& layerName);
     void loadTexture(const std::string& imagePath);
 
     tson::Tileson tsonParser;
+    std::vector<sf::FloatRect> m_collisionRects;
     std::unique_ptr<tson::Map> m_currentMap;
     std::map<std::string, std::unique_ptr<sf::Texture>> m_textures;
     std::vector<TileRenderInfo> m_tiles;

@@ -1,4 +1,5 @@
 #include "./tilemanager.h"
+#include "logger.h"
 #include "spdlog/spdlog.h"
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -35,6 +36,8 @@ void TileManager::processLayer(const std::string& layerName) {
         return;
     }
 
+    const bool isCollidable = layer->get<bool>("collidable");
+
     for (auto& [pos, tileObject] : layer->getTileObjects()) {
         tson::Tileset* tileset = tileObject.getTile()->getTileset();
         tson::Rect drawingRect = tileObject.getDrawingRect();
@@ -54,6 +57,19 @@ void TileManager::processLayer(const std::string& layerName) {
         info.position = sf::Vector2f(position.x, position.y);
 
         m_tiles.push_back(info);
+
+        if (isCollidable) {
+            // log this event
+            Logger::info(
+                "Collidable tile found at: ({}, {})", position.x, position.y
+            );
+
+            m_collisionRects.emplace_back(sf::FloatRect(
+                { position.x, position.y },
+                { static_cast<float>(drawingRect.width),
+                  static_cast<float>(drawingRect.height) }
+            ));
+        }
     }
 }
 
@@ -93,5 +109,6 @@ void TileManager::render(sf::RenderTarget& target) {
 void TileManager::clear() {
     m_tiles.clear();
     m_textures.clear();
+    m_collisionRects.clear();
     m_currentMap.reset();
 }
