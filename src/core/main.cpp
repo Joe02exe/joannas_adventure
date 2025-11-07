@@ -1,4 +1,5 @@
 #include "game.h"
+
 #include "spdlog/spdlog.h"
 
 int main() {
