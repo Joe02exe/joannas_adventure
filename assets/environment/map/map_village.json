@@ -50,6 +50,13 @@
 			"id": 1,
 			"name": "background",
 			"opacity": 1,
+			"properties": [
+				{
+					"name": "collidable",
+					"type": "bool",
+					"value": false
+				}
+			],
 			"type": "tilelayer",
 			"visible": true,
 			"width": 32,
@@ -88,6 +95,13 @@
 			"id": 3,
 			"name": "ground",
 			"opacity": 1,
+			"properties": [
+				{
+					"name": "collidable",
+					"type": "bool",
+					"value": false
+				}
+			],
 			"type": "tilelayer",
 			"visible": true,
 			"width": 32,
@@ -135,6 +149,13 @@
 			"id": 2,
 			"name": "decorations",
 			"opacity": 1,
+			"properties": [
+				{
+					"name": "collidable",
+					"type": "bool",
+					"value": true
+				}
+			],
 			"type": "tilelayer",
 			"visible": true,
 			"width": 32,
@@ -150,17 +171,17 @@
 	"tileheight": 16,
 	"tilesets": [
 		{
+			"columns": 64,
 			"firstgid": 1,
-			"image": "./assets/environment/map/tileset.png",
+			"image": "tileset.png",
 			"imageheight": 1024,
 			"imagewidth": 1024,
-			"columns": 64,
+			"margin": 0,
+			"name": "tileset",
+			"spacing": 0,
 			"tilecount": 4096,
 			"tileheight": 16,
-			"tilewidth": 16,
-			"margin": 0,
-			"spacing": 0,
-			"name": "tileset"
+			"tilewidth": 16
 		}
 	],
 	"tilewidth": 16,

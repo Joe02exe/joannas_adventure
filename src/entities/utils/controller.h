@@ -7,10 +7,23 @@
 class Controller {
   public:
     Controller(Player& player, sf::View& camera, sf::View& miniMapView);
-    void getInput(float dt, sf::RenderWindow& window);
-    sf::View& getCamera() { return *camera; }
-    sf::View& getMiniMapView() { return *miniMapView; }
-    Player& getPlayer() { return *player; }
+    void getInput(
+        float dt, sf::RenderWindow& window,
+        const std::vector<sf::FloatRect>& collisions
+    );
+
+    sf::View& getCamera() {
+        return *camera;
+    }
+
+    sf::View& getMiniMapView() {
+        return *miniMapView;
+    }
+
+    Player& getPlayer() {
+        return *player;
+    }
+
   private:
     Player* player;
     sf::View* camera;

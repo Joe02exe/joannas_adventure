@@ -24,13 +24,12 @@ void Game::run() {
         "assets/player/main/run.png", playerScreenPos
     );
 
-    sf::View camera(playerScreenPos, {
-        static_cast<float>(windowSize.x),
-        static_cast<float>(windowSize.y)
-    });
-    sf::View miniMapView(playerScreenPos, {250.f, 250.f});
-    miniMapView.setViewport(
-        sf::FloatRect({0.75f, 0.f}, {0.25f, 0.25f})
+    sf::View camera(
+        playerScreenPos,
+        { static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) }
+    );
+    sf::View miniMapView(playerScreenPos, { 250.f, 250.f });
+    miniMapView.setViewport(sf::FloatRect({ 0.75f, 0.f }, { 0.25f, 0.25f })
     ); // Top-right corner
 
     Controller controller(player, camera, miniMapView);
@@ -43,7 +42,7 @@ void Game::run() {
 
     // Load the map ONCE before the game loop
     TileManager tileManager;
-    if (!tileManager.loadMap("./assets/environment/map/map_village.json")) {
+    if (!tileManager.loadMap("./assets/environment/map/map_village2.json")) {
         Logger::error("Failed to load map!");
         return;
     }
@@ -90,10 +89,10 @@ void Game::run() {
             //     postProc.resize(newSize.x, newSize.y);
             // }
         }
-        
+
         // TODO move to WindowManager
-        controller.getInput(dt, window);
-        
+        controller.getInput(dt, window, tileManager.getCollisionRects());
+
         window.clear();
 
         window.setView(controller.getCamera());
@@ -117,8 +116,10 @@ void Game::run() {
         debugText.setCharacterSize(24);
         debugText.setFillColor(sf::Color::White);
         debugText.setStyle(sf::Text::Bold);
-        debugText.setPosition({window.getView().getCenter().x - debugText.getLocalBounds().size.x / 2,
-                              window.getView().getCenter().y + windowSize.y / 2 - 50});
+        debugText.setPosition({ window.getView().getCenter().x -
+                                    debugText.getLocalBounds().size.x / 2,
+                                window.getView().getCenter().y +
+                                    windowSize.y / 2 - 50 });
 
         window.draw(debugText);
 
