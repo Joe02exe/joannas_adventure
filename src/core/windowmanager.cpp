@@ -1,12 +1,11 @@
 #include "windowmanager.h"
 
-#include "logger.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 WindowManager::WindowManager(
-    unsigned width, unsigned height, const std::string& title
+    unsigned width, unsigned height, const std::string& title, sf::Vector2f initialPos
 )
     : window(sf::VideoMode({ width, height }), title),
       targetAspectRatio(
@@ -22,6 +21,8 @@ WindowManager::WindowManager(
     miniMapView.setViewport(
         sf::FloatRect({ 0.75f, 0.f }, { MINI_MAP_SIZE, MINI_MAP_SIZE })
     );
+
+    setCenter(initialPos);
 }
 
 void WindowManager::setCenter(const sf::Vector2f& center) {
@@ -55,7 +56,7 @@ void WindowManager::pollEvents() {
     }
 }
 
-sf::FloatRect WindowManager::computeMainViewPort(sf::Vector2u newSize) {
+sf::FloatRect WindowManager::computeMainViewPort(sf::Vector2u newSize) const {
     float newAspectRatio =
         static_cast<float>(newSize.x) / static_cast<float>(newSize.y);
 
@@ -70,4 +71,14 @@ sf::FloatRect WindowManager::computeMainViewPort(sf::Vector2u newSize) {
     return mainViewport;
 }
 
-void WindowManager::render() {}
+void WindowManager::setView(const sf::View& view) {
+    window.setView(view);
+}
+
+void WindowManager::clear() {
+    window.clear(sf::Color::Black);
+}
+
+void WindowManager::display() {
+    window.display();
+}

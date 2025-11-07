@@ -1,13 +1,18 @@
-#pragma once
-
 #include "controller.h"
-#include "../../core/logger.h"
+
+#include "../../core/windowmanager.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
+#include <SFML/Window/Window.hpp>
 
-Controller::Controller(Player& player, sf::View& camera, sf::View& miniMapView)
-    : player(&player), camera(&camera), miniMapView(&miniMapView) {}
+Controller::Controller(WindowManager& windowManager)
+    : windowManager(&windowManager), playerView(windowManager.getMainView()),
+      miniMapView(windowManager.getMiniMapView()),
+      player(
+          "assets/player/main/idle.png", "assets/player/main/walk.png",
+          "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
+      ) {}
 
 void Controller::getInput(float dt, sf::RenderWindow& window) {
     float factor = 60.0f * 0.5f;
@@ -43,20 +48,13 @@ void Controller::getInput(float dt, sf::RenderWindow& window) {
         dir *= 0.7071f; // approx 1/sqrt(2)
     }
 
-    camera->move(dir);
-    miniMapView->move(dir);
+    playerView.move(dir);
+    miniMapView.move(dir);
 
-    player->setPosition(
-        { camera->getCenter().x - 48.f, camera->getCenter().y - 32.f }
+    player.setPosition(
+        { playerView.getCenter().x - 48.f, playerView.getCenter().y - 32.f }
     ); // subtract half the size of character
 
-    // if (dir.x != 0.f || dir.y != 0.f) {
-    //     Logger::info(
-    //         "Camera position: x={}, y={}", camera->getCenter().x,
-    //         camera->getCenter().y
-    //     );
-    // }
-
     // Update and draw the player AFTER (foreground)
-    player->update(dt, state, facingLeft);
+    player.update(dt, state, facingLeft);
 }
