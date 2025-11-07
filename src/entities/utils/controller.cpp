@@ -16,7 +16,7 @@ const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& 
     
     // create small illusion of depth (therefore we don't use box.size.y / 2.f)
     const bool AIsBelowB = nextPlayerBox.position.y >= box.position.y + box.size.y;
-    const bool AIsAboveB = nextPlayerBox.position.y <= box.position.y;
+    const bool AIsAboveB = nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f <= box.position.y;
     return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
 }
 
@@ -90,9 +90,10 @@ void Controller::getInput(
         dir *= 0.7071f; // approx 1/sqrt(2)
     }
 
-    // maybe in the future make this less static
+    // maybe in the future make this less static and a smaller size such that
+    // the player can go through smaller gaps
     sf::FloatRect playerBox(
-        { camera->getCenter().x, camera->getCenter().y }, { 16.f, 16.f }
+        { camera->getCenter().x, camera->getCenter().y }, { 16.f, 10.f }
     );
 
     sf::Vector2f allowedMove = moveWithCollisions(dir, playerBox, collisions);

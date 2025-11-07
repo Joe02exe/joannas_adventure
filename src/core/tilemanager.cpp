@@ -1,6 +1,7 @@
 #include "./tilemanager.h"
 #include "logger.h"
 #include "spdlog/spdlog.h"
+#include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -25,6 +26,48 @@ bool TileManager::loadMap(const std::string& path) {
     processLayer("decorations");
 
     return true;
+}
+
+sf::FloatRect calculatePixelRect(
+    const sf::Texture& tex, const sf::IntRect& texRect, const sf::Vector2f& pos
+) {
+    sf::Image img = tex.copyToImage();
+
+    int left = texRect.size.x;
+    int right = 0;
+    int top = texRect.size.y;
+    int bottom = 0;
+    bool hasOpaque = false;
+
+    for (int y = 0; y < texRect.size.y; ++y) {
+        for (int x = 0; x < texRect.size.x; ++x) {
+            sf::Color c = img.getPixel({ texRect.position.x + x,
+                                         texRect.position.y + y });
+            if (c.a > 0) { // if pixel is not transparent
+                hasOpaque = true;
+                if (x < left)
+                    left = x;
+                if (x > right)
+                    right = x;
+                if (y < top)
+                    top = y;
+                if (y > bottom)
+                    bottom = y;
+            }
+        }
+    }
+
+    if (!hasOpaque) {
+        // completely transparent tile
+        return sf::FloatRect({ 0.f, 0.f }, { 0.f, 0.f });
+    }
+
+    // Translate local pixel bounds to world position
+    return sf::FloatRect(
+        { pos.x + static_cast<float>(left), pos.y + static_cast<float>(top) },
+        { static_cast<float>(right - left + 1),
+          static_cast<float>(bottom - top + 1) }
+    );
 }
 
 void TileManager::processLayer(const std::string& layerName) {
@@ -59,16 +102,17 @@ void TileManager::processLayer(const std::string& layerName) {
         m_tiles.push_back(info);
 
         if (isCollidable) {
-            // log this event
-            Logger::info(
-                "Collidable tile found at: ({}, {})", position.x, position.y
+            sf::FloatRect pixelRect = calculatePixelRect(
+                *m_textures[imagePath], info.textureRect, info.position
             );
-
-            m_collisionRects.emplace_back(sf::FloatRect(
-                { position.x, position.y },
-                { static_cast<float>(drawingRect.width),
-                  static_cast<float>(drawingRect.height) }
-            ));
+            if (pixelRect.size.x > 0.f && pixelRect.size.y > 0.f) {
+                m_collisionRects.push_back(pixelRect);
+                Logger::info(
+                    "Collidable tile (pixel-based) at: ({}, {}) size=({}, {})",
+                    pixelRect.position.x, pixelRect.position.y,
+                    pixelRect.size.x, pixelRect.size.y
+                );
+            }
         }
     }
 }
