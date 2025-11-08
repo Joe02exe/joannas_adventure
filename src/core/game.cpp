@@ -42,7 +42,7 @@ void Game::run() {
 
     // Load the map ONCE before the game loop
     TileManager tileManager;
-    if (!tileManager.loadMap("./assets/environment/map/map_village.json")) {
+    if (!tileManager.loadMap("./assets/environment/map/map_village3.json")) {
         Logger::error("Failed to load map!");
         return;
     }
@@ -98,14 +98,12 @@ void Game::run() {
         window.setView(controller.getCamera());
 
         // render map and player in main view
-        tileManager.render(window);
-        controller.getPlayer().draw(window);
+        tileManager.render(window, controller.getPlayer());
 
         window.setView(miniMapView);
 
         // render minimap
-        tileManager.render(window);
-        controller.getPlayer().draw(window);
+        tileManager.render(window, controller.getPlayer());
 
         window.setView(window.getDefaultView());
 

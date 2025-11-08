@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../entities/player/player.h"
 #include "tileson.hpp"
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -17,6 +18,7 @@ struct TileRenderInfo {
     std::string texturePath;
     sf::IntRect textureRect;
     sf::Vector2f position;
+    float ySortOffset;
 };
 
 class TileManager {
@@ -24,7 +26,7 @@ class TileManager {
     TileManager();
 
     bool loadMap(const std::string& path);
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderTarget& target, Player& player);
     void clear();
 
     const std::vector<sf::FloatRect>& getCollisionRects() const {

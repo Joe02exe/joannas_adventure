@@ -1,4 +1,5 @@
 #include "./tilemanager.h"
+#include "../entities/player/player.h"
 #include "logger.h"
 #include "spdlog/spdlog.h"
 #include <SFML/Graphics/Image.hpp>
@@ -24,6 +25,17 @@ bool TileManager::loadMap(const std::string& path) {
     processLayer("background");
     processLayer("ground");
     processLayer("decorations");
+    processLayer("decoration_overlay");
+
+    // Sort all tiles by bottom y + offset
+    std::stable_sort(
+        m_tiles.begin(), m_tiles.end(),
+        [](const TileRenderInfo& a, const TileRenderInfo& b) {
+            float aBottom = a.position.y + a.textureRect.size.y + a.ySortOffset;
+            float bBottom = b.position.y + b.textureRect.size.y + b.ySortOffset;
+            return aBottom < bBottom;
+        }
+    );
 
     return true;
 }
@@ -138,8 +150,10 @@ void TileManager::loadTexture(const std::string& imagePath) {
     m_textures[imagePath] = std::move(tex);
 }
 
-void TileManager::render(sf::RenderTarget& target) {
-    for (const auto& tile : m_tiles) {
+void TileManager::render(sf::RenderTarget& target, Player& player) {
+    float playerBottom = player.getPosition().y + 48.f;
+
+    auto drawTile = [&](const TileRenderInfo& tile) {
         auto it = m_textures.find(tile.texturePath);
         if (it != m_textures.end()) {
             sf::Sprite sprite(*it->second);
@@ -147,6 +161,23 @@ void TileManager::render(sf::RenderTarget& target) {
             sprite.setPosition(tile.position);
             target.draw(sprite);
         }
+    };
+
+    bool playerDrawn = false;
+
+    for (const auto& tile : m_tiles) {
+        float tileBottom =
+            tile.position.y + tile.textureRect.size.y + tile.ySortOffset;
+        if (!playerDrawn && tileBottom >= playerBottom) {
+            player.draw(target);
+            playerDrawn = true;
+        }
+        drawTile(tile);
+    }
+
+    // If the player is still not drawn (player above all tiles)
+    if (!playerDrawn) {
+        player.draw(target);
     }
 }
 
