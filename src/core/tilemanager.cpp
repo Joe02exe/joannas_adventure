@@ -33,6 +33,7 @@ bool TileManager::loadMap(const std::string& path) {
     processLayer("ground");
     processLayer("decorations");
     processLayer("decoration_overlay");
+    processLayer("overlay");
 
     // Sort all collidable tiles by bottom y + offset
     std::stable_sort(
@@ -131,6 +132,8 @@ void TileManager::processLayer(const std::string& layerName) {
             }
             info.collisionBox = pixelRect;
             m_collidables.push_back(info);
+        } else if (layerName == "overlay") {
+            m_overlayTiles.push_back(info);
         } else {
 
             m_tiles.push_back(info);
@@ -194,6 +197,9 @@ void TileManager::render(sf::RenderTarget& target, Player& player) {
     }
 
     // draw overlay tiles
+    for (const auto& tile : m_overlayTiles) {
+        drawTile(tile);
+    }
 }
 
 void TileManager::clear() {

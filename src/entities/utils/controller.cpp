@@ -19,7 +19,7 @@ const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& 
     const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f >= box.position.x + box.size.x;
     const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f <= box.position.x;
      
-    // create small illusion of depth (therefore we don't use box.size.y / 2.f)
+    // create small illusion of depth (therefore we only user use box.size.y / 2.f once)
     const bool AIsBelowB = nextPlayerBox.position.y >= box.position.y + box.size.y;
     const bool AIsAboveB = nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f <= box.position.y;
     return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
@@ -95,9 +95,7 @@ void Controller::getInput(
         dir *= 0.7071f; // approx 1/sqrt(2)
     }
 
-    // maybe in the future make this less static and a smaller size such that
-    // the player can go through smaller gaps
-    // draw the play hitbox
+    // draw the player hitbox
     sf::FloatRect playerHitBox(
         { player.getPosition().x + 48.f, player.getPosition().y + 32.f },
         { 10.f, 8.f }
@@ -108,9 +106,8 @@ void Controller::getInput(
     playerView.move(allowedMove);
     miniMapView.move(allowedMove);
 
+    // subtract half the size of character
     player.setPosition({ playerView.getCenter().x - 48.f,
                          playerView.getCenter().y - 32.f });
-    // subtract half the size of character
-    // Update and draw the player AFTER (foreground)
     player.update(dt, state, facingLeft);
 }
