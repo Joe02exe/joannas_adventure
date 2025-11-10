@@ -16,11 +16,11 @@ Controller::Controller(WindowManager& windowManager)
 
 // clang-format off
 const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
-    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f + 2>= box.position.x + box.size.x;
-    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f - 2<= box.position.x;
-    
+    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f >= box.position.x + box.size.x;
+    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f <= box.position.x;
+     
     // create small illusion of depth (therefore we don't use box.size.y / 2.f)
-    const bool AIsBelowB = nextPlayerBox.position.y - 3 >= box.position.y + box.size.y;
+    const bool AIsBelowB = nextPlayerBox.position.y >= box.position.y + box.size.y;
     const bool AIsAboveB = nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f <= box.position.y;
     return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
 }
@@ -97,18 +97,20 @@ void Controller::getInput(
 
     // maybe in the future make this less static and a smaller size such that
     // the player can go through smaller gaps
-    sf::FloatRect playerBox(
-        { playerView.getCenter().x, playerView.getCenter().y }, { 16.f, 10.f }
+    // draw the play hitbox
+    sf::FloatRect playerHitBox(
+        { player.getPosition().x + 48.f, player.getPosition().y + 32.f },
+        { 10.f, 8.f }
     );
 
-    sf::Vector2f allowedMove = moveWithCollisions(dir, playerBox, collisions);
+    sf::Vector2f allowedMove =
+        moveWithCollisions(dir, playerHitBox, collisions);
     playerView.move(allowedMove);
     miniMapView.move(allowedMove);
 
-    player.setPosition(
-        { playerView.getCenter().x - 48.f, playerView.getCenter().y - 32.f }
-    ); // subtract half the size of character
-
+    player.setPosition({ playerView.getCenter().x - 48.f,
+                         playerView.getCenter().y - 32.f });
+    // subtract half the size of character
     // Update and draw the player AFTER (foreground)
     player.update(dt, state, facingLeft);
 }

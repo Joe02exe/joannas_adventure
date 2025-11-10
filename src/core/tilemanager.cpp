@@ -180,9 +180,7 @@ void TileManager::render(sf::RenderTarget& target, Player& player) {
 
     // draw collidable/decorative tiles with player sorting
     for (const auto& tile : m_collidables) {
-        // TODO replace this static variables by something dynamic
-        float middleTile = tile.collisionBox.value().position.y - 1 +
-                           tile.collisionBox.value().size.y / 2.f;
+        float middleTile = tile.collisionBox.value().position.y;
         if (!playerDrawn && middleTile >= playerBottom) {
             player.draw(target);
             playerDrawn = true;
@@ -194,6 +192,8 @@ void TileManager::render(sf::RenderTarget& target, Player& player) {
     if (!playerDrawn) {
         player.draw(target);
     }
+
+    // draw overlay tiles
 }
 
 void TileManager::clear() {

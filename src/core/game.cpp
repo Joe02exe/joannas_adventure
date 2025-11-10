@@ -45,6 +45,18 @@ void Game::run() {
 
         // render map and player in main view
         tileManager.render(window, controller.getPlayer());
+        auto& player = controller.getPlayer();
+
+        sf::FloatRect playerHitBox(
+            { player.getPosition().x + 48.f, player.getPosition().y + 32.f },
+            { 10.f, 8.f }
+        );
+        sf::RectangleShape hitboxShape;
+        hitboxShape.setPosition({ playerHitBox.position.x,
+                                  playerHitBox.position.y });
+        hitboxShape.setSize({ 10, 8 });
+        hitboxShape.setFillColor(sf::Color(255, 0, 0, 100));
+        window.draw(hitboxShape);
 
         windowManager.setView(windowManager.getMiniMapView());
 
