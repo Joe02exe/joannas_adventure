@@ -1,18 +1,23 @@
-#pragma once
-
 #include "controller.h"
-#include "../../core/logger.h"
+
+#include "../../core/windowmanager.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
+#include <SFML/Window/Window.hpp>
 
-Controller::Controller(Player& player, sf::View& camera, sf::View& miniMapView)
-    : player(&player), camera(&camera), miniMapView(&miniMapView) {}
+Controller::Controller(WindowManager& windowManager)
+    : windowManager(&windowManager), playerView(windowManager.getMainView()),
+      miniMapView(windowManager.getMiniMapView()),
+      player(
+          "assets/player/main/idle.png", "assets/player/main/walk.png",
+          "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
+      ) {}
 
 // clang-format off
 const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
-    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f + 1>= box.position.x + box.size.x;
-    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f - 1<= box.position.x;
+    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f + 2>= box.position.x + box.size.x;
+    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f - 2<= box.position.x;
     
     // create small illusion of depth (therefore we don't use box.size.y / 2.f)
     const bool AIsBelowB = nextPlayerBox.position.y - 3 >= box.position.y + box.size.y;
@@ -93,24 +98,17 @@ void Controller::getInput(
     // maybe in the future make this less static and a smaller size such that
     // the player can go through smaller gaps
     sf::FloatRect playerBox(
-        { camera->getCenter().x, camera->getCenter().y }, { 16.f, 10.f }
+        { playerView.getCenter().x, playerView.getCenter().y }, { 16.f, 10.f }
     );
 
     sf::Vector2f allowedMove = moveWithCollisions(dir, playerBox, collisions);
-    camera->move(allowedMove);
-    miniMapView->move(allowedMove);
+    playerView.move(allowedMove);
+    miniMapView.move(allowedMove);
 
-    player->setPosition(
-        { camera->getCenter().x - 48.f, camera->getCenter().y - 32.f }
+    player.setPosition(
+        { playerView.getCenter().x - 48.f, playerView.getCenter().y - 32.f }
     ); // subtract half the size of character
 
-    if (dir.x != 0.f || dir.y != 0.f) {
-        Logger::info(
-            "Camera position: x={}, y={}", camera->getCenter().x,
-            camera->getCenter().y
-        );
-    }
-
     // Update and draw the player AFTER (foreground)
-    player->update(dt, state, facingLeft);
+    player.update(dt, state, facingLeft);
 }

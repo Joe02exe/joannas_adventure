@@ -1,32 +1,36 @@
 #pragma once
 
+#include "../../core/windowmanager.h"
 #include "../player/player.h"
+
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
 
 class Controller {
   public:
-    Controller(Player& player, sf::View& camera, sf::View& miniMapView);
+    Controller(WindowManager& windowManager);
+
     void getInput(
         float dt, sf::RenderWindow& window,
         const std::vector<sf::FloatRect>& collisions
     );
 
-    sf::View& getCamera() {
-        return *camera;
+    sf::View& getPlayerView() {
+        return playerView;
     }
 
     sf::View& getMiniMapView() {
-        return *miniMapView;
+        return miniMapView;
     }
 
     Player& getPlayer() {
-        return *player;
+        return player;
     }
 
   private:
-    Player* player;
-    sf::View* camera;
-    sf::View* miniMapView;
+    WindowManager* windowManager;
+    Player player;
+    sf::View playerView;
+    sf::View miniMapView;
     bool facingLeft = false;
 };

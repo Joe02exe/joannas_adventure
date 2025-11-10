@@ -7,8 +7,15 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <string>
 
-TileManager::TileManager() = default;
+TileManager::TileManager()
+    : tsonParser(), m_currentMap(nullptr), m_textures(), m_tiles() {
+    if (!loadMap("./assets/environment/map/map_village3.json")) {
+        Logger::error("Failed to load map!");
+    }
+    Logger::info("Map loaded successfully");
+}
 
 bool TileManager::loadMap(const std::string& path) {
     std::unique_ptr<tson::Map> map = tsonParser.parse(fs::path(path));

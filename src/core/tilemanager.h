@@ -6,7 +6,6 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
-#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
@@ -39,7 +38,8 @@ class TileManager {
 
     tson::Tileson tsonParser;
     std::vector<sf::FloatRect> m_collisionRects;
-    std::unique_ptr<tson::Map> m_currentMap;
+    std::unique_ptr<tson::Map> m_currentMap = nullptr;
+    ;
     std::map<std::string, std::unique_ptr<sf::Texture>> m_textures;
     std::vector<TileRenderInfo> m_tiles;
     std::vector<TileRenderInfo> m_collidables;

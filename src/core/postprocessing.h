@@ -1,6 +1,8 @@
 #ifndef POSTPROCESSING_H
 #define POSTPROCESSING_H
 
+#pragma once
+
 #include <SFML/Graphics.hpp>
 #include <functional>
 #include <stdexcept>
