@@ -16,7 +16,7 @@ Game::Game() = default;
 
 void Game::run() {
 
-    WindowManager windowManager(900, 900, "Game");
+    WindowManager windowManager(900, 900, "Meadowlight");
 
     sf::RenderWindow& window = windowManager.getWindow();
 
@@ -57,7 +57,7 @@ void Game::run() {
 
         // render text in default view
         // TODO: move to UI manager
-        sf::Font font("assets/minecraft.ttf");
+        sf::Font font("assets/font/minecraft.ttf");
         sf::Text debugText(font);
         debugText.setString("Inventory UI");
         debugText.setCharacterSize(24);

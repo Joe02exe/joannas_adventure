@@ -6,7 +6,8 @@
 #include <SFML/Window/Window.hpp>
 
 Menu::Menu(WindowManager& windowManager) : windowManager(windowManager){
-    this->font.openFromFile("assets/font/Pixellari.ttf");
+    this->font.openFromFile("assets/font/minecraft.ttf");
+    this->font.setSmooth(false);
     pos = 0;
     pressed = theselect = false;
 
@@ -17,7 +18,7 @@ void Menu::set_values() {
     pos_mouse = { 0, 0 };
     mouse_coord = { 0, 0 };
 
-    options = { "Joe's Farm", "Play", "Save", "Options", "About", "Quit" };
+    options = { "Meadowlight", "Play", "Save", "Options", "About", "Quit" };
     sizes = { 18, 14, 14, 14, 14, 14 };
 
     texts.clear();        // just in case
@@ -37,12 +38,12 @@ void Menu::set_values() {
         text.setString(options[i]);
         text.setCharacterSize(sizes[i]);
         text.setLetterSpacing(1.5f);
-        text.setOutlineColor(sf::Color(128,54,255));
+        text.setOutlineColor(sf::Color(51, 202, 127));
 
         // Horizontal centering
         sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin({ bounds.size.x / 2.f, 0.f });
-        text.setPosition({ windowManager.getMainView().getCenter().x, startY });
+        text.setPosition({ windowManager.getMainView().getCenter().x, std::floor(startY) });
         Logger::info(
             "Menu option '{}' positioned at ({}, {})", options[i],
             text.getPosition().x, text.getPosition().y
@@ -67,6 +68,8 @@ void Menu::loop_events() {
         if (event->is<sf::Event::Closed>()) {
             windowManager.getWindow().close();
         }
+
+        windowManager.pollEvents();
 
         pos_mouse = sf::Mouse::getPosition(windowManager.getWindow());
         mouse_coord = windowManager.getWindow().mapPixelToCoords(pos_mouse);
