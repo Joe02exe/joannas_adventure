@@ -19,7 +19,7 @@ void Game::run() {
     WindowManager windowManager(900, 900, "Game");
 
     sf::RenderWindow& window = windowManager.getWindow();
-
+    window.setFramerateLimit(60);
     Controller controller(windowManager);
 
     TileManager tileManager;
@@ -45,24 +45,10 @@ void Game::run() {
 
         // render map and player in main view
         tileManager.render(window, controller.getPlayer());
-        auto& player = controller.getPlayer();
-
-        sf::FloatRect playerHitBox(
-            { player.getPosition().x + 48.f, player.getPosition().y + 32.f },
-            { 10.f, 8.f }
-        );
-        sf::RectangleShape hitboxShape;
-        hitboxShape.setPosition({ playerHitBox.position.x,
-                                  playerHitBox.position.y });
-        hitboxShape.setSize({ 10, 8 });
-        hitboxShape.setFillColor(sf::Color(255, 0, 0, 100));
-        window.draw(hitboxShape);
-
         windowManager.setView(windowManager.getMiniMapView());
 
         // render minimap
         tileManager.render(window, controller.getPlayer());
-
         window.setView(window.getDefaultView());
 
         windowManager.setView(windowManager.getDefaultView());

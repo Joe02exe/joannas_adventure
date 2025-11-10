@@ -96,15 +96,14 @@ void Controller::getInput(
     }
 
     // draw the player hitbox
-    sf::FloatRect playerHitBox(
+    const sf::FloatRect playerHitBox(
         { player.getPosition().x + 48.f, player.getPosition().y + 32.f },
         { 10.f, 8.f }
     );
 
-    sf::Vector2f allowedMove =
-        moveWithCollisions(dir, playerHitBox, collisions);
-    playerView.move(allowedMove);
-    miniMapView.move(allowedMove);
+    sf::Vector2f nextMove = moveWithCollisions(dir, playerHitBox, collisions);
+    playerView.move(nextMove);
+    miniMapView.move(nextMove);
 
     // subtract half the size of character
     player.setPosition({ playerView.getCenter().x - 48.f,
