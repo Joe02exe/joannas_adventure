@@ -19,7 +19,7 @@ void Game::run() {
     WindowManager windowManager(900, 900, "Game");
 
     sf::RenderWindow& window = windowManager.getWindow();
-
+    window.setFramerateLimit(60);
     Controller controller(windowManager);
 
     TileManager tileManager;
@@ -45,12 +45,10 @@ void Game::run() {
 
         // render map and player in main view
         tileManager.render(window, controller.getPlayer());
-
         windowManager.setView(windowManager.getMiniMapView());
 
         // render minimap
         tileManager.render(window, controller.getPlayer());
-
         window.setView(window.getDefaultView());
 
         windowManager.setView(windowManager.getDefaultView());
