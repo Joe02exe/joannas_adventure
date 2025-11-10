@@ -123,6 +123,10 @@ void TileManager::processLayer(const std::string& layerName) {
             if (pixelRect.size.x > 0.f && pixelRect.size.y > 0.f &&
                 isCollidable) {
                 m_collisionRects.push_back(pixelRect);
+                Logger::info(
+                    "Added collision rect at ({}, {})", pixelRect.position.x,
+                    pixelRect.position.y
+                );
             }
             info.collisionBox = pixelRect;
             m_collidables.push_back(info);
