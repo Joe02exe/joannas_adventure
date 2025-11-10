@@ -1,4 +1,5 @@
 #include "animation.h"
+
 #include <spdlog/spdlog.h>
 
 Animation::Animation() = default;

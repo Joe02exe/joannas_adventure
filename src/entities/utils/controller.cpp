@@ -1,16 +1,68 @@
-#pragma once
-
 #include "controller.h"
-#include "../../core/logger.h"
-#include "../../core/menu.h"
+
+#include "../../core/windowmanager.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/View.hpp>
+#include <SFML/Window/Window.hpp>
 
-Controller::Controller(Player& player, sf::View& camera)
-    : player(&player), camera(&camera) {}
+Controller::Controller(WindowManager& windowManager)
+    : windowManager(&windowManager), playerView(windowManager.getMainView()),
+      miniMapView(windowManager.getMiniMapView()),
+      player(
+          "assets/player/main/idle.png", "assets/player/main/walk.png",
+          "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
+      ) {}
 
-void Controller::getInput(float dt, sf::RenderWindow& window) {
-    float factor = 60.0f * 0.5f;
+// clang-format off
+const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
+    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f + 2>= box.position.x + box.size.x;
+    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f - 2<= box.position.x;
+    
+    // create small illusion of depth (therefore we don't use box.size.y / 2.f)
+    const bool AIsBelowB = nextPlayerBox.position.y - 3 >= box.position.y + box.size.y;
+    const bool AIsAboveB = nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f <= box.position.y;
+    return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
+}
+
+
+sf::Vector2f moveWithCollisions(
+    const sf::Vector2f& dir, const sf::FloatRect& playerBox,
+    const std::vector<sf::FloatRect>& collisions
+) {
+
+    sf::Vector2f result = dir;
+    sf::FloatRect nextPlayerBox = playerBox;
+    nextPlayerBox.position.x += dir.x;
+    nextPlayerBox.position.y += dir.y;
+    for (const auto& box : collisions) {
+        if (isColliding(nextPlayerBox, box)) {
+            if (dir.x != 0.f) {
+                // if B.left- A.right = 0, only move along y axis or if A.left - B.right = 0
+                if ((box.position.x - (nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f) < 0.01f) ||
+                        ((nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f) - box.position.x + box.size.x < 0.01f)) {
+                    result.x = 0.f;
+                }
+            }
+            if (dir.y != 0.f) {
+                // if B.above - A.bottom = 0, only move along x axis or if A.top - B.bottom  = 0
+                if ((box.position.y - (nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f) < 0.01f) ||
+                        ((nextPlayerBox.position.y - nextPlayerBox.size.y / 2.f) - box.position.y + box.size.y < 0.01f)) {
+                    result.y = 0.f;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+// clang-format on
+
+void Controller::getInput(
+    float dt, sf::RenderWindow& window,
+    const std::vector<sf::FloatRect>& collisions
+) {
+    float factor = 30.0f;
 
     Player::State state = Player::State::Idle;
     sf::Vector2f dir{ 0.f, 0.f };
@@ -47,19 +99,20 @@ void Controller::getInput(float dt, sf::RenderWindow& window) {
         dir *= 0.7071f; // approx 1/sqrt(2)
     }
 
-    camera->move(dir);
+    // maybe in the future make this less static and a smaller size such that
+    // the player can go through smaller gaps
+    sf::FloatRect playerBox(
+        { playerView.getCenter().x, playerView.getCenter().y }, { 16.f, 10.f }
+    );
 
-    player->setPosition(
-        { camera->getCenter().x - 48.f, camera->getCenter().y - 32.f }
+    sf::Vector2f allowedMove = moveWithCollisions(dir, playerBox, collisions);
+    playerView.move(allowedMove);
+    miniMapView.move(allowedMove);
+
+    player.setPosition(
+        { playerView.getCenter().x - 48.f, playerView.getCenter().y - 32.f }
     ); // subtract half the size of character
 
-    if (dir.x != 0.f || dir.y != 0.f) {
-        Logger::info(
-            "Camera position: x={}, y={}", camera->getCenter().x,
-            camera->getCenter().y
-        );
-    }
-
     // Update and draw the player AFTER (foreground)
-    player->update(dt, state, facingLeft);
+    player.update(dt, state, facingLeft);
 }
