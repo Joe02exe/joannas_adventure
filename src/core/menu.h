@@ -1,12 +1,14 @@
 #pragma once
 
+#include "windowmanager.h"
+
 #include <SFML/Graphics.hpp>
 
 class Menu {
     int pos;
     bool pressed, theselect;
 
-    sf::RenderWindow& window;
+    WindowManager& windowManager;
     sf::Font font;
     sf::Texture image;
 
@@ -24,6 +26,6 @@ class Menu {
     void draw_all();
 
   public:
-    Menu(sf::RenderWindow& window);
+    Menu(WindowManager& windowManager);
     void show();
 };

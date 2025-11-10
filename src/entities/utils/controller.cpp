@@ -1,10 +1,10 @@
 #include "controller.h"
 
 #include "../../core/windowmanager.h"
+#include "../../core/menu.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
-#include <SFML/Window/Window.hpp>
 
 Controller::Controller(WindowManager& windowManager)
     : windowManager(&windowManager), playerView(windowManager.getMainView()),
@@ -90,7 +90,7 @@ void Controller::getInput(
         state = Player::State::Running;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-        Menu menu(window);
+        Menu menu(*windowManager);
         menu.show();
     }
 
