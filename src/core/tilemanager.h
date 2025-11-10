@@ -18,7 +18,7 @@ struct TileRenderInfo {
     std::string texturePath;
     sf::IntRect textureRect;
     sf::Vector2f position;
-    float ySortOffset;
+    std::optional<sf::FloatRect> collisionBox;
 };
 
 class TileManager {
@@ -42,4 +42,5 @@ class TileManager {
     std::unique_ptr<tson::Map> m_currentMap;
     std::map<std::string, std::unique_ptr<sf::Texture>> m_textures;
     std::vector<TileRenderInfo> m_tiles;
+    std::vector<TileRenderInfo> m_collidables;
 };

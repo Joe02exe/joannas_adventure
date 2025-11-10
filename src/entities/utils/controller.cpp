@@ -11,11 +11,11 @@ Controller::Controller(Player& player, sf::View& camera, sf::View& miniMapView)
 
 // clang-format off
 const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
-    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f >= box.position.x + box.size.x;
-    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f <= box.position.x;
+    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f + 1>= box.position.x + box.size.x;
+    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f - 1<= box.position.x;
     
     // create small illusion of depth (therefore we don't use box.size.y / 2.f)
-    const bool AIsBelowB = nextPlayerBox.position.y >= box.position.y + box.size.y;
+    const bool AIsBelowB = nextPlayerBox.position.y - 3 >= box.position.y + box.size.y;
     const bool AIsAboveB = nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f <= box.position.y;
     return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
 }

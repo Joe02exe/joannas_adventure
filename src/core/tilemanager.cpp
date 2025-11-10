@@ -27,13 +27,11 @@ bool TileManager::loadMap(const std::string& path) {
     processLayer("decorations");
     processLayer("decoration_overlay");
 
-    // Sort all tiles by bottom y + offset
+    // Sort all collidable tiles by bottom y + offset
     std::stable_sort(
-        m_tiles.begin(), m_tiles.end(),
+        m_collidables.begin(), m_collidables.end(),
         [](const TileRenderInfo& a, const TileRenderInfo& b) {
-            float aBottom = a.position.y + a.textureRect.size.y + a.ySortOffset;
-            float bBottom = b.position.y + b.textureRect.size.y + b.ySortOffset;
-            return aBottom < bBottom;
+            return a.position.y < b.position.y;
         }
     );
 
@@ -111,13 +109,12 @@ void TileManager::processLayer(const std::string& layerName) {
         );
         info.position = sf::Vector2f(position.x, position.y);
 
-        m_tiles.push_back(info);
-
-        if (isCollidable) {
+        if (layerName == "decorations" || layerName == "decoration_overlay") {
             sf::FloatRect pixelRect = calculatePixelRect(
                 *m_textures[imagePath], info.textureRect, info.position
             );
-            if (pixelRect.size.x > 0.f && pixelRect.size.y > 0.f) {
+            if (pixelRect.size.x > 0.f && pixelRect.size.y > 0.f &&
+                isCollidable) {
                 m_collisionRects.push_back(pixelRect);
                 Logger::info(
                     "Collidable tile (pixel-based) at: ({}, {}) size=({}, {})",
@@ -125,6 +122,11 @@ void TileManager::processLayer(const std::string& layerName) {
                     pixelRect.size.x, pixelRect.size.y
                 );
             }
+            info.collisionBox = pixelRect;
+            m_collidables.push_back(info);
+        } else {
+
+            m_tiles.push_back(info);
         }
     }
 }
@@ -151,7 +153,7 @@ void TileManager::loadTexture(const std::string& imagePath) {
 }
 
 void TileManager::render(sf::RenderTarget& target, Player& player) {
-    float playerBottom = player.getPosition().y + 48.f;
+    float playerBottom = player.getPosition().y + 32.f;
 
     auto drawTile = [&](const TileRenderInfo& tile) {
         auto it = m_textures.find(tile.texturePath);
@@ -162,13 +164,19 @@ void TileManager::render(sf::RenderTarget& target, Player& player) {
             target.draw(sprite);
         }
     };
+    // draw background and ground tiles
+    for (const auto& tile : m_tiles) {
+        drawTile(tile);
+    }
 
     bool playerDrawn = false;
 
-    for (const auto& tile : m_tiles) {
-        float tileBottom =
-            tile.position.y + tile.textureRect.size.y + tile.ySortOffset;
-        if (!playerDrawn && tileBottom >= playerBottom) {
+    // draw collidable/decorative tiles with player sorting
+    for (const auto& tile : m_collidables) {
+        // TODO replace this static variables by something dynamic
+        float middleTile = tile.collisionBox.value().position.y - 1 +
+                           tile.collisionBox.value().size.y / 2.f;
+        if (!playerDrawn && middleTile >= playerBottom) {
             player.draw(target);
             playerDrawn = true;
         }
@@ -183,6 +191,7 @@ void TileManager::render(sf::RenderTarget& target, Player& player) {
 
 void TileManager::clear() {
     m_tiles.clear();
+    m_collidables.clear();
     m_textures.clear();
     m_collisionRects.clear();
     m_currentMap.reset();
