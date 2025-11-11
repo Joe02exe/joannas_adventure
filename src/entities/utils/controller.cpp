@@ -90,8 +90,10 @@ void Controller::getInput(
         state = Player::State::Running;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+        auto tmp = dt;
         Menu menu(*windowManager);
         menu.show();
+        dt = tmp;
     }
 
     // normalize the diagonal movement
