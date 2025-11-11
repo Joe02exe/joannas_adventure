@@ -11,6 +11,7 @@
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <cmath>
 
 Game::Game() = default;
 
@@ -66,50 +67,17 @@ void Game::run() {
             debugText.setFillColor(sf::Color::White);
             debugText.setStyle(sf::Text::Bold);
             debugText.setPosition(
-                { window.getView().getCenter().x -
-                    debugText.getLocalBounds().size.x / 2,
-                window.getView().getCenter().y +
-                    windowManager.getWindow().getSize().y / 2 - 50 }
-            );
+                { std::floor(target.getView().getCenter().x -
+                      debugText.getLocalBounds().size.x / 2.f),
+                  std::floor(target.getView().getCenter().y + 
+                      target.getSize().y / 2.f - 50.f )});
 
             target.draw(debugText);
 
         }, nullptr);
 
-        // Apply CRT shader effect
         postProc.apply(window, clock.getElapsedTime().asSeconds());
 
         window.display();
-
-        // windowManager.setView(controller.getPlayerView());
-
-        // // render map and player in main view
-        // tileManager.render(window, controller.getPlayer());
-        // windowManager.setView(windowManager.getMiniMapView());
-
-        // // render minimap
-        // tileManager.render(window, controller.getPlayer());
-        // window.setView(window.getDefaultView());
-
-        // windowManager.setView(windowManager.getDefaultView());
-
-        // // render text in default view
-        // // TODO: move to UI manager
-        // sf::Font font("assets/minecraft.ttf");
-        // sf::Text debugText(font);
-        // debugText.setString("Inventory UI");
-        // debugText.setCharacterSize(24);
-        // debugText.setFillColor(sf::Color::White);
-        // debugText.setStyle(sf::Text::Bold);
-        // debugText.setPosition(
-        //     { window.getView().getCenter().x -
-        //           debugText.getLocalBounds().size.x / 2,
-        //       window.getView().getCenter().y +
-        //           windowManager.getWindow().getSize().y / 2 - 50 }
-        // );
-
-        // windowManager.getWindow().draw(debugText);
-
-        // windowManager.display();
     }
 }
