@@ -12,7 +12,7 @@ class PostProcessing {
     PostProcessing(unsigned int width, unsigned int height);
 
     // Draw the scene to the internal render texture
-    void drawScene(const std::function<void(sf::RenderTarget&)>& drawFunc);
+    void drawScene(const std::function<void(sf::RenderTarget&, const sf::View&)>& drawFunc, const sf::View* customView = nullptr);
 
     // Apply post-processing effects and render to target
     void apply(sf::RenderTarget& target, float time);
