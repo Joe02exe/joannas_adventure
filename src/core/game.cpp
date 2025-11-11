@@ -20,7 +20,7 @@ Game::Game() = default;
 
 void Game::run() {
 
-    WindowManager windowManager(900, 900, "Meadowlight");
+    WindowManager windowManager(900, 900, "Joanna's Farm");
 
     sf::RenderWindow& window = windowManager.getWindow();
     window.setFramerateLimit(60);

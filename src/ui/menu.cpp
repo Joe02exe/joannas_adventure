@@ -18,8 +18,8 @@ void Menu::set_values() {
     pos_mouse = { 0, 0 };
     mouse_coord = { 0, 0 };
 
-    options = { "Meadowlight", "Play", "Save", "Options", "About", "Quit" };
-    sizes = { 18, 14, 14, 14, 14, 14 };
+    options = { "Joanna's Farm", "Play", "Save", "Options", "About", "Quit" };
+    sizes = { 12, 10, 10, 10, 10, 10 };
 
     texts.clear();       // just in case
     float spacing = 5.f; // vertical spacing between texts
@@ -38,7 +38,7 @@ void Menu::set_values() {
         sf::Text text(font);
         text.setString(options[i]);
         text.setCharacterSize(sizes[i]);
-        text.setLetterSpacing(1.5f);
+        text.setLetterSpacing(2.f);
         text.setOutlineColor(sf::Color(51, 202, 127));
 
         // Horizontal centering
@@ -58,9 +58,9 @@ void Menu::set_values() {
         texts.push_back(std::move(text));
     }
 
-    texts[0].setOutlineThickness(2);
+    texts[0].setOutlineThickness(1);
     pos = 1;
-    texts[pos].setOutlineThickness(2);
+    texts[pos].setOutlineThickness(1);
 
     pressed = theselect = false;
 }
@@ -80,7 +80,7 @@ void Menu::loop_events() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && !pressed) {
             if (pos < 5) {
                 ++pos;
-                texts[pos].setOutlineThickness(2);
+                texts[pos].setOutlineThickness(1);
                 texts[pos - 1].setOutlineThickness(0);
                 theselect = false;
                 pressed = true;
@@ -90,7 +90,7 @@ void Menu::loop_events() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && !pressed) {
             if (pos > 1) {
                 --pos;
-                texts[pos].setOutlineThickness(2);
+                texts[pos].setOutlineThickness(1);
                 texts[pos + 1].setOutlineThickness(0);
                 theselect = false;
                 pressed = true;
