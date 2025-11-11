@@ -43,4 +43,5 @@ class TileManager {
     std::map<std::string, std::unique_ptr<sf::Texture>> m_textures;
     std::vector<TileRenderInfo> m_tiles;
     std::vector<TileRenderInfo> m_collidables;
+    std::vector<TileRenderInfo> m_overlayTiles;
 };

@@ -33,6 +33,7 @@ bool TileManager::loadMap(const std::string& path) {
     processLayer("ground");
     processLayer("decorations");
     processLayer("decoration_overlay");
+    processLayer("overlay");
 
     // Sort all collidable tiles by bottom y + offset
     std::stable_sort(
@@ -75,7 +76,6 @@ sf::FloatRect calculatePixelRect(
     }
 
     if (!hasOpaque) {
-        // completely transparent tile
         return sf::FloatRect({ 0.f, 0.f }, { 0.f, 0.f });
     }
 
@@ -99,9 +99,9 @@ void TileManager::processLayer(const std::string& layerName) {
     const bool isCollidable = layer->get<bool>("collidable");
 
     for (auto& [pos, tileObject] : layer->getTileObjects()) {
-        tson::Tileset* tileset = tileObject.getTile()->getTileset();
-        tson::Rect drawingRect = tileObject.getDrawingRect();
-        tson::Vector2f position = tileObject.getPosition();
+        const tson::Tileset* tileset = tileObject.getTile()->getTileset();
+        const tson::Rect drawingRect = tileObject.getDrawingRect();
+        const tson::Vector2f position = tileObject.getPosition();
 
         // Load texture if not already loaded
         std::string imagePath = tileset->getImage().u8string();
@@ -124,15 +124,15 @@ void TileManager::processLayer(const std::string& layerName) {
                 isCollidable) {
                 m_collisionRects.push_back(pixelRect);
                 Logger::info(
-                    "Collidable tile (pixel-based) at: ({}, {}) size=({}, {})",
-                    pixelRect.position.x, pixelRect.position.y,
-                    pixelRect.size.x, pixelRect.size.y
+                    "Added collision rect at ({}, {})", pixelRect.position.x,
+                    pixelRect.position.y
                 );
             }
             info.collisionBox = pixelRect;
             m_collidables.push_back(info);
+        } else if (layerName == "overlay") {
+            m_overlayTiles.push_back(info);
         } else {
-
             m_tiles.push_back(info);
         }
     }
@@ -160,7 +160,6 @@ void TileManager::loadTexture(const std::string& imagePath) {
 }
 
 void TileManager::render(sf::RenderTarget& target, Player& player) {
-    float playerBottom = player.getPosition().y + 32.f;
 
     auto drawTile = [&](const TileRenderInfo& tile) {
         auto it = m_textures.find(tile.texturePath);
@@ -171,18 +170,17 @@ void TileManager::render(sf::RenderTarget& target, Player& player) {
             target.draw(sprite);
         }
     };
+
     // draw background and ground tiles
     for (const auto& tile : m_tiles) {
         drawTile(tile);
     }
 
-    bool playerDrawn = false;
-
     // draw collidable/decorative tiles with player sorting
+    float playerBottom = player.getPosition().y + 32.f;
+    bool playerDrawn = false;
     for (const auto& tile : m_collidables) {
-        // TODO replace this static variables by something dynamic
-        float middleTile = tile.collisionBox.value().position.y - 1 +
-                           tile.collisionBox.value().size.y / 2.f;
+        float middleTile = tile.collisionBox.value().position.y;
         if (!playerDrawn && middleTile >= playerBottom) {
             player.draw(target);
             playerDrawn = true;
@@ -192,7 +190,13 @@ void TileManager::render(sf::RenderTarget& target, Player& player) {
 
     // If the player is still not drawn (player above all tiles)
     if (!playerDrawn) {
+        Logger::info("Player drawn last in tile rendering");
         player.draw(target);
+    }
+
+    // draw overlay tiles
+    for (const auto& tile : m_overlayTiles) {
+        drawTile(tile);
     }
 }
 
