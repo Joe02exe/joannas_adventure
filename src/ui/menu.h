@@ -1,6 +1,6 @@
 #pragma once
 
-#include "windowmanager.h"
+#include "../core/windowmanager.h"
 
 #include <SFML/Graphics.hpp>
 

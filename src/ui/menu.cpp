@@ -1,5 +1,5 @@
 #include "menu.h"
-#include "logger.h"
+#include "../core/logger.h"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Mouse.hpp>

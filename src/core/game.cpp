@@ -2,6 +2,7 @@
 
 #include "../entities/player/player.h"
 #include "../ui/font_renderer.h"
+#include "../ui/menu.h"
 #include "../core/logger.h"
 #include "../entities/utils/controller.h"
 #include "./postprocessing.h"
@@ -9,7 +10,6 @@
 #include "./windowmanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "menu.h"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Sprite.hpp>
