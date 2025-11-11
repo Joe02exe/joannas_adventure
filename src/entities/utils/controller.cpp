@@ -58,7 +58,7 @@ sf::Vector2f moveWithCollisions(
 
 // clang-format on
 
-void Controller::getInput(
+bool Controller::getInput(
     float dt, sf::RenderWindow& window,
     const std::vector<sf::FloatRect>& collisions
 ) {
@@ -90,10 +90,9 @@ void Controller::getInput(
         state = Player::State::Running;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-        auto tmp = dt;
         Menu menu(*windowManager);
         menu.show();
-        dt = tmp;
+        return true;
     }
 
     // normalize the diagonal movement
@@ -115,4 +114,5 @@ void Controller::getInput(
     player.setPosition({ playerView.getCenter().x - 48.f,
                          playerView.getCenter().y - 32.f });
     player.update(dt, state, facingLeft);
+    return false;
 }

@@ -2,7 +2,7 @@
 
 #include "../entities/player/player.h"
 #include "../entities/utils/controller.h"
-// #include "./postprocessing.h"
+#include "./postprocessing.h"
 #include "./tilemanager.h"
 #include "./windowmanager.h"
 
@@ -11,6 +11,7 @@
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <cmath>
 
 Game::Game() = default;
 
@@ -23,7 +24,7 @@ void Game::run() {
     Controller controller(windowManager);
 
     TileManager tileManager;
-    // PostProcessing postProc(900, 900);
+    PostProcessing postProc(900, 900);
 
     sf::Clock clock;
 
@@ -34,41 +35,52 @@ void Game::run() {
 
         float dt = clock.restart().asSeconds();
 
-        controller.getInput(dt, window, tileManager.getCollisionRects());
-
+        bool resetClock = controller.getInput(dt, window, tileManager.getCollisionRects());
+        if (resetClock) {
+            clock.restart();
+        }
+        
         windowManager.clear();
         controller.getPlayerView().setViewport(
             windowManager.getMainView().getViewport()
         );
 
-        windowManager.setView(controller.getPlayerView());
+        postProc.drawScene([&](sf::RenderTarget& target, const sf::View& view) {
+            // world view
+            target.setView(controller.getPlayerView());
+            tileManager.render(target, controller.getPlayer());
 
-        // render map and player in main view
-        tileManager.render(window, controller.getPlayer());
-        windowManager.setView(windowManager.getMiniMapView());
+            // minimap
+            target.setView(windowManager.getMiniMapView());
+            tileManager.render(target, controller.getPlayer());
 
-        // render minimap
-        tileManager.render(window, controller.getPlayer());
-        window.setView(window.getDefaultView());
+            // ui
+            target.setView(windowManager.getDefaultView());
 
-        windowManager.setView(windowManager.getDefaultView());
+            sf::Font font;
+            if (!font.openFromFile("assets/font/minecraft.ttf")) {
+                throw std::runtime_error("Failed to load font");
+            }
 
-        // render text in default view
-        // TODO: move to UI manager
-        sf::Font font("assets/font/minecraft.ttf");
-        sf::Text debugText(font);
-        debugText.setString("Inventory UI");
-        debugText.setCharacterSize(24);
-        debugText.setFillColor(sf::Color::White);
-        debugText.setStyle(sf::Text::Bold);
-        debugText.setPosition({ window.getView().getCenter().x -
-                                    debugText.getLocalBounds().size.x / 2,
-                                window.getView().getCenter().y +
-                                    windowManager.getWindow().getSize().y / 2 -
-                                    50 });
+            target.setView(windowManager.getDefaultView());
 
-        windowManager.getWindow().draw(debugText);
+            sf::Text debugText(font);
+            debugText.setString("Inventory UI");
+            debugText.setCharacterSize(24);
+            debugText.setFillColor(sf::Color::White);
+            debugText.setStyle(sf::Text::Bold);
+            debugText.setPosition(
+                { std::floor(target.getView().getCenter().x -
+                      debugText.getLocalBounds().size.x / 2.f),
+                  std::floor(target.getView().getCenter().y + 
+                      target.getSize().y / 2.f - 50.f )});
 
-        windowManager.display();
+            target.draw(debugText);
+
+        }, nullptr);
+
+        postProc.apply(window, clock.getElapsedTime().asSeconds());
+
+        window.display();
     }
 }

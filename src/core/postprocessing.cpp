@@ -19,9 +19,26 @@ PostProcessing::PostProcessing(unsigned int width, unsigned int height)
     m_shader.setUniform("texture_size", sf::Vector2f(static_cast<float>(width), static_cast<float>(height)));
 }
 
-void PostProcessing::drawScene(const std::function<void(sf::RenderTarget&)>& drawFunc) {
+void PostProcessing::drawScene(const std::function<void(sf::RenderTarget&, const sf::View&)>& drawFunc,
+                               const sf::View* customView)
+{
     m_sceneTexture.clear(sf::Color::Black);
-    drawFunc(m_sceneTexture);
+
+    // Save the current view (the default one for the RenderTexture)
+    sf::View oldView = m_sceneTexture.getView();
+
+    // Set the provided view if given
+    if (customView)
+        m_sceneTexture.setView(*customView);
+    else
+        m_sceneTexture.setView(oldView);
+
+    // Draw with the given function (passing the view for flexibility)
+    drawFunc(m_sceneTexture, m_sceneTexture.getView());
+
+    // Restore the old view
+    m_sceneTexture.setView(oldView);
+
     m_sceneTexture.display();
 }
 

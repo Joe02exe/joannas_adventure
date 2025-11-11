@@ -10,7 +10,7 @@ class Controller {
   public:
     Controller(WindowManager& windowManager);
 
-    void getInput(
+    bool getInput(
         float dt, sf::RenderWindow& window,
         const std::vector<sf::FloatRect>& collisions
     );

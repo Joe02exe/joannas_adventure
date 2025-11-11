@@ -5,7 +5,7 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Window.hpp>
 
-Menu::Menu(WindowManager& windowManager) : windowManager(windowManager){
+Menu::Menu(WindowManager& windowManager) : windowManager(windowManager) {
     this->font.openFromFile("assets/font/minecraft.ttf");
     this->font.setSmooth(false);
     pos = 0;
@@ -21,7 +21,7 @@ void Menu::set_values() {
     options = { "Meadowlight", "Play", "Save", "Options", "About", "Quit" };
     sizes = { 18, 14, 14, 14, 14, 14 };
 
-    texts.clear();        // just in case
+    texts.clear();       // just in case
     float spacing = 5.f; // vertical spacing between texts
 
     // Compute total height
@@ -31,7 +31,8 @@ void Menu::set_values() {
     }
 
     // Starting Y to vertically center
-    float startY = windowManager.getMainView().getCenter().y - totalHeight / 2.f;
+    float startY =
+        windowManager.getMainView().getCenter().y - totalHeight / 2.f;
 
     for (std::size_t i = 0; i < options.size(); ++i) {
         sf::Text text(font);
@@ -43,7 +44,9 @@ void Menu::set_values() {
         // Horizontal centering
         sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin({ bounds.size.x / 2.f, 0.f });
-        text.setPosition({ windowManager.getMainView().getCenter().x, std::floor(startY) });
+        text.setPosition(
+            { windowManager.getMainView().getCenter().x, std::floor(startY) }
+        );
         Logger::info(
             "Menu option '{}' positioned at ({}, {})", options[i],
             text.getPosition().x, text.getPosition().y
@@ -55,7 +58,6 @@ void Menu::set_values() {
         texts.push_back(std::move(text));
     }
 
-    // Highlight first selectable option (skip "War Game" title)
     texts[0].setOutlineThickness(2);
     pos = 1;
     texts[pos].setOutlineThickness(2);
@@ -64,12 +66,13 @@ void Menu::set_values() {
 }
 
 void Menu::loop_events() {
-    while (const std::optional<sf::Event> event = windowManager.getWindow().pollEvent()) {
+    while (const std::optional<sf::Event> event =
+               windowManager.getWindow().pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             windowManager.getWindow().close();
         }
 
-        windowManager.pollEvents();
+        // windowManager.pollEvents();
 
         pos_mouse = sf::Mouse::getPosition(windowManager.getWindow());
         mouse_coord = windowManager.getWindow().mapPixelToCoords(pos_mouse);
@@ -137,24 +140,23 @@ void Menu::loop_events() {
         }
     }
 }
- 
+
 void Menu::draw_all() {
     windowManager.setView(windowManager.getMainView());
     windowManager.getWindow().clear(sf::Color::Black);
-    // sf::Sprite bg(this->image);
-    // bg.setPosition({windowManager.getMainView().getCenter().x - windowManager.getWindow().getSize().x / 2, windowManager.getWindow().getView().getCenter().y - windowManager.getWindow().getSize().y / 2});
-    // bg.scale({1.f, 1.f});
-    // windowManager.getWindow().draw(bg);
 
     for (const auto& t : texts) {
         windowManager.getWindow().draw(t);
     }
+    windowManager.pollEvents();
     windowManager.getWindow().display();
 }
 
 void Menu::show() {
+    auto tmp = windowManager.getWindow().getView();
     while (windowManager.getWindow().isOpen() && !theselect) {
         loop_events();
         draw_all();
     }
+    windowManager.getWindow().setView(tmp);
 }
