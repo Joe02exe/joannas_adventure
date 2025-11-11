@@ -1,6 +1,6 @@
 #include "./player.h"
 
-#include <spdlog/spdlog.h>
+#include "../../core/logger.h"
 
 Player::Player(
     const std::string& idlePath, const std::string& walkPath,
@@ -65,4 +65,8 @@ void Player::setPosition(const sf::Vector2f& pos) {
 
 sf::Vector2f Player::getPosition() const {
     return sprite->getPosition();
+}
+
+void Player::addItemToInventory(const Item& item, std::uint32_t quantity) {
+    inventory.addItem(item, quantity);
 }

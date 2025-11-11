@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../utils/animation.h"
+#include "inventory.h"
 
 #include <SFML/Graphics.hpp>
 #include <memory>
@@ -24,11 +25,14 @@ class Player {
     void setPosition(const sf::Vector2f& pos);
     sf::Vector2f getPosition() const;
 
+    void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
+
   private:
     std::unique_ptr<sf::Sprite> sprite; // use pointer to avoid initialization
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
     Direction facing = Direction::Right;
+    Inventory inventory{100};
 
     float frameTimer = 0.f;
     int currentFrame = 0;

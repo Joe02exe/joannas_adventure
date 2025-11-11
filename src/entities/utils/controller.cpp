@@ -88,6 +88,7 @@ bool Controller::getInput(
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
         dir *= 1.5f;
         state = Player::State::Running;
+        player.addItemToInventory(Item("test_item", "Test Item"), 1);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
         Menu menu(*windowManager);
@@ -108,7 +109,7 @@ bool Controller::getInput(
 
     sf::Vector2f nextMove = moveWithCollisions(dir, playerHitBox, collisions);
     playerView.move(nextMove);
-    miniMapView.move(nextMove);
+    windowManager->getMiniMapView().move(nextMove);
 
     // subtract half the size of character
     player.setPosition({ playerView.getCenter().x - 48.f,
