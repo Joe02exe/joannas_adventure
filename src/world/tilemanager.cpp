@@ -1,6 +1,6 @@
-#include "./tilemanager.h"
-#include "../entities/player/player.h"
-#include "logger.h"
+#include "joanna/world/tilemanager.h"
+#include "joanna/entities/player.h"
+#include "joanna/utils/logger.h"
 #include "spdlog/spdlog.h"
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Rect.hpp>
@@ -20,7 +20,7 @@ TileManager::TileManager()
 bool TileManager::loadMap(const std::string& path) {
     std::unique_ptr<tson::Map> map = tsonParser.parse(fs::path(path));
     if (map->getStatus() != tson::ParseStatus::OK) {
-        spdlog::error(
+        Logger::error(
             "Failed to load map: {}", static_cast<int>(map->getStatus())
         );
         return false;
@@ -151,13 +151,13 @@ void TileManager::loadTexture(const std::string& imagePath) {
 
     fs::path path = imagePath;
     if (!fs::exists(path) || !fs::is_regular_file(path)) {
-        spdlog::error("Could not find texture: {}", path.generic_string());
+        Logger::error("Could not find texture: {}", path.generic_string());
         return;
     }
 
     auto tex = std::make_unique<sf::Texture>();
     if (!tex->loadFromFile(path.generic_string())) {
-        spdlog::error("Failed to load texture: {}", path.generic_string());
+        Logger::error("Failed to load texture: {}", path.generic_string());
         return;
     }
 

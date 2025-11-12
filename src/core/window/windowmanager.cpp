@@ -1,11 +1,12 @@
-#include "windowmanager.h"
+#include "joanna/core/windowmanager.h"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 WindowManager::WindowManager(
-    unsigned width, unsigned height, const std::string& title, sf::Vector2f initialPos
+    unsigned width, unsigned height, const std::string& title,
+    sf::Vector2f initialPos
 )
     : window(sf::VideoMode({ width, height }), title),
       targetAspectRatio(
@@ -51,7 +52,6 @@ void WindowManager::pollEvents() {
 
             mainView.setViewport(mainViewport);
             miniMapView.setViewport(miniViewport);
-
         }
     }
 }

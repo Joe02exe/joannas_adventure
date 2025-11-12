@@ -1,13 +1,12 @@
 #include "game.h"
 
-#include "../core/logger.h"
-#include "../entities/player/player.h"
-#include "../entities/utils/controller.h"
-#include "../systems/ui/font_renderer.h"
-#include "../systems/ui/menu.h"
-#include "./postprocessing.h"
-#include "./tilemanager.h"
-#include "./windowmanager.h"
+#include "joanna/core/windowmanager.h"
+#include "joanna/entities/player.h"
+#include "joanna/systems/controller.h"
+#include "joanna/systems/font_renderer.h"
+#include "joanna/systems/menu.h"
+#include "joanna/utils/logger.h"
+#include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
 #include <SFML/Graphics/Color.hpp>

@@ -1,5 +1,5 @@
-#include "font_renderer.h"
-#include "../../core/logger.h"
+#include "joanna/systems/font_renderer.h"
+#include "joanna/utils/logger.h"
 #include <SFML/Graphics/RenderTarget.hpp>
 
 FontRenderer::FontRenderer(const std::string& fontPath) : loaded(false) {

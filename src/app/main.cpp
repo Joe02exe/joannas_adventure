@@ -1,19 +1,20 @@
-#include "game.h"
+#include "../core/game.h"
+#include "joanna/utils/logger.h"
 
 #include "spdlog/spdlog.h"
 
 int main() {
 
 #if LOGGING_ENABLED
-    spdlog::info("Logging enabled");
+    Logger::info("Logging enabled");
 #endif
 
 #if GOD_MODE_ENABLED
-    spdlog::info("God mode enabled");
+    Logger::info("God mode enabled");
 #endif
 
 #if INFINITE_RESOURCES_ENABLED
-    spdlog::info("Infinite resources enabled");
+    Logger::info("Infinite resources enabled");
 #endif
 
     Game game;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../entities/player/player.h"
-#include "tileson.hpp"
+#include "extern/tileson.hpp"
+#include "joanna/entities/player.h"
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>

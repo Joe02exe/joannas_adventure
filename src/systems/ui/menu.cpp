@@ -1,5 +1,6 @@
 #include "menu.h"
-#include "../../core/logger.h"
+#include "joanna/systems/menu.h"
+#include "joanna/utils/logger.h"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Mouse.hpp>
