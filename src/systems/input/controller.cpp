@@ -1,7 +1,6 @@
-#include "controller.h"
-
-#include "../../core/windowmanager.h"
-#include "../../ui/menu.h"
+#include "joanna/systems/controller.h"
+#include "joanna/core/windowmanager.h"
+#include "joanna/systems/menu.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>

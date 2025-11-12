@@ -1,5 +1,5 @@
-#include "font_renderer.h"
-#include "../core/logger.h"
+#include "joanna/systems/font_renderer.h"
+#include "joanna/utils/logger.h"
 #include <SFML/Graphics/RenderTarget.hpp>
 
 FontRenderer::FontRenderer(const std::string& fontPath) : loaded(false) {
@@ -16,22 +16,16 @@ bool FontRenderer::isLoaded() const {
 }
 
 void FontRenderer::drawText(
-    sf::RenderTarget& target,
-    const std::string& text,
-    const sf::Vector2f& position,
-    unsigned int size,
-    const sf::Color& color,
+    sf::RenderTarget& target, const std::string& text,
+    const sf::Vector2f& position, unsigned int size, const sf::Color& color,
     uint32_t options
 ) {
     drawTextImpl(target, text, position, size, color, options);
 }
 
 void FontRenderer::drawTextUI(
-    sf::RenderTarget& target,
-    const std::string& text,
-    const sf::Vector2f& position,
-    unsigned int size,
-    const sf::Color& color,
+    sf::RenderTarget& target, const std::string& text,
+    const sf::Vector2f& position, unsigned int size, const sf::Color& color,
     uint32_t options
 ) {
     // Save current view
@@ -48,11 +42,8 @@ void FontRenderer::drawTextUI(
 }
 
 void FontRenderer::drawTextImpl(
-    sf::RenderTarget& target,
-    const std::string& text,
-    const sf::Vector2f& position,
-    unsigned int size,
-    const sf::Color& color,
+    sf::RenderTarget& target, const std::string& text,
+    const sf::Vector2f& position, unsigned int size, const sf::Color& color,
     uint32_t options
 ) {
     if (!loaded) {
@@ -79,7 +70,8 @@ void FontRenderer::drawTextImpl(
         sf::Text shadowText(font, text);
         shadowText.setCharacterSize(size);
         shadowText.setLetterSpacing(letterSpacing);
-        shadowText.setFillColor(sf::Color(0, 0, 0, 128)); // Semi-transparent black
+        shadowText.setFillColor(sf::Color(0, 0, 0, 128)
+        ); // Semi-transparent black
         shadowText.setPosition(textObj.getPosition() + sf::Vector2f(2.f, 2.f));
         applyAlignment(shadowText, shadowText.getPosition(), options);
         target.draw(shadowText);
@@ -93,7 +85,9 @@ const sf::Font& FontRenderer::getFont() const {
     return font;
 }
 
-void FontRenderer::applyAlignment(sf::Text& text, const sf::Vector2f& position, uint32_t options) {
+void FontRenderer::applyAlignment(
+    sf::Text& text, const sf::Vector2f& position, uint32_t options
+) {
     sf::FloatRect bounds = text.getLocalBounds();
     sf::Vector2f origin(0.f, 0.f);
 

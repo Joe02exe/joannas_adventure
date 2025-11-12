@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core/windowmanager.h"
+#include "joanna/core/windowmanager.h"
 
 #include <SFML/Graphics.hpp>
 

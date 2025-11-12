@@ -1,6 +1,6 @@
-#include "./tilemanager.h"
-#include "../entities/player/player.h"
-#include "logger.h"
+#include "joanna/world/tilemanager.h"
+#include "joanna/entities/player.h"
+#include "joanna/utils/logger.h"
 #include "spdlog/spdlog.h"
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Rect.hpp>
@@ -20,7 +20,7 @@ TileManager::TileManager()
 bool TileManager::loadMap(const std::string& path) {
     std::unique_ptr<tson::Map> map = tsonParser.parse(fs::path(path));
     if (map->getStatus() != tson::ParseStatus::OK) {
-        spdlog::error(
+        Logger::error(
             "Failed to load map: {}", static_cast<int>(map->getStatus())
         );
         return false;
@@ -45,6 +45,11 @@ bool TileManager::loadMap(const std::string& path) {
 
     return true;
 }
+
+// rendering renderEngine
+// maps
+// ogg for sound SountBufferManager
+// texturemanager as singleton
 
 sf::FloatRect calculatePixelRect(
     const sf::Texture& tex, const sf::IntRect& texRect, const sf::Vector2f& pos
@@ -146,58 +151,17 @@ void TileManager::loadTexture(const std::string& imagePath) {
 
     fs::path path = imagePath;
     if (!fs::exists(path) || !fs::is_regular_file(path)) {
-        spdlog::error("Could not find texture: {}", path.generic_string());
+        Logger::error("Could not find texture: {}", path.generic_string());
         return;
     }
 
     auto tex = std::make_unique<sf::Texture>();
     if (!tex->loadFromFile(path.generic_string())) {
-        spdlog::error("Failed to load texture: {}", path.generic_string());
+        Logger::error("Failed to load texture: {}", path.generic_string());
         return;
     }
 
     m_textures[imagePath] = std::move(tex);
-}
-
-void TileManager::render(sf::RenderTarget& target, Player& player) {
-
-    auto drawTile = [&](const TileRenderInfo& tile) {
-        auto it = m_textures.find(tile.texturePath);
-        if (it != m_textures.end()) {
-            sf::Sprite sprite(*it->second);
-            sprite.setTextureRect(tile.textureRect);
-            sprite.setPosition(tile.position);
-            target.draw(sprite);
-        }
-    };
-
-    // draw background and ground tiles
-    for (const auto& tile : m_tiles) {
-        drawTile(tile);
-    }
-
-    // draw collidable/decorative tiles with player sorting
-    float playerBottom = player.getPosition().y + 32.f;
-    bool playerDrawn = false;
-    for (const auto& tile : m_collidables) {
-        float middleTile = tile.collisionBox.value().position.y;
-        if (!playerDrawn && middleTile >= playerBottom) {
-            player.draw(target);
-            playerDrawn = true;
-        }
-        drawTile(tile);
-    }
-
-    // If the player is still not drawn (player above all tiles)
-    if (!playerDrawn) {
-        Logger::info("Player drawn last in tile rendering");
-        player.draw(target);
-    }
-
-    // draw overlay tiles
-    for (const auto& tile : m_overlayTiles) {
-        drawTile(tile);
-    }
 }
 
 void TileManager::clear() {

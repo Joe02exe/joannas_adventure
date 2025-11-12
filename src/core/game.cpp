@@ -1,13 +1,13 @@
 #include "game.h"
 
-#include "../entities/player/player.h"
-#include "../ui/font_renderer.h"
-#include "../ui/menu.h"
-#include "../core/logger.h"
-#include "../entities/utils/controller.h"
-#include "./postprocessing.h"
-#include "./tilemanager.h"
-#include "./windowmanager.h"
+#include "joanna/core/renderengine.h"
+#include "joanna/core/windowmanager.h"
+#include "joanna/entities/player.h"
+#include "joanna/systems/controller.h"
+#include "joanna/systems/font_renderer.h"
+#include "joanna/systems/menu.h"
+#include "joanna/utils/logger.h"
+#include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
 #include <SFML/Graphics/Color.hpp>
@@ -27,15 +27,16 @@ void Game::run() {
     Controller controller(windowManager);
 
     TileManager tileManager;
+    RenderEngine renderEngine;
     PostProcessing postProc(900, 900);
 
     FontRenderer fontRenderer("assets/font/minecraft.ttf");
     if (!fontRenderer.isLoaded()) {
         Logger::error("Failed to load font for UI rendering");
     }
-    
+
     sf::Clock clock;
-    
+
     Menu menu(windowManager);
     menu.show();
 
@@ -48,7 +49,8 @@ void Game::run() {
 
         float dt = clock.restart().asSeconds();
 
-        bool resetClock = controller.getInput(dt, window, tileManager.getCollisionRects());
+        bool resetClock =
+            controller.getInput(dt, window, tileManager.getCollisionRects());
         if (resetClock) {
             clock.restart();
         }
@@ -58,34 +60,48 @@ void Game::run() {
             windowManager.getMainView().getViewport()
         );
 
-        postProc.drawScene([&](sf::RenderTarget& target, const sf::View& view) {
-            // world view
-            target.setView(controller.getPlayerView());
-            tileManager.render(target, controller.getPlayer());
+        postProc.drawScene(
+            [&](sf::RenderTarget& target, const sf::View& view) {
+                // world view
+                target.setView(controller.getPlayerView());
+                renderEngine.render(
+                    target, controller.getPlayer(), tileManager
+                );
 
-            // minimap
-            target.setView(windowManager.getMiniMapView());
-            tileManager.render(target, controller.getPlayer());
+                // minimap
+                target.setView(windowManager.getMiniMapView());
+                renderEngine.render(
+                    target, controller.getPlayer(), tileManager
+                );
 
-            // ui
-            target.setView(windowManager.getDefaultView());
+                // ui
+                target.setView(windowManager.getDefaultView());
 
-            // target.setView(windowManager.getDefaultView());
-            fontRenderer.drawTextUI(target, "Inventory UI []", { std::floor(target.getView().getCenter().x - 100.f), std::floor(target.getView().getCenter().y + target.getSize().y / 2.f - 50.f) }, 24);
-            // sf::Text debugText(fontRenderer.getFont());
-            // debugText.setString("Inventory UI");
-            // debugText.setCharacterSize(24);
-            // debugText.setFillColor(sf::Color::White);
-            // debugText.setStyle(sf::Text::Bold);
-            // debugText.setPosition(
-            //     { std::floor(target.getView().getCenter().x -
-            //           debugText.getLocalBounds().size.x / 2.f),
-            //       std::floor(target.getView().getCenter().y + 
-            //           target.getSize().y / 2.f - 50.f )});
+                // target.setView(windowManager.getDefaultView());
+                fontRenderer.drawTextUI(
+                    target, "Inventory UI []",
+                    { std::floor(target.getView().getCenter().x - 100.f),
+                      std::floor(
+                          target.getView().getCenter().y +
+                          target.getSize().y / 2.f - 50.f
+                      ) },
+                    24
+                );
+                // sf::Text debugText(fontRenderer.getFont());
+                // debugText.setString("Inventory UI");
+                // debugText.setCharacterSize(24);
+                // debugText.setFillColor(sf::Color::White);
+                // debugText.setStyle(sf::Text::Bold);
+                // debugText.setPosition(
+                //     { std::floor(target.getView().getCenter().x -
+                //           debugText.getLocalBounds().size.x / 2.f),
+                //       std::floor(target.getView().getCenter().y +
+                //           target.getSize().y / 2.f - 50.f )});
 
-            // target.draw(debugText);
-
-        }, nullptr);
+                // target.draw(debugText);
+            },
+            nullptr
+        );
 
         postProc.apply(window, clock.getElapsedTime().asSeconds());
 

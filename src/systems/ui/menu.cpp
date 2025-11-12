@@ -1,5 +1,5 @@
-#include "menu.h"
-#include "../core/logger.h"
+#include "joanna/systems/menu.h"
+#include "joanna/utils/logger.h"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Mouse.hpp>
@@ -44,9 +44,8 @@ void Menu::set_values() {
         // Horizontal centering
         sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin({ bounds.size.x / 2.f, 0.f });
-        text.setPosition(
-            { windowManager.getMainView().getCenter().x, std::floor(startY) }
-        );
+        text.setPosition({ windowManager.getMainView().getCenter().x,
+                           std::floor(startY) });
         Logger::info(
             "Menu option '{}' positioned at ({}, {})", options[i],
             text.getPosition().x, text.getPosition().y

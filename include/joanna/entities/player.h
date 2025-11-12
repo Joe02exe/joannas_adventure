@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../utils/animation.h"
+#include "./animation.h"
 
 #include <SFML/Graphics.hpp>
 #include <memory>

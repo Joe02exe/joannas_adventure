@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../core/windowmanager.h"
-#include "../player/player.h"
+#include "joanna/core/windowmanager.h"
+#include "joanna/entities/player.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>

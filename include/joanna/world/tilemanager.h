@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../entities/player/player.h"
-#include "tileson.hpp"
+#include "extern/tileson.hpp"
+#include "joanna/entities/player.h"
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -30,6 +30,23 @@ class TileManager {
 
     const std::vector<sf::FloatRect>& getCollisionRects() const {
         return m_collisionRects;
+    }
+
+    const std::map<std::string, std::unique_ptr<sf::Texture>>&
+    getGroundTextures() const {
+        return m_textures;
+    }
+
+    const std::vector<TileRenderInfo>& getTiles() const {
+        return m_tiles;
+    }
+
+    const std::vector<TileRenderInfo>& getCollidableTiles() const {
+        return m_collidables;
+    }
+
+    const std::vector<TileRenderInfo>& getOverlayTiles() const {
+        return m_overlayTiles;
     }
 
   private:
