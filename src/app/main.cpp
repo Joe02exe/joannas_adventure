@@ -1,8 +1,6 @@
 #include "../core/game.h"
 #include "joanna/utils/logger.h"
 
-#include "spdlog/spdlog.h"
-
 int main() {
 
 #if LOGGING_ENABLED

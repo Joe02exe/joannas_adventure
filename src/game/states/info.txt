@@ -1,0 +1,1 @@
+game state here... player position, current xp for the player and defined objects etc. 
