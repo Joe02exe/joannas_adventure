@@ -1,7 +1,7 @@
 #include "controller.h"
 
 #include "../../core/windowmanager.h"
-#include "../../ui/menu.h"
+#include "../../systems/ui/menu.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>

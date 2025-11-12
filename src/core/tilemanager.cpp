@@ -46,6 +46,11 @@ bool TileManager::loadMap(const std::string& path) {
     return true;
 }
 
+// rendering renderEngine
+// maps
+// ogg for sound SountBufferManager
+// texturemanager as singleton
+
 sf::FloatRect calculatePixelRect(
     const sf::Texture& tex, const sf::IntRect& texRect, const sf::Vector2f& pos
 ) {
