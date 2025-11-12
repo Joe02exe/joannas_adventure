@@ -1,4 +1,3 @@
-#include "menu.h"
 #include "joanna/systems/menu.h"
 #include "joanna/utils/logger.h"
 #include <SFML/Graphics/Color.hpp>
