@@ -1,5 +1,6 @@
 #include "game.h"
 
+#include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/player.h"
 #include "joanna/systems/controller.h"
@@ -26,6 +27,7 @@ void Game::run() {
     Controller controller(windowManager);
 
     TileManager tileManager;
+    RenderEngine renderEngine;
     PostProcessing postProc(900, 900);
 
     FontRenderer fontRenderer("assets/font/minecraft.ttf");
@@ -62,11 +64,15 @@ void Game::run() {
             [&](sf::RenderTarget& target, const sf::View& view) {
                 // world view
                 target.setView(controller.getPlayerView());
-                tileManager.render(target, controller.getPlayer());
+                renderEngine.render(
+                    target, controller.getPlayer(), tileManager
+                );
 
                 // minimap
                 target.setView(windowManager.getMiniMapView());
-                tileManager.render(target, controller.getPlayer());
+                renderEngine.render(
+                    target, controller.getPlayer(), tileManager
+                );
 
                 // ui
                 target.setView(windowManager.getDefaultView());
