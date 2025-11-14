@@ -1,6 +1,7 @@
 #include "joanna/systems/controller.h"
 #include "joanna/core/windowmanager.h"
 #include "joanna/systems/menu.h"
+#include "joanna/utils/logger.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -24,6 +25,7 @@ const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& 
     return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
 }
 
+// clang-format on
 
 sf::Vector2f moveWithCollisions(
     const sf::Vector2f& dir, const sf::FloatRect& playerBox,
@@ -31,31 +33,22 @@ sf::Vector2f moveWithCollisions(
 ) {
 
     sf::Vector2f result = dir;
-    sf::FloatRect nextPlayerBox = playerBox;
-    nextPlayerBox.position.x += dir.x;
-    nextPlayerBox.position.y += dir.y;
+
+    sf::FloatRect nextX = playerBox;
+    nextX.position.x += dir.x;
+
+    sf::FloatRect nextY = playerBox;
+    nextY.position.y += dir.y;
     for (const auto& box : collisions) {
-        if (isColliding(nextPlayerBox, box)) {
-            if (dir.x != 0.f) {
-                // if B.left- A.right = 0, only move along y axis or if A.left - B.right = 0
-                if ((box.position.x - (nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f) < 0.01f) ||
-                        ((nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f) - box.position.x + box.size.x < 0.01f)) {
-                    result.x = 0.f;
-                }
-            }
-            if (dir.y != 0.f) {
-                // if B.above - A.bottom = 0, only move along x axis or if A.top - B.bottom  = 0
-                if ((box.position.y - (nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f) < 0.01f) ||
-                        ((nextPlayerBox.position.y - nextPlayerBox.size.y / 2.f) - box.position.y + box.size.y < 0.01f)) {
-                    result.y = 0.f;
-                }
-            }
+        if (isColliding(nextX, box)) {
+            result.x = 0.f;
+        }
+        if (isColliding(nextY, box)) {
+            result.y = 0.f;
         }
     }
     return result;
 }
-
-// clang-format on
 
 bool Controller::getInput(
     float dt, sf::RenderWindow& window,
