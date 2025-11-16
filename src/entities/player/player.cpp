@@ -1,11 +1,9 @@
 #include "joanna/entities/player.h"
 
-#include <spdlog/spdlog.h>
-
 Player::Player(
     const std::string& idlePath, const std::string& walkPath,
     const std::string& runPath, const sf::Vector2f& startPos
-) {
+){
     animations[State::Idle] = Animation(idlePath, { 96, 64 });
     animations[State::Walking] = Animation(walkPath, { 96, 64 });
     animations[State::Running] = Animation(runPath, { 96, 64 });
@@ -55,14 +53,19 @@ void Player::switchState(State newState) {
     }
 }
 
-void Player::draw(sf::RenderTarget& target) {
+void Player::draw(sf::RenderTarget& target) const {
     target.draw(*sprite);
+    inventory.draw(target);
 }
 
-void Player::setPosition(const sf::Vector2f& pos) {
+void Player::setPosition(const sf::Vector2f& pos) const {
     sprite->setPosition(pos);
 }
 
 sf::Vector2f Player::getPosition() const {
     return sprite->getPosition();
+}
+
+void Player::addItemToInventory(const Item& item, const std::uint32_t quantity) {
+    inventory.addItem(item, quantity);
 }

@@ -33,4 +33,5 @@ class Controller {
     sf::View playerView;
     sf::View miniMapView;
     bool facingLeft = false;
+    bool keyPressed = false;
 };

@@ -1,6 +1,7 @@
 #include "joanna/systems/controller.h"
 #include "joanna/core/windowmanager.h"
 #include "joanna/systems/menu.h"
+#include "joanna/entities/inventory.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -88,6 +89,10 @@ bool Controller::getInput(
         dir *= 1.5f;
         state = Player::State::Running;
     }
+    bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+    if (spaceDown && !keyPressed) {
+        player.addItemToInventory(Item("test", "test"));
+    }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
         Menu menu(*windowManager);
         menu.show();
@@ -107,11 +112,12 @@ bool Controller::getInput(
 
     sf::Vector2f nextMove = moveWithCollisions(dir, playerHitBox, collisions);
     playerView.move(nextMove);
-    miniMapView.move(nextMove);
+    windowManager->getMiniMapView().move(nextMove);
 
     // subtract half the size of character
     player.setPosition({ playerView.getCenter().x - 48.f,
                          playerView.getCenter().y - 32.f });
     player.update(dt, state, facingLeft);
+    keyPressed = spaceDown;
     return false;
 }
