@@ -1,5 +1,7 @@
 #pragma once
 
+#include "joanna/utils/debug.h"
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -16,6 +18,7 @@ public:
     sf::RenderWindow& getWindow() { return window; }
     sf::View& getMainView() { return mainView; }
     sf::View& getMiniMapView() { return miniMapView; }
+    DebugUI getDebugUI() { return debug_ui; }
     const sf::View& getDefaultView() { return window.getDefaultView(); }
     void pollEvents(); 
     void render();
@@ -25,6 +28,7 @@ private:
     sf::View miniMapView;
     float targetAspectRatio;
     const float MINI_MAP_SIZE = 0.25f;
+    DebugUI debug_ui;
 
     sf::FloatRect computeMainViewPort(sf::Vector2u newSize) const;
 };
