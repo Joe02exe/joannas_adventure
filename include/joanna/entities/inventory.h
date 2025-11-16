@@ -44,7 +44,7 @@ public:
 private:
     // Internal helpers assume mutex held
     std::size_t slotsUsedUnlocked() const;
-
+    sf::Font font;
     mutable std::mutex mutex_;
     std::unordered_map<std::string, StoredItem> items_;
     std::size_t capacity_;

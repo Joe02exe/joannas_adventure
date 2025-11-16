@@ -1,12 +1,14 @@
 #include "joanna/systems/menu.h"
 #include "joanna/utils/logger.h"
+#include "joanna/utils/resourcemanager.h"
+
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Window.hpp>
 
 Menu::Menu(WindowManager& windowManager) : windowManager(windowManager) {
-    this->font.openFromFile("assets/font/minecraft.ttf");
+    this->font = ResourceManager<sf::Font>::getInstance()->get("assets/font/minecraft.ttf");
     this->font.setSmooth(false);
     pos = 0;
     pressed = theselect = false;

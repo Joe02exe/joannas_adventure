@@ -1,4 +1,5 @@
-#include "../core/game.h"
+#include "joanna/core/game.h"
+
 #include "joanna/utils/logger.h"
 
 int main() {

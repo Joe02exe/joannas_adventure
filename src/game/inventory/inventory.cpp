@@ -1,5 +1,7 @@
 #include "joanna/entities/inventory.h"
 
+#include "joanna/utils/resourcemanager.h"
+
 #include <algorithm>
 #include <utility>
 
@@ -9,7 +11,11 @@ Item::Item(std::string id, std::string name, const bool stackable)
 StoredItem::StoredItem(Item item, const std::uint32_t q)
     : item(std::move(item)), quantity(q) {}
 
-Inventory::Inventory(const std::size_t capacity) : capacity_(capacity) {}
+Inventory::Inventory(const std::size_t capacity) : capacity_(capacity) {
+    font = ResourceManager<sf::Font>::getInstance()->get(
+        "assets/font/minecraft.ttf"
+    );
+}
 
 std::uint32_t
 Inventory::addItem(const Item& item, const std::uint32_t quantity) {
@@ -125,10 +131,6 @@ std::size_t Inventory::slotsUsedUnlocked() const {
 
 void Inventory::draw(sf::RenderTarget& target) const {
     // Simple text-based inventory display for demonstration
-    sf::Font font;
-    if (!font.openFromFile("assets/font/minecraft.ttf")) {
-        return; // Font loading failed
-    }
 
     auto items = listItems();
 
