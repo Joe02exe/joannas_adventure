@@ -88,6 +88,7 @@ bool Controller::getInput(
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
         dir *= 1.5f;
         state = Player::State::Running;
+        player.addItemToInventory(Item("test_item", "Test Item"), 1);
     }
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
