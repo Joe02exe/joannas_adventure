@@ -10,6 +10,7 @@ project(
 find_package(SFML CONFIG REQUIRED COMPONENTS Graphics)
 find_package(spdlog CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
+find_package(ImGui-SFML CONFIG REQUIRED)
 
 find_package(GTest CONFIG REQUIRED)
 
@@ -38,6 +39,8 @@ target_link_libraries(main PRIVATE SFML::Graphics)
 target_link_libraries(main PRIVATE spdlog::spdlog)
 
 target_link_libraries(main PRIVATE rapidjson)
+
+target_link_libraries(main PRIVATE ImGui-SFML::ImGui-SFML)
 
 target_link_libraries(test_all PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 

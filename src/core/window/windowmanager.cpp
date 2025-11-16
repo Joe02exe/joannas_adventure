@@ -1,8 +1,11 @@
 #include "joanna/core/windowmanager.h"
 
+#include "joanna/utils/debug.h"
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <imgui-SFML.h>
 
 WindowManager::WindowManager(
     unsigned width, unsigned height, const std::string& title,
@@ -23,6 +26,9 @@ WindowManager::WindowManager(
         sf::FloatRect({ 0.75f, 0.f }, { MINI_MAP_SIZE, MINI_MAP_SIZE })
     );
 
+    // ImGUI
+    DebugUI::init(window);
+
     setCenter(initialPos);
 }
 
@@ -34,6 +40,7 @@ void WindowManager::setCenter(const sf::Vector2f& center) {
 void WindowManager::pollEvents() {
 
     while (const std::optional<sf::Event> event = window.pollEvent()) {
+        debug_ui.processEvent(window, *event);
         if (event->is<sf::Event::Closed>()) {
             window.close();
         }
@@ -81,4 +88,8 @@ void WindowManager::clear() {
 
 void WindowManager::display() {
     window.display();
+}
+
+void WindowManager::render() {
+    debug_ui.render(window);
 }
