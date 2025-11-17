@@ -10,8 +10,7 @@ class Interactable {
 
   public:
     Interactable(
-        const sf::FloatRect& box, const std::optional<std::string>& name,
-        const std::string& buttonTexturePath,
+        const sf::FloatRect& box, const std::string& buttonTexturePath,
         const std::string& spriteTexturePath,
         const std::optional<sf::FloatRect>& collisionBox = std::nullopt,
         Player::Direction direction = Player::Direction::Right
@@ -29,10 +28,6 @@ class Interactable {
 
     uint32_t getId() const;
 
-    std::optional<std::string> getName() const;
-
-    void setName(const std::optional<std::string>& newName);
-
     void setFrame(const sf::IntRect& textureRect);
 
     void setCollisionBox(const sf::FloatRect& box);
@@ -45,7 +40,6 @@ class Interactable {
     static inline uint32_t NEXT_ID = 1;
     const uint32_t id;
     const sf::FloatRect box;
-    std::optional<std::string> name;
     std::unique_ptr<sf::Sprite> sprite;
     sf::Texture texture;
     InteractionButton button;

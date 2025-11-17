@@ -1,22 +1,18 @@
 #include "joanna/entities/interactable.h"
 #include "joanna/entities/player.h"
+#include "joanna/utils/filesystem.h"
 
 Interactable::Interactable(
-    const sf::FloatRect& box, const std::optional<std::string>& name,
-    const std::string& buttonTexturePath, const std::string& spriteTexturePath,
+    const sf::FloatRect& box, const std::string& buttonTexturePath,
+    const std::string& spriteTexturePath,
     const std::optional<sf::FloatRect>& collisionBox,
     Player::Direction direction
 
 )
-    : id(NEXT_ID++), box(box), name(name), button(box, buttonTexturePath),
+    : id(NEXT_ID++), box(box), button(box, buttonTexturePath),
       collisionBox(collisionBox), direction(direction) {
 
-    if (!texture.loadFromFile(spriteTexturePath)) {
-        Logger::error(
-            "Failed to load texture for Interactable {} from path: {}",
-            name.value_or("Unnamed"), spriteTexturePath
-        );
-    }
+    texture = fs::getTextureFromPath(spriteTexturePath);
     sprite = std::make_unique<sf::Sprite>(texture);
     sprite->setPosition({ box.position.x, box.position.y });
 }
@@ -37,14 +33,6 @@ bool Interactable::canPlayerInteract(const sf::Vector2f& playerPos) const {
 
 uint32_t Interactable::getId() const {
     return id;
-}
-
-std::optional<std::string> Interactable::getName() const {
-    return name;
-}
-
-void Interactable::setName(const std::optional<std::string>& newName) {
-    name = newName;
 }
 
 void Interactable::setFrame(const sf::IntRect& textureRect) {

@@ -7,7 +7,7 @@
 
 class NPC: public Interactable {
   public:
-    NPC(const sf::Vector2f& startPos, const std::string& name,
+    NPC(const sf::Vector2f& startPos, const std::string& npcTexturePath,
         const std::string& buttonTexturePath);
 
     void interact() override;

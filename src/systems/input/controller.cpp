@@ -11,8 +11,8 @@ Controller::Controller(WindowManager& windowManager)
     : windowManager(&windowManager), playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()),
       player(
-          "assets/player/main/idle.png", "assets/player/main/walk.png",
-          "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
+          "player/main/idle.png", "player/main/walk.png", "player/main/run.png",
+          sf::Vector2f{ 150.f, 165.f }
       ) {}
 
 // clang-format off

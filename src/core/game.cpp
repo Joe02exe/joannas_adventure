@@ -30,7 +30,7 @@ void Game::run() {
     std::list<std::unique_ptr<Interactable>> interactables;
 
     interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 100.f }, "Joe", "assets/buttons/talk_T.png"
+        sf::Vector2f{ 220.f, 100.f }, "player/npc/joe.png", "buttons/talk_T.png"
     ));
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();

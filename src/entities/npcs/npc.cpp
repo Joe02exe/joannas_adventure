@@ -1,23 +1,20 @@
 #include "joanna/entities/npc.h"
 
 NPC::NPC(
-    const sf::Vector2f& startPos, const std::string& name,
+    const sf::Vector2f& startPos, const std::string& npcTexturePath,
     const std::string& buttonTexturePath
 )
     : Interactable(
-          sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }), name,
-          buttonTexturePath, "assets/player/npc/joe_stages.png",
+          sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
+          buttonTexturePath, npcTexturePath,
           sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 12 }),
           Player::Direction::Left
       ) {
-    animations[Player::State::Idle] =
-        Animation("assets/player/npc/joe_stages.png", { 96, 64 });
+    animations[Player::State::Idle] = Animation(npcTexturePath, { 96, 64 });
 }
 
 void NPC::interact() {
-    Logger::info(
-        "NPC {} says: {}", getName().value_or("Unnamed NPC"), "Hello there!"
-    );
+    Logger::info("NPC {} says: {}", getId(), "Hello there!");
 }
 
 void NPC::update(
