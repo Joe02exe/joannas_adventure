@@ -30,8 +30,7 @@ void Game::run() {
     std::list<std::unique_ptr<Interactable>> interactables;
 
     interactables.push_back(std::make_unique<NPC>(
-        sf::FloatRect{ { 100.f, 100.f }, { 96.f, 64.f } }, "Joe",
-        "assets/buttons/plant.png"
+        sf::Vector2f{ 150.f, 165.f }, "Joe", "assets/buttons/plant.png"
     ));
     TileManager tileManager;
     RenderEngine renderEngine;
@@ -79,6 +78,19 @@ void Game::run() {
                 renderEngine.render(
                     target, controller.getPlayer(), tileManager, interactables
                 );
+                const sf::FloatRect playerHitBox(
+                    { controller.getPlayer().getPosition().x + 48.f,
+                      controller.getPlayer().getPosition().y + 32.f },
+                    { 10.f, 8.f }
+                );
+                // render hitbox as red rectangle for debugging
+                sf::RectangleShape hitboxRect;
+                hitboxRect.setSize({ playerHitBox.size.x, playerHitBox.size.y }
+                );
+                hitboxRect.setPosition({ playerHitBox.position.x,
+                                         playerHitBox.position.y });
+                hitboxRect.setFillColor(sf::Color(255, 0, 0, 50));
+                target.draw(hitboxRect);
 
                 // minimap
                 target.setView(windowManager.getMiniMapView());

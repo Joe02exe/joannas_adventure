@@ -98,6 +98,10 @@ bool Controller::getInput(
         { 10.f, 8.f }
     );
 
+    Logger::info(
+        "Player Hitbox Position: x={}, y={}", playerHitBox.position.x,
+        playerHitBox.position.y
+    );
     sf::Vector2f nextMove = moveWithCollisions(dir, playerHitBox, collisions);
     playerView.move(nextMove);
     miniMapView.move(nextMove);

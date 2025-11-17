@@ -1,12 +1,10 @@
 #include "joanna/entities/interactionbutton.h"
 
-InteractionButton::InteractionButton(const sf::FloatRect& box,
-                                     const std::string& texturePath)
+InteractionButton::InteractionButton(
+    const sf::FloatRect& box, const std::string& texturePath
+)
     : box(box), texture(texturePath), sprite(texture) {
-    sprite.setPosition({
-        box.position.x,
-        box.position.y - box.size.y * 0.5f
-    });
+    sprite.setPosition({ box.position.x, box.position.y + 10.f });
 }
 
 void InteractionButton::render(sf::RenderTarget& target) {
@@ -15,7 +13,9 @@ void InteractionButton::render(sf::RenderTarget& target) {
 
 void InteractionButton::setTexture(const std::string& texturePath) {
     if (!texture.loadFromFile(texturePath)) {
-        Logger::error("Failed to load interaction button texture from {}", texturePath);
+        Logger::error(
+            "Failed to load interaction button texture from {}", texturePath
+        );
     }
     sprite.setTexture(texture);
 }

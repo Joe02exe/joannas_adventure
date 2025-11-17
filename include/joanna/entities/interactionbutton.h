@@ -5,7 +5,7 @@
 #include <string>
 
 class InteractionButton {
-public:
+  public:
     InteractionButton(const sf::FloatRect& box, const std::string& texturePath);
 
     void render(sf::RenderTarget& target);
@@ -14,7 +14,7 @@ public:
 
     sf::Vector2f getPosition() const;
 
-private:
+  private:
     const sf::FloatRect box;
     sf::Sprite sprite;
     sf::Texture texture;

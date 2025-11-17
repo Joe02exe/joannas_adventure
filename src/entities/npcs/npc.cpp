@@ -1,11 +1,12 @@
 #include "joanna/entities/npc.h"
 
 NPC::NPC(
-    const sf::FloatRect& box, const std::string& name,
+    const sf::Vector2f& startPos, const std::string& name,
     const std::string& buttonTexturePath
 )
     : Interactable(
-          box, name, buttonTexturePath, "assets/player/npc/joe_stages.png"
+          sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }), name,
+          buttonTexturePath, "assets/player/npc/joe_stages.png"
       ) {
     animations[Player::State::Idle] =
         Animation("assets/player/npc/joe_stages.png", { 96, 64 });

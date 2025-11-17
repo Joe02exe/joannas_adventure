@@ -1,14 +1,13 @@
 #pragma once
 
+#include "./player.h"
 #include "joanna/entities/interactable.h"
 #include <SFML/Graphics.hpp>
-#include "./player.h"
 #include <unordered_map>
 
-class NPC : public Interactable {
-public:
-    NPC(const sf::FloatRect& box,
-        const std::string& name,
+class NPC: public Interactable {
+  public:
+    NPC(const sf::Vector2f& startPos, const std::string& name,
         const std::string& buttonTexturePath);
 
     void onInteract() override;
@@ -17,7 +16,7 @@ public:
 
     void applyFrame();
 
-private:
+  private:
     Player::State currentState = Player::State::Idle;
     Player::Direction facing = Player::Direction::Right;
     float frameTimer = 0.f;

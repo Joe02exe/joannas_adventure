@@ -26,8 +26,6 @@ class Interactable {
 
     std::optional<std::string> getName() const;
 
-    sf::FloatRect getBoundingBox() const;
-
     void setName(const std::optional<std::string>& newName);
 
     void setFrame(const sf::IntRect& textureRect);
@@ -35,10 +33,10 @@ class Interactable {
   private:
     static inline uint32_t NEXT_ID = 1;
     const uint32_t id;
-    const sf::FloatRect boundingBox;
+    const sf::FloatRect box;
     std::optional<std::string> name;
     std::unique_ptr<sf::Sprite> sprite;
     sf::Texture texture;
     InteractionButton button;
-    const float interactionDistance = 32.f;
+    const float interactionDistance = 16.f;
 };
