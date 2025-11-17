@@ -30,6 +30,20 @@ void RenderEngine::render(
     // draw collidable/decorative tiles with player sorting
     float playerBottom = player.getPosition().y + 32.f;
     bool playerDrawn = false;
+
+    // draw iteractables below player
+    for (auto& entity : interactables) {
+        if (entity->getCollisionBox().has_value()) {
+            float middleEntity = entity->getCollisionBox().value().position.y;
+            if (middleEntity < playerBottom) {
+                entity->render(target);
+            }
+        } else {
+            entity->render(target);
+        }
+    }
+
+    // draw collidables
     for (const auto& tile : m_collidables) {
         float middleTile = tile.collisionBox.value().position.y;
         if (!playerDrawn && middleTile >= playerBottom) {
@@ -39,22 +53,30 @@ void RenderEngine::render(
         drawTile(tile);
     }
 
-    // If the player is still not drawn (player above all tiles)
-    if (!playerDrawn) {
-        Logger::info("Player drawn last in tile rendering");
-        player.draw(target);
-    }
-
+    // draw interactables above player
     for (auto& entity : interactables) {
-        if (entity->canPlayerInteract(player.getPosition())) {
-            entity->render(target, true);
-        } else {
-            entity->render(target, false);
+        if (entity->getCollisionBox().has_value()) {
+            float middleEntity = entity->getCollisionBox().value().position.y;
+            if (middleEntity >= playerBottom) {
+                entity->render(target);
+            }
         }
-    }
 
-    // draw overlay tiles
-    for (const auto& tile : m_overlayTiles) {
-        drawTile(tile);
+        // If the player is still not drawn (player above all tiles)
+        if (!playerDrawn) {
+            Logger::info("Player drawn last in tile rendering");
+            player.draw(target);
+        }
+
+        for (auto& entity : interactables) {
+            if (entity->canPlayerInteract(player.getPosition())) {
+                entity->renderButton(target);
+            }
+        }
+
+        // draw overlay tiles
+        for (const auto& tile : m_overlayTiles) {
+            drawTile(tile);
+        }
     }
 }

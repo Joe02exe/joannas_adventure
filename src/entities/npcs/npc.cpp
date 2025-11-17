@@ -7,7 +7,8 @@ NPC::NPC(
     : Interactable(
           sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }), name,
           buttonTexturePath, "assets/player/npc/joe_stages.png",
-          sf::FloatRect({ startPos.x - 6, startPos.y - 4 }, { 12, 12 })
+          sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 12 }),
+          Player::Direction::Left
       ) {
     animations[Player::State::Idle] =
         Animation("assets/player/npc/joe_stages.png", { 96, 64 });
@@ -19,7 +20,10 @@ void NPC::interact() {
     );
 }
 
-void NPC::update(float dt, Player::State state, bool facingLeft) {
+void NPC::update(
+    float dt, Player::State state, bool facingLeft,
+    const sf::Vector2f& playerPos
+) {
     frameTimer += dt;
 
     const auto& anim = animations[currentState];
@@ -28,6 +32,12 @@ void NPC::update(float dt, Player::State state, bool facingLeft) {
         currentFrame = (currentFrame + 1) % anim.frames.size();
         applyFrame();
     }
+    const Player::Direction direction =
+        this->getCollisionBox().has_value() &&
+                this->getCollisionBox()->position.x < playerPos.x
+            ? Player::Direction::Left
+            : Player::Direction::Right;
+    flipFace(direction);
 }
 
 void NPC::applyFrame() {

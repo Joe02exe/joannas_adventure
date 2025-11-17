@@ -12,13 +12,15 @@ class NPC: public Interactable {
 
     void interact() override;
 
-    void update(float dt, Player::State state, bool facingLeft);
+    void update(
+        float dt, Player::State state, bool facingLeft,
+        const sf::Vector2f& playerPos
+    );
 
     void applyFrame();
 
   private:
     Player::State currentState = Player::State::Idle;
-    Player::Direction facing = Player::Direction::Right;
     float frameTimer = 0.f;
     int currentFrame = 0;
     std::unordered_map<Player::State, Animation> animations;
