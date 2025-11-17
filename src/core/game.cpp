@@ -2,6 +2,7 @@
 
 #include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
+#include "joanna/entities/npc.h"
 #include "joanna/entities/player.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
@@ -26,6 +27,12 @@ void Game::run() {
     window.setFramerateLimit(60);
     Controller controller(windowManager);
 
+    std::list<std::unique_ptr<Interactable>> interactables;
+
+    interactables.push_back(std::make_unique<NPC>(
+        sf::FloatRect{ { 100.f, 100.f }, { 96.f, 64.f } }, "Joe",
+        "assets/buttons/plant.png"
+    ));
     TileManager tileManager;
     RenderEngine renderEngine;
     PostProcessing postProc(900, 900);
@@ -65,13 +72,13 @@ void Game::run() {
                 // world view
                 target.setView(controller.getPlayerView());
                 renderEngine.render(
-                    target, controller.getPlayer(), tileManager
+                    target, controller.getPlayer(), tileManager, interactables
                 );
 
                 // minimap
                 target.setView(windowManager.getMiniMapView());
                 renderEngine.render(
-                    target, controller.getPlayer(), tileManager
+                    target, controller.getPlayer(), tileManager, interactables
                 );
 
                 // ui
@@ -87,6 +94,7 @@ void Game::run() {
                       ) },
                     24
                 );
+                // check for click
                 // sf::Text debugText(fontRenderer.getFont());
                 // debugText.setString("Inventory UI");
                 // debugText.setCharacterSize(24);

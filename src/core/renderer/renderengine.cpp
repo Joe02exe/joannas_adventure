@@ -4,7 +4,8 @@
 RenderEngine::RenderEngine() {}
 
 void RenderEngine::render(
-    sf::RenderTarget& target, Player& player, TileManager& tileManager
+    sf::RenderTarget& target, Player& player, TileManager& tileManager,
+    std::list<std::unique_ptr<Interactable>>& interactables
 ) {
     const auto& m_textures = tileManager.getGroundTextures();
     const auto& m_tiles = tileManager.getTiles();
@@ -42,6 +43,20 @@ void RenderEngine::render(
     if (!playerDrawn) {
         Logger::info("Player drawn last in tile rendering");
         player.draw(target);
+    }
+
+    for (auto& entity : interactables) {
+        if (entity->canPlayerInteract(player.getPosition())) {
+            Logger::info(
+                "Rendering interactable entity with ID {}", entity->getId()
+            );
+            entity->render(target, true);
+        } else {
+            Logger::info(
+                "Not rendering interactable entity with ID {}", entity->getId()
+            );
+            entity->render(target, false);
+        }
     }
 
     // draw overlay tiles
