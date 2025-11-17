@@ -11,9 +11,8 @@
 #include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/Sprite.hpp>
+#include <imgui.h>
+#include <imgui-SFML.h>
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 
@@ -116,25 +115,18 @@ void Game::run() {
                       ) },
                     24
                 );
-                // check for click
-                // sf::Text debugText(fontRenderer.getFont());
-                // debugText.setString("Inventory UI");
-                // debugText.setCharacterSize(24);
-                // debugText.setFillColor(sf::Color::White);
-                // debugText.setStyle(sf::Text::Bold);
-                // debugText.setPosition(
-                //     { std::floor(target.getView().getCenter().x -
-                //           debugText.getLocalBounds().size.x / 2.f),
-                //       std::floor(target.getView().getCenter().y +
-                //           target.getSize().y / 2.f - 50.f )});
-
-                // target.draw(debugText);
             },
             nullptr
         );
 
         postProc.apply(window, clock.getElapsedTime().asSeconds());
 
+        windowManager.getDebugUI().update(dt, window, controller.getPlayer());
+
+        windowManager.render();
+
         window.display();
     }
+
+    ImGui::SFML::Shutdown();
 }

@@ -3,6 +3,7 @@
     "gtest",
     "rapidjson",
     "sfml",
-    "spdlog"
+    "spdlog",
+    "imgui-sfml"
   ]
 }
