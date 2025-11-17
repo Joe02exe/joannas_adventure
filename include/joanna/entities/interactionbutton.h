@@ -9,8 +9,8 @@ class InteractionButton {
                                 box.position.y - box.size.y * 0.5f });
         }
 
-        void render(sf::RenderWindow& window) {
-            window.draw(sprite);
+        void render(sf::RenderTarget& target) {
+            target.draw(sprite);
         }
 
         void setTexture(const std::string& texturePath) {
