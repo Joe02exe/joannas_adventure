@@ -2,6 +2,7 @@
 
 #include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
+#include "joanna/entities/npc.h"
 #include "joanna/entities/player.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
@@ -25,7 +26,19 @@ void Game::run() {
     window.setFramerateLimit(60);
     Controller controller(windowManager);
 
+    std::list<std::unique_ptr<Interactable>> interactables;
+
+    interactables.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 220.f, 100.f }, "player/npc/joe.png", "buttons/talk_T.png"
+    ));
     TileManager tileManager;
+    std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
+    for (auto& entity : interactables) {
+        if (entity->getCollisionBox().has_value()) {
+            collisions.push_back(entity->getCollisionBox().value());
+        }
+    }
+
     RenderEngine renderEngine;
     PostProcessing postProc(900, 900);
 
@@ -49,7 +62,7 @@ void Game::run() {
         float dt = clock.restart().asSeconds();
 
         bool resetClock =
-            controller.getInput(dt, window, tileManager.getCollisionRects());
+            controller.updateStep(dt, window, collisions, interactables);
         if (resetClock) {
             clock.restart();
         }
@@ -64,13 +77,29 @@ void Game::run() {
                 // world view
                 target.setView(controller.getPlayerView());
                 renderEngine.render(
-                    target, controller.getPlayer(), tileManager
+                    target, controller.getPlayer(), tileManager, interactables
                 );
+
+                // keep for debugging player hitbox
+                // const sf::FloatRect playerHitBox(
+                //     { controller.getPlayer().getPosition().x + 48.f,
+                //       controller.getPlayer().getPosition().y + 32.f },
+                //     { 10.f, 8.f }
+                // );
+                // // render hitbox as red rectangle for debugging
+                // sf::RectangleShape hitboxRect;
+                // hitboxRect.setSize({ playerHitBox.size.x, playerHitBox.size.y
+                // }
+                // );
+                // hitboxRect.setPosition({ playerHitBox.position.x,
+                //                          playerHitBox.position.y });
+                // hitboxRect.setFillColor(sf::Color(255, 0, 0, 50));
+                // target.draw(hitboxRect);
 
                 // minimap
                 target.setView(windowManager.getMiniMapView());
                 renderEngine.render(
-                    target, controller.getPlayer(), tileManager
+                    target, controller.getPlayer(), tileManager, interactables
                 );
 
                 // ui
