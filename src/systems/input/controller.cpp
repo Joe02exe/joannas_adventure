@@ -120,8 +120,7 @@ bool Controller::getInput(
 }
 
 bool Controller::updateStep(
-    float dt, sf::RenderWindow& window,
-    const std::vector<sf::FloatRect>& collisions,
+    float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
     std::list<std::unique_ptr<Interactable>>& interactables
 ) {
     // This function can be used for fixed time step updates if needed in future

@@ -2,9 +2,12 @@
 
 Interactable::Interactable(
     const sf::FloatRect& box, const std::optional<std::string>& name,
-    const std::string& buttonTexturePath, const std::string& spriteTexturePath
+    const std::string& buttonTexturePath, const std::string& spriteTexturePath,
+    const std::optional<sf::FloatRect>& collisionBox
+
 )
-    : id(NEXT_ID++), box(box), name(name), button(box, buttonTexturePath) {
+    : id(NEXT_ID++), box(box), name(name), button(box, buttonTexturePath),
+      collisionBox(collisionBox) {
 
     if (!texture.loadFromFile(spriteTexturePath)) {
         Logger::error(
@@ -45,4 +48,12 @@ void Interactable::setName(const std::optional<std::string>& newName) {
 
 void Interactable::setFrame(const sf::IntRect& textureRect) {
     sprite->setTextureRect(textureRect);
+}
+
+void Interactable::setCollisionBox(const sf::FloatRect& box) {
+    collisionBox = box;
+}
+
+std::optional<sf::FloatRect> Interactable::getCollisionBox() {
+    return collisionBox;
 }

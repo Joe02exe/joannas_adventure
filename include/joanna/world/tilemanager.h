@@ -28,7 +28,7 @@ class TileManager {
     void render(sf::RenderTarget& target, Player& player);
     void clear();
 
-    const std::vector<sf::FloatRect>& getCollisionRects() const {
+    std::vector<sf::FloatRect>& getCollisionRects() {
         return m_collisionRects;
     }
 

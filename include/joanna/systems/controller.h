@@ -21,7 +21,7 @@ class Controller {
 
     bool updateStep(
         float dt, sf::RenderWindow& window,
-        const std::vector<sf::FloatRect>& collisions,
+        std::vector<sf::FloatRect>& collisions,
         std::list<std::unique_ptr<Interactable>>& interactables
 
     );

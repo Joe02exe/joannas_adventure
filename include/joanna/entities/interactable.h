@@ -11,7 +11,8 @@ class Interactable {
     Interactable(
         const sf::FloatRect& box, const std::optional<std::string>& name,
         const std::string& buttonTexturePath,
-        const std::string& spriteTexturePath
+        const std::string& spriteTexturePath,
+        const std::optional<sf::FloatRect>& collisionBox = std::nullopt
     );
 
     virtual ~Interactable() = default;
@@ -30,6 +31,10 @@ class Interactable {
 
     void setFrame(const sf::IntRect& textureRect);
 
+    void setCollisionBox(const sf::FloatRect& box);
+
+    std::optional<sf::FloatRect> getCollisionBox();
+
   private:
     static inline uint32_t NEXT_ID = 1;
     const uint32_t id;
@@ -38,5 +43,6 @@ class Interactable {
     std::unique_ptr<sf::Sprite> sprite;
     sf::Texture texture;
     InteractionButton button;
+    std::optional<sf::FloatRect> collisionBox;
     const float interactionDistance = 16.f;
 };

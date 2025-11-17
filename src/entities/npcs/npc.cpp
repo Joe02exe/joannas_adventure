@@ -6,7 +6,8 @@ NPC::NPC(
 )
     : Interactable(
           sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }), name,
-          buttonTexturePath, "assets/player/npc/joe_stages.png"
+          buttonTexturePath, "assets/player/npc/joe_stages.png",
+          sf::FloatRect({ startPos.x - 6, startPos.y - 4 }, { 12, 12 })
       ) {
     animations[Player::State::Idle] =
         Animation("assets/player/npc/joe_stages.png", { 96, 64 });

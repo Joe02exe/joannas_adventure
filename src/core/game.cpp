@@ -30,9 +30,16 @@ void Game::run() {
     std::list<std::unique_ptr<Interactable>> interactables;
 
     interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 150.f, 165.f }, "Joe", "assets/buttons/talk_T.png"
+        sf::Vector2f{ 220.f, 100.f }, "Joe", "assets/buttons/talk_T.png"
     ));
     TileManager tileManager;
+    std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
+    for (auto& entity : interactables) {
+        if (entity->getCollisionBox().has_value()) {
+            collisions.push_back(entity->getCollisionBox().value());
+        }
+    }
+
     RenderEngine renderEngine;
     PostProcessing postProc(900, 900);
 
@@ -55,9 +62,8 @@ void Game::run() {
 
         float dt = clock.restart().asSeconds();
 
-        bool resetClock = controller.updateStep(
-            dt, window, tileManager.getCollisionRects(), interactables
-        );
+        bool resetClock =
+            controller.updateStep(dt, window, collisions, interactables);
         if (resetClock) {
             clock.restart();
         }
