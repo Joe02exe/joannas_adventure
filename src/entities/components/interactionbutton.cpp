@@ -3,12 +3,17 @@
 InteractionButton::InteractionButton(
     const sf::FloatRect& box, const std::string& texturePath
 )
-    : box(box), texture(texturePath), sprite(texture) {
-    sprite.setPosition({ box.position.x, box.position.y + 10.f });
+    : box({ box.position.x + box.size.x / 2 + 3.f,
+            box.position.y + box.size.y / 2 + 3.f },
+          { 18.f, 19.f }),
+      texture(texturePath) {
+    sprite = std::make_unique<sf::Sprite>(texture);
+    sprite->setScale({ 0.5f, 0.5f });
+    sprite->setPosition({ this->box.position.x, this->box.position.y });
 }
 
 void InteractionButton::render(sf::RenderTarget& target) {
-    target.draw(sprite);
+    target.draw(*sprite);
 }
 
 void InteractionButton::setTexture(const std::string& texturePath) {
@@ -17,9 +22,9 @@ void InteractionButton::setTexture(const std::string& texturePath) {
             "Failed to load interaction button texture from {}", texturePath
         );
     }
-    sprite.setTexture(texture);
+    sprite->setTexture(texture);
 }
 
 sf::Vector2f InteractionButton::getPosition() const {
-    return sprite.getPosition();
+    return sprite->getPosition();
 }

@@ -16,6 +16,6 @@ class InteractionButton {
 
   private:
     const sf::FloatRect box;
-    sf::Sprite sprite;
+    std::unique_ptr<sf::Sprite> sprite;
     sf::Texture texture;
 };
