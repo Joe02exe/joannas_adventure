@@ -16,7 +16,7 @@ class Interactable {
 
     virtual ~Interactable() = default;
 
-    virtual void onInteract() = 0;
+    virtual void interact() = 0;
 
     void render(sf::RenderTarget& target, bool renderWithInteraction);
 

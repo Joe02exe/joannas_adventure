@@ -5,6 +5,7 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
+#include <joanna/entities/npc.h>
 
 Controller::Controller(WindowManager& windowManager)
     : windowManager(&windowManager), playerView(windowManager.getMainView()),
@@ -52,7 +53,9 @@ sf::Vector2f moveWithCollisions(
 
 bool Controller::getInput(
     float dt, sf::RenderWindow& window,
-    const std::vector<sf::FloatRect>& collisions
+    const std::vector<sf::FloatRect>& collisions,
+    std::list<std::unique_ptr<Interactable>>& interactables
+
 ) {
     float factor = 30.0f;
 
@@ -81,6 +84,13 @@ bool Controller::getInput(
         dir *= 1.5f;
         state = Player::State::Running;
     }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
+        for (auto& entity : interactables) {
+            if (entity->canPlayerInteract(player.getPosition())) {
+                entity->interact();
+            }
+        }
+    }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
         Menu menu(*windowManager);
         menu.show();
@@ -98,10 +108,6 @@ bool Controller::getInput(
         { 10.f, 8.f }
     );
 
-    Logger::info(
-        "Player Hitbox Position: x={}, y={}", playerHitBox.position.x,
-        playerHitBox.position.y
-    );
     sf::Vector2f nextMove = moveWithCollisions(dir, playerHitBox, collisions);
     playerView.move(nextMove);
     miniMapView.move(nextMove);
@@ -111,4 +117,18 @@ bool Controller::getInput(
                          playerView.getCenter().y - 32.f });
     player.update(dt, state, facingLeft);
     return false;
+}
+
+bool Controller::updateStep(
+    float dt, sf::RenderWindow& window,
+    const std::vector<sf::FloatRect>& collisions,
+    std::list<std::unique_ptr<Interactable>>& interactables
+) {
+    // This function can be used for fixed time step updates if needed in future
+    for (auto& entity : interactables) {
+        if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
+            npc->update(dt, Player::State::Idle, false);
+        }
+    }
+    return getInput(dt, window, collisions, interactables);
 }

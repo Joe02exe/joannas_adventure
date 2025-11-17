@@ -10,7 +10,7 @@ class NPC: public Interactable {
     NPC(const sf::Vector2f& startPos, const std::string& name,
         const std::string& buttonTexturePath);
 
-    void onInteract() override;
+    void interact() override;
 
     void update(float dt, Player::State state, bool facingLeft);
 

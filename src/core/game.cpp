@@ -30,7 +30,7 @@ void Game::run() {
     std::list<std::unique_ptr<Interactable>> interactables;
 
     interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 150.f, 165.f }, "Joe", "assets/buttons/plant.png"
+        sf::Vector2f{ 150.f, 165.f }, "Joe", "assets/buttons/talk_T.png"
     ));
     TileManager tileManager;
     RenderEngine renderEngine;
@@ -55,15 +55,11 @@ void Game::run() {
 
         float dt = clock.restart().asSeconds();
 
-        bool resetClock =
-            controller.getInput(dt, window, tileManager.getCollisionRects());
+        bool resetClock = controller.updateStep(
+            dt, window, tileManager.getCollisionRects(), interactables
+        );
         if (resetClock) {
             clock.restart();
-        }
-        for (auto& entity : interactables) {
-            if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
-                npc->update(dt, Player::State::Idle, false);
-            }
         }
 
         windowManager.clear();
@@ -78,19 +74,22 @@ void Game::run() {
                 renderEngine.render(
                     target, controller.getPlayer(), tileManager, interactables
                 );
-                const sf::FloatRect playerHitBox(
-                    { controller.getPlayer().getPosition().x + 48.f,
-                      controller.getPlayer().getPosition().y + 32.f },
-                    { 10.f, 8.f }
-                );
-                // render hitbox as red rectangle for debugging
-                sf::RectangleShape hitboxRect;
-                hitboxRect.setSize({ playerHitBox.size.x, playerHitBox.size.y }
-                );
-                hitboxRect.setPosition({ playerHitBox.position.x,
-                                         playerHitBox.position.y });
-                hitboxRect.setFillColor(sf::Color(255, 0, 0, 50));
-                target.draw(hitboxRect);
+
+                // keep for debugging player hitbox
+                // const sf::FloatRect playerHitBox(
+                //     { controller.getPlayer().getPosition().x + 48.f,
+                //       controller.getPlayer().getPosition().y + 32.f },
+                //     { 10.f, 8.f }
+                // );
+                // // render hitbox as red rectangle for debugging
+                // sf::RectangleShape hitboxRect;
+                // hitboxRect.setSize({ playerHitBox.size.x, playerHitBox.size.y
+                // }
+                // );
+                // hitboxRect.setPosition({ playerHitBox.position.x,
+                //                          playerHitBox.position.y });
+                // hitboxRect.setFillColor(sf::Color(255, 0, 0, 50));
+                // target.draw(hitboxRect);
 
                 // minimap
                 target.setView(windowManager.getMiniMapView());

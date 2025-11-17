@@ -12,8 +12,10 @@ NPC::NPC(
         Animation("assets/player/npc/joe_stages.png", { 96, 64 });
 }
 
-void NPC::onInteract() {
-    Logger::info("NPC {} says: {}", getName().value_or("Unnamed NPC"));
+void NPC::interact() {
+    Logger::info(
+        "NPC {} says: {}", getName().value_or("Unnamed NPC"), "Hello there!"
+    );
 }
 
 void NPC::update(float dt, Player::State state, bool facingLeft) {

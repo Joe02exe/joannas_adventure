@@ -47,14 +47,8 @@ void RenderEngine::render(
 
     for (auto& entity : interactables) {
         if (entity->canPlayerInteract(player.getPosition())) {
-            Logger::info(
-                "Rendering interactable entity with ID {}", entity->getId()
-            );
             entity->render(target, true);
         } else {
-            Logger::info(
-                "Not rendering interactable entity with ID {}", entity->getId()
-            );
             entity->render(target, false);
         }
     }
