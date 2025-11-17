@@ -7,11 +7,12 @@
 
 class Interactable {
 
-public:
-    Interactable(const sf::FloatRect& box,
-                 const std::optional<std::string>& name,
-                 const std::string& buttonTexturePath,
-                 const std::string& spriteTexturePath);
+  public:
+    Interactable(
+        const sf::FloatRect& box, const std::optional<std::string>& name,
+        const std::string& buttonTexturePath,
+        const std::string& spriteTexturePath
+    );
 
     virtual ~Interactable() = default;
 
@@ -29,14 +30,15 @@ public:
 
     void setName(const std::optional<std::string>& newName);
 
-    void setTexture(const sf::Texture& texture);
+    void setFrame(const sf::IntRect& textureRect);
 
-private:
+  private:
     static inline uint32_t NEXT_ID = 1;
     const uint32_t id;
     const sf::FloatRect boundingBox;
     std::optional<std::string> name;
     std::unique_ptr<sf::Sprite> sprite;
+    sf::Texture texture;
     InteractionButton button;
     const float interactionDistance = 32.f;
 };

@@ -61,6 +61,11 @@ void Game::run() {
         if (resetClock) {
             clock.restart();
         }
+        for (auto& entity : interactables) {
+            if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
+                npc->update(dt, Player::State::Idle, false);
+            }
+        }
 
         windowManager.clear();
         controller.getPlayerView().setViewport(

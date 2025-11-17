@@ -1,20 +1,25 @@
 #include "joanna/entities/interactable.h"
 
-Interactable::Interactable(const sf::FloatRect& box,
-                           const std::optional<std::string>& name,
-                           const std::string& buttonTexturePath,
-                           const std::string& spriteTexturePath)
-    : id(NEXT_ID++),
-      boundingBox(box),
-      name(name),
+Interactable::Interactable(
+    const sf::FloatRect& box, const std::optional<std::string>& name,
+    const std::string& buttonTexturePath, const std::string& spriteTexturePath
+)
+    : id(NEXT_ID++), boundingBox(box), name(name),
       button(boundingBox, buttonTexturePath) {
 
-    sf::Texture texture(spriteTexturePath);
-    sprite->setTexture(texture);
+    if (!texture.loadFromFile(spriteTexturePath)) {
+        Logger::error(
+            "Failed to load texture for Interactable {} from path: {}",
+            name.value_or("Unnamed"), spriteTexturePath
+        );
+    }
+    sprite = std::make_unique<sf::Sprite>(texture);
     sprite->setPosition({ box.position.x, box.position.y });
 }
 
-void Interactable::render(sf::RenderTarget& target, bool renderWithInteraction) {
+void Interactable::render(
+    sf::RenderTarget& target, bool renderWithInteraction
+) {
     target.draw(*sprite);
     if (renderWithInteraction) {
         button.render(target);
@@ -48,6 +53,6 @@ void Interactable::setName(const std::optional<std::string>& newName) {
     name = newName;
 }
 
-void Interactable::setTexture(const sf::Texture& texture) {
-    sprite->setTexture(texture);
+void Interactable::setFrame(const sf::IntRect& textureRect) {
+    sprite->setTextureRect(textureRect);
 }

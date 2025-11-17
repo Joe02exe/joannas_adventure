@@ -1,13 +1,14 @@
 #include "joanna/entities/npc.h"
 
-NPC::NPC(const sf::FloatRect& box,
-         const std::string& name,
-         const std::string& buttonTexturePath)
-    : Interactable(box, name, buttonTexturePath,
-                   "assets/player/npc/joe_base.png") 
-{
+NPC::NPC(
+    const sf::FloatRect& box, const std::string& name,
+    const std::string& buttonTexturePath
+)
+    : Interactable(
+          box, name, buttonTexturePath, "assets/player/npc/joe_stages.png"
+      ) {
     animations[Player::State::Idle] =
-        Animation("assets/player/npc/joe_stages.png", {96, 64});
+        Animation("assets/player/npc/joe_stages.png", { 96, 64 });
 }
 
 void NPC::onInteract() {
@@ -27,6 +28,5 @@ void NPC::update(float dt, Player::State state, bool facingLeft) {
 
 void NPC::applyFrame() {
     const auto& anim = animations[currentState];
-    setTexture(anim.texture);
-    // sprite->setTextureRect(anim.frames[currentFrame]);
+    setFrame(anim.frames[currentFrame]);
 }
