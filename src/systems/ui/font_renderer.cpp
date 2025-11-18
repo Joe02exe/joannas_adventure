@@ -1,14 +1,13 @@
 #include "joanna/systems/font_renderer.h"
+
 #include "joanna/utils/logger.h"
+#include "joanna/utils/resourcemanager.h"
+
 #include <SFML/Graphics/RenderTarget.hpp>
 
 FontRenderer::FontRenderer(const std::string& fontPath) : loaded(false) {
-    if (font.openFromFile(fontPath)) {
-        loaded = true;
-        Logger::info("Font loaded successfully from: {}", fontPath);
-    } else {
-        Logger::error("Failed to load font from: {}", fontPath);
-    }
+    font = ResourceManager<sf::Font>::getInstance()->get(fontPath);
+    loaded = true;
 }
 
 bool FontRenderer::isLoaded() const {

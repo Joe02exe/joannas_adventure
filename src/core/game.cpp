@@ -1,4 +1,4 @@
-#include "game.h"
+#include "joanna/core/game.h"
 
 #include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
@@ -50,9 +50,6 @@ void Game::run() {
     PostProcessing postProc(900, 900);
 
     FontRenderer fontRenderer("assets/font/minecraft.ttf");
-    if (!fontRenderer.isLoaded()) {
-        Logger::error("Failed to load font for UI rendering");
-    }
 
     sf::Clock clock;
 

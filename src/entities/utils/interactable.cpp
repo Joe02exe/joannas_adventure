@@ -1,6 +1,7 @@
 #include "joanna/entities/interactable.h"
 #include "joanna/entities/player.h"
 #include "joanna/utils/filesystem.h"
+#include "joanna/utils/resourcemanager.h"
 
 Interactable::Interactable(
     const sf::FloatRect& box, const std::string& buttonTexturePath,
@@ -9,10 +10,10 @@ Interactable::Interactable(
     Player::Direction direction
 
 )
-    : id(NEXT_ID++), box(box), button(box, buttonTexturePath),
+    : id(NEXT_ID++), box(box), texture(ResourceManager<sf::Texture>::getInstance()->get(spriteTexturePath)), button(box, buttonTexturePath),
       collisionBox(collisionBox), direction(direction) {
 
-    texture = fs::getTextureFromPath(spriteTexturePath);
+
     sprite = std::make_unique<sf::Sprite>(texture);
     sprite->setPosition({ box.position.x, box.position.y });
 }

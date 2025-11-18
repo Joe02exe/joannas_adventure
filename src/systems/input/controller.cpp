@@ -1,6 +1,7 @@
 #include "joanna/systems/controller.h"
 #include "joanna/core/windowmanager.h"
 #include "joanna/systems/menu.h"
+#include "joanna/entities/inventory.h"
 #include "joanna/utils/logger.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -12,7 +13,7 @@ Controller::Controller(WindowManager& windowManager)
     : windowManager(&windowManager), playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()),
       player(
-          "player/main/idle.png", "player/main/walk.png", "player/main/run.png",
+          "assets/player/main/idle.png", "assets/player/main/walk.png", "assets/player/main/run.png",
           sf::Vector2f{ 150.f, 165.f }
       ) {}
 
@@ -27,7 +28,6 @@ const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& 
     return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
 }
 
-// clang-format on
 
 sf::Vector2f moveWithCollisions(
     const sf::Vector2f& dir, const sf::FloatRect& playerBox,
@@ -51,6 +51,8 @@ sf::Vector2f moveWithCollisions(
     }
     return result;
 }
+
+// clang-format on
 
 bool Controller::getInput(
     float dt, sf::RenderWindow& window,
@@ -85,6 +87,10 @@ bool Controller::getInput(
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
         dir *= 1.5f;
         state = Player::State::Running;
+    }
+    bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+    if (spaceDown && !keyPressed) {
+        player.addItemToInventory(Item("test", "test"));
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
         for (auto& entity : interactables) {
@@ -132,12 +138,13 @@ bool Controller::getInput(
 
     sf::Vector2f nextMove = moveWithCollisions(dir, playerHitBox, collisions);
     playerView.move(nextMove);
-    miniMapView.move(nextMove);
+    windowManager->getMiniMapView().move(nextMove);
 
     // subtract half the size of character
     player.setPosition({ playerView.getCenter().x - 48.f,
                          playerView.getCenter().y - 32.f });
     player.update(dt, state, facingLeft);
+    keyPressed = spaceDown;
     return false;
 }
 
