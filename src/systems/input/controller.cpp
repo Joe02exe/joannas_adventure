@@ -2,16 +2,18 @@
 #include "joanna/core/windowmanager.h"
 #include "joanna/systems/menu.h"
 #include "joanna/entities/inventory.h"
+#include "joanna/utils/logger.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
+#include <joanna/entities/npc.h>
 
 Controller::Controller(WindowManager& windowManager)
     : windowManager(&windowManager), playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()),
       player(
-          "assets/player/main/idle.png", "assets/player/main/walk.png",
-          "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
+          "assets/player/main/idle.png", "assets/player/main/walk.png", "assets/player/main/run.png",
+          sf::Vector2f{ 150.f, 165.f }
       ) {}
 
 // clang-format off
@@ -32,25 +34,18 @@ sf::Vector2f moveWithCollisions(
 ) {
 
     sf::Vector2f result = dir;
-    sf::FloatRect nextPlayerBox = playerBox;
-    nextPlayerBox.position.x += dir.x;
-    nextPlayerBox.position.y += dir.y;
+
+    sf::FloatRect nextX = playerBox;
+    nextX.position.x += dir.x;
+
+    sf::FloatRect nextY = playerBox;
+    nextY.position.y += dir.y;
     for (const auto& box : collisions) {
-        if (isColliding(nextPlayerBox, box)) {
-            if (dir.x != 0.f) {
-                // if B.left- A.right = 0, only move along y axis or if A.left - B.right = 0
-                if ((box.position.x - (nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f) < 0.01f) ||
-                        ((nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f) - box.position.x + box.size.x < 0.01f)) {
-                    result.x = 0.f;
-                }
-            }
-            if (dir.y != 0.f) {
-                // if B.above - A.bottom = 0, only move along x axis or if A.top - B.bottom  = 0
-                if ((box.position.y - (nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f) < 0.01f) ||
-                        ((nextPlayerBox.position.y - nextPlayerBox.size.y / 2.f) - box.position.y + box.size.y < 0.01f)) {
-                    result.y = 0.f;
-                }
-            }
+        if (isColliding(nextX, box)) {
+            result.x = 0.f;
+        }
+        if (isColliding(nextY, box)) {
+            result.y = 0.f;
         }
     }
     return result;
@@ -60,7 +55,9 @@ sf::Vector2f moveWithCollisions(
 
 bool Controller::getInput(
     float dt, sf::RenderWindow& window,
-    const std::vector<sf::FloatRect>& collisions
+    const std::vector<sf::FloatRect>& collisions,
+    std::list<std::unique_ptr<Interactable>>& interactables
+
 ) {
     float factor = 30.0f;
 
@@ -93,6 +90,13 @@ bool Controller::getInput(
     if (spaceDown && !keyPressed) {
         player.addItemToInventory(Item("test", "test"));
     }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
+        for (auto& entity : interactables) {
+            if (entity->canPlayerInteract(player.getPosition())) {
+                entity->interact();
+            }
+        }
+    }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
         Menu menu(*windowManager);
         menu.show();
@@ -120,4 +124,20 @@ bool Controller::getInput(
     player.update(dt, state, facingLeft);
     keyPressed = spaceDown;
     return false;
+}
+
+bool Controller::updateStep(
+    float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
+    std::list<std::unique_ptr<Interactable>>& interactables
+) {
+    // This function can be used for fixed time step updates if needed in future
+    for (auto& entity : interactables) {
+        if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
+            npc->update(
+                dt, Player::State::Idle, false,
+                { player.getPosition().x + 48.f, player.getPosition().y + 32.f }
+            );
+        }
+    }
+    return getInput(dt, window, collisions, interactables);
 }
