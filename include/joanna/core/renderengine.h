@@ -2,6 +2,7 @@
 
 #include "joanna/entities/player.h"
 #include "joanna/world/tilemanager.h"
+#include "joanna/utils/dialogue_box.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <list>
 #include "joanna/entities/interactable.h"
@@ -11,5 +12,5 @@ class RenderEngine {
     RenderEngine();
 
     void
-    render(sf::RenderTarget& target, Player& player, TileManager& tileManager, std::list<std::unique_ptr<Interactable>>& interactables);
+    render(sf::RenderTarget& target, Player& player, TileManager& tileManager, std::list<std::unique_ptr<Interactable>>& interactables, std::shared_ptr<DialogueBox> dialogueBox);
 };

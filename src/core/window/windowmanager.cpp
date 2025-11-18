@@ -17,7 +17,7 @@ WindowManager::WindowManager(
       ) {
 
     mainView.setSize({ static_cast<float>(width), static_cast<float>(height) });
-    mainView.zoom(0.15f);
+    mainView.zoom(0.2f);
     mainView.setCenter({ 0.f, 0.f });
 
     miniMapView.setSize({ 250.f, 250.f });

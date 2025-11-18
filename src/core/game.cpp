@@ -3,6 +3,7 @@
 #include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/npc.h"
+#include "joanna/utils/dialogue_box.h"
 #include "joanna/entities/player.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
@@ -28,8 +29,14 @@ void Game::run() {
 
     std::list<std::unique_ptr<Interactable>> interactables;
 
+    FontRenderer fontRendererDialog("assets/font/Pixellari.ttf");
+    if (!fontRendererDialog.isLoaded()) {
+        Logger::error("Failed to load font for Dialog rendering");
+    }
+
+    auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRendererDialog);
     interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 100.f }, "player/npc/joe.png", "buttons/talk_T.png"
+        sf::Vector2f{ 220.f, 100.f }, "player/npc/joe.png", "buttons/talk_T.png", sharedDialogueBox
     ));
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
@@ -62,7 +69,7 @@ void Game::run() {
         float dt = clock.restart().asSeconds();
 
         bool resetClock =
-            controller.updateStep(dt, window, collisions, interactables);
+            controller.updateStep(dt, window, collisions, interactables, sharedDialogueBox);
         if (resetClock) {
             clock.restart();
         }
@@ -77,7 +84,7 @@ void Game::run() {
                 // world view
                 target.setView(controller.getPlayerView());
                 renderEngine.render(
-                    target, controller.getPlayer(), tileManager, interactables
+                    target, controller.getPlayer(), tileManager, interactables, sharedDialogueBox
                 );
 
                 // keep for debugging player hitbox
@@ -99,7 +106,7 @@ void Game::run() {
                 // minimap
                 target.setView(windowManager.getMiniMapView());
                 renderEngine.render(
-                    target, controller.getPlayer(), tileManager, interactables
+                    target, controller.getPlayer(), tileManager, interactables, sharedDialogueBox
                 );
 
                 // ui

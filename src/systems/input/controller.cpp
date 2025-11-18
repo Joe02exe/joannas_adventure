@@ -6,6 +6,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <joanna/entities/npc.h>
+#include <algorithm>
 
 Controller::Controller(WindowManager& windowManager)
     : windowManager(&windowManager), playerView(windowManager.getMainView()),
@@ -54,7 +55,8 @@ sf::Vector2f moveWithCollisions(
 bool Controller::getInput(
     float dt, sf::RenderWindow& window,
     const std::vector<sf::FloatRect>& collisions,
-    std::list<std::unique_ptr<Interactable>>& interactables
+    std::list<std::unique_ptr<Interactable>>& interactables,
+    std::shared_ptr<DialogueBox> sharedDialogueBox
 
 ) {
     float factor = 30.0f;
@@ -96,6 +98,26 @@ bool Controller::getInput(
         menu.show();
         return true;
     }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+        if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
+            sharedDialogueBox->nextLine();  // Advances to next line or closes dialogue
+        }
+    }
+
+    bool anyInteractionPoissible = std::any_of(
+        interactables.begin(),
+        interactables.end(),
+        [this](const auto& obj) {
+            if (auto npc = dynamic_cast<NPC*>(obj.get())) {
+                return npc->canPlayerInteract(player.getPosition());
+            }
+            return false;
+        }
+    );
+
+    if(sharedDialogueBox->isActive() && !anyInteractionPoissible){
+        sharedDialogueBox->hide();
+    }
 
     // normalize the diagonal movement
     if (dir.x != 0.f && dir.y != 0.f) {
@@ -121,7 +143,7 @@ bool Controller::getInput(
 
 bool Controller::updateStep(
     float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
-    std::list<std::unique_ptr<Interactable>>& interactables
+    std::list<std::unique_ptr<Interactable>>& interactables, std::shared_ptr<DialogueBox> sharedDialogueBox
 ) {
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : interactables) {
@@ -132,5 +154,5 @@ bool Controller::updateStep(
             );
         }
     }
-    return getInput(dt, window, collisions, interactables);
+    return getInput(dt, window, collisions, interactables, sharedDialogueBox);
 }
