@@ -17,7 +17,7 @@ class Entity {
 
     virtual ~Entity() = default;
 
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderTarget& target) const;
 
     uint32_t getId() const;
 
@@ -27,17 +27,18 @@ class Entity {
 
     void flipFace(const Direction direction);
 
-    std::optional<sf::FloatRect> getCollisionBox();
+    std::optional<sf::FloatRect> getCollisionBox() const;
 
-    std::optional<sf::Vector2f> getCollisionBoxCenter();
+    std::optional<sf::Vector2f> getCollisionBoxCenter() const;
 
-    sf::Vector2f getPosition();
+    sf::Vector2f getPosition() const;
 
-    void setPosition(sf::Vector2f position);
+    void setPosition(const sf::Vector2f& position);
 
-    sf::FloatRect getBoundingBox();
+    sf::FloatRect getBoundingBox() const;
 
   private:
+    void setCollisionBox(sf::FloatRect newCollisionBox);
     static inline uint32_t NEXT_ID = 1;
     const uint32_t id;
     sf::FloatRect boundingBox;
