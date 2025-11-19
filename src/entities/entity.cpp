@@ -6,8 +6,8 @@ Entity::Entity(
     const sf::FloatRect& box, const sf::Texture& texture,
     const std::optional<sf::FloatRect>& collisionBox, Direction direction
 )
-    : id(NEXT_ID++), box(box), texture(texture), collisionBox(collisionBox),
-      direction(direction) {
+    : id(NEXT_ID++), boundingBox(box), texture(texture), direction(direction),
+      collisionBox(collisionBox) {
 
     sprite = std::make_unique<sf::Sprite>(texture);
     sprite->setPosition(box.position);
@@ -49,25 +49,25 @@ std::optional<sf::Vector2f> Entity::getCollisionBoxCenter() {
         return std::nullopt;
 
     const auto& cb = *collisionBox;
-    return sf::Vector2f{ cb.position.x + cb.size.x * 0.5f,
-                         cb.position.y + cb.size.y * 0.5f };
+    return sf::Vector2f{ cb.position.x + cb.size.x / 2,
+                         cb.position.y + cb.size.y / 2 };
 }
 
 sf::Vector2f Entity::getPosition() {
-    return { box.position.x + box.size.x / 2, box.position.y + box.size.y / 2 };
+    return { boundingBox.position.x + boundingBox.size.x / 2,
+             boundingBox.position.y + boundingBox.size.y / 2 };
 }
 
 void Entity::setPosition(sf::Vector2f position) {
-    box = { { position.x - box.size.x / 2, position.y - box.size.y / 2 },
-            box.size };
-    sprite->setPosition(box.position);
+    sf::Vector2f delta = position - getPosition();
+    boundingBox.position += delta;
+    sprite->setPosition(boundingBox.position);
     if (!collisionBox) // if entity has no collision, we don't want to set it
         return;
     const auto& cb = *collisionBox;
-    collisionBox = { { position.x - cb.size.x / 2, position.y - cb.size.y / 2 },
-                     collisionBox->size };
+    collisionBox = sf::FloatRect{ cb.position + delta, cb.size };
 }
 
-sf::FloatRect Entity::getBox() {
-    return box;
+sf::FloatRect Entity::getBoundingBox() {
+    return boundingBox;
 }

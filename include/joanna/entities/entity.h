@@ -35,12 +35,12 @@ class Entity {
 
     void setPosition(sf::Vector2f position);
 
-    sf::FloatRect getBox();
+    sf::FloatRect getBoundingBox();
 
   private:
     static inline uint32_t NEXT_ID = 1;
     const uint32_t id;
-    sf::FloatRect box;
+    sf::FloatRect boundingBox;
     std::unique_ptr<sf::Sprite> sprite;
     sf::Texture texture;
     std::optional<sf::FloatRect> collisionBox;
