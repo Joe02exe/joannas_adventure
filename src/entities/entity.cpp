@@ -4,8 +4,7 @@
 
 Entity::Entity(
     const sf::FloatRect& box, const sf::Texture& texture,
-    const std::optional<sf::FloatRect>& collisionBox,
-    Player::Direction direction
+    const std::optional<sf::FloatRect>& collisionBox, Direction direction
 )
     : id(NEXT_ID++), box(box), texture(texture), collisionBox(collisionBox),
       direction(direction) {
@@ -30,9 +29,9 @@ void Entity::setFrame(const sf::IntRect& textureRect) {
     sprite->setTextureRect(textureRect);
 }
 
-void Entity::flipFace(const Player::Direction direction) {
+void Entity::flipFace(const Direction direction) {
     this->direction = direction;
-    if (direction == Player::Direction::Right) {
+    if (direction == Direction::Right) {
         sprite->setScale({ -1.f, 1.f });
         sprite->setOrigin({ 96.f, 0.f });
     } else {

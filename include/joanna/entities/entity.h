@@ -12,7 +12,7 @@ class Entity {
     Entity(
         const sf::FloatRect& box, const sf::Texture& texture,
         const std::optional<sf::FloatRect>& collisionBox = std::nullopt,
-        Player::Direction direction = Player::Direction::Right
+        Direction direction = Direction::Right
     );
 
     virtual ~Entity() = default;
@@ -25,7 +25,7 @@ class Entity {
 
     void setFrame(const sf::IntRect& textureRect);
 
-    void flipFace(const Player::Direction direction);
+    void flipFace(const Direction direction);
 
     std::optional<sf::FloatRect> getCollisionBox();
 
@@ -44,5 +44,5 @@ class Entity {
     std::unique_ptr<sf::Sprite> sprite;
     sf::Texture texture;
     std::optional<sf::FloatRect> collisionBox;
-    std::optional<Player::Direction> direction;
+    std::optional<Direction> direction;
 };
