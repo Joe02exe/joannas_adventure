@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 
+enum class Direction { Left, Right };
+
+enum class State { Idle, Walking, Running };
+
 struct Animation {
     sf::Texture texture;
     std::vector<sf::IntRect> frames;

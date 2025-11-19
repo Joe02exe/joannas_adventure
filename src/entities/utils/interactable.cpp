@@ -6,13 +6,14 @@
 Interactable::Interactable(
     const sf::FloatRect& box, const std::string& buttonTexturePath,
     const std::string& spriteTexturePath,
-    const std::optional<sf::FloatRect>& collisionBox,
-    Player::Direction direction
+    const std::optional<sf::FloatRect>& collisionBox, Direction direction
 
 )
-    : id(NEXT_ID++), box(box), texture(ResourceManager<sf::Texture>::getInstance()->get(spriteTexturePath)), button(box, buttonTexturePath),
-      collisionBox(collisionBox), direction(direction) {
-
+    : id(NEXT_ID++), box(box),
+      texture(ResourceManager<sf::Texture>::getInstance()->get(spriteTexturePath
+      )),
+      button(box, buttonTexturePath), collisionBox(collisionBox),
+      direction(direction) {
 
     sprite = std::make_unique<sf::Sprite>(texture);
     sprite->setPosition({ box.position.x, box.position.y });
@@ -48,9 +49,9 @@ std::optional<sf::FloatRect> Interactable::getCollisionBox() {
     return collisionBox;
 }
 
-void Interactable::flipFace(const Player::Direction direction) {
+void Interactable::flipFace(const Direction direction) {
     this->direction = direction;
-    if (direction == Player::Direction::Right) {
+    if (direction == Direction::Right) {
         sprite->setScale({ -1.f, 1.f });
         sprite->setOrigin({ 96.f, 0.f });
     } else {

@@ -1,0 +1,47 @@
+#pragma once
+#include "joanna/systems/font_renderer.h"
+#include <SFML/Graphics.hpp>
+#include <string>
+#include <vector>
+#include <queue>
+#include <memory>
+
+class DialogueBox {
+public:
+
+    DialogueBox(FontRenderer& fontRenderer);
+
+    // Dialogue management
+    void setDialogue(const std::vector<std::string>& messages);
+    void addDialogueLine(const std::string& message);
+    void show();
+    void hide();
+    void clear();
+    void nextLine();
+    void skipTypewriter();
+    
+    bool isActive() const { return active; }
+    bool isTyping() const { return visibleCharCount < currentDialogue.length(); }
+    bool hasMoreLines() const { return !dialogueQueue.empty(); }
+    
+    void update(float dt, const sf::Vector2f& targetPosition);
+    void render(sf::RenderTarget& target);
+
+private:
+    void updateTypewriter(float dt);
+    void updateBubbleGeometry(const sf::Vector2f& targetPosition);
+    std::string wrapText(const std::string& text, float maxWidth);
+
+    FontRenderer fontRenderer;
+
+    bool active = false;
+    std::queue<std::string> dialogueQueue;
+    std::string currentDialogue;
+    std::string visibleText;
+    size_t visibleCharCount = 0;
+    float displayTime = 0.0f;
+    
+    sf::RectangleShape bubbleBackground;
+    sf::ConvexShape bubblePointer;
+    sf::Vector2f textPosition;
+};

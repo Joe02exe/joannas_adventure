@@ -64,8 +64,8 @@ sf::FloatRect calculatePixelRect(
 
     for (int y = 0; y < texRect.size.y; ++y) {
         for (int x = 0; x < texRect.size.x; ++x) {
-            sf::Color c = img.getPixel({ texRect.position.x + x,
-                                         texRect.position.y + y });
+            sf::Color c = img.getPixel({ static_cast<unsigned int>(texRect.position.x + x),
+                                         static_cast<unsigned int>(texRect.position.y + y )});
             if (c.a > 0) { // if pixel is not transparent
                 hasOpaque = true;
                 if (x < left)
