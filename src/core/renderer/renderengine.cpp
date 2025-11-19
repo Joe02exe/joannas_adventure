@@ -5,7 +5,7 @@ RenderEngine::RenderEngine() {}
 
 void RenderEngine::render(
     sf::RenderTarget& target, Player& player, TileManager& tileManager,
-    std::list<std::unique_ptr<Interactable>>& interactables
+    std::list<std::unique_ptr<Interactable>>& interactables, std::shared_ptr<DialogueBox> dialogueBox
 ) {
     const auto& m_textures = tileManager.getGroundTextures();
     const auto& m_tiles = tileManager.getTiles();
@@ -78,5 +78,9 @@ void RenderEngine::render(
         for (const auto& tile : m_overlayTiles) {
             drawTile(tile);
         }
+    }
+
+    if (dialogueBox->isActive()) {
+        dialogueBox->render(target);
     }
 }

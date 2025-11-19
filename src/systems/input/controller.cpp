@@ -1,19 +1,24 @@
 #include "joanna/systems/controller.h"
 #include "joanna/core/windowmanager.h"
-#include "joanna/systems/menu.h"
+#include "joanna/entities/entityutils.h"
 #include "joanna/entities/inventory.h"
+#include "joanna/systems/audiomanager.h"
+#include "joanna/systems/menu.h"
 #include "joanna/utils/logger.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
+#include <algorithm>
 #include <joanna/entities/npc.h>
 
-Controller::Controller(WindowManager& windowManager)
-    : windowManager(&windowManager), playerView(windowManager.getMainView()),
+Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
+    : windowManager(&windowManager),
+      audioManager(&audioManager),
+      playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()),
       player(
-          "assets/player/main/idle.png", "assets/player/main/walk.png", "assets/player/main/run.png",
-          sf::Vector2f{ 150.f, 165.f }
+          "assets/player/main/idle.png", "assets/player/main/walk.png",
+          "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
       ) {}
 
 // clang-format off
@@ -56,35 +61,36 @@ sf::Vector2f moveWithCollisions(
 bool Controller::getInput(
     float dt, sf::RenderWindow& window,
     const std::vector<sf::FloatRect>& collisions,
-    std::list<std::unique_ptr<Interactable>>& interactables
+    std::list<std::unique_ptr<Interactable>>& interactables,
+    std::shared_ptr<DialogueBox> sharedDialogueBox
 
 ) {
     float factor = 30.0f;
 
-    Player::State state = Player::State::Idle;
+    State state = State::Idle;
     sf::Vector2f dir{ 0.f, 0.f };
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
         dir.x -= 1.f * factor * dt;
         facingLeft = true;
-        state = Player::State::Walking;
+        state = State::Walking;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
         dir.x += 1.f * factor * dt;
         facingLeft = false;
-        state = Player::State::Walking;
+        state = State::Walking;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
         dir.y -= 1.f * factor * dt;
-        state = Player::State::Walking;
+        state = State::Walking;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
         dir.y += 1.f * factor * dt;
-        state = Player::State::Walking;
+        state = State::Walking;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
         dir *= 1.5f;
-        state = Player::State::Running;
+        state = State::Running;
     }
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
@@ -101,6 +107,26 @@ bool Controller::getInput(
         Menu menu(*windowManager);
         menu.show();
         return true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+        if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
+            sharedDialogueBox->nextLine(
+            ); // Advances to next line or closes dialogue
+        }
+    }
+
+    bool anyInteractionPoissible = std::any_of(
+        interactables.begin(), interactables.end(),
+        [this](const auto& obj) {
+            if (auto npc = dynamic_cast<NPC*>(obj.get())) {
+                return npc->canPlayerInteract(player.getPosition());
+            }
+            return false;
+        }
+    );
+
+    if (sharedDialogueBox->isActive() && !anyInteractionPoissible) {
+        sharedDialogueBox->hide();
     }
 
     // normalize the diagonal movement
@@ -121,23 +147,24 @@ bool Controller::getInput(
     // subtract half the size of character
     player.setPosition({ playerView.getCenter().x - 48.f,
                          playerView.getCenter().y - 32.f });
-    player.update(dt, state, facingLeft);
+    player.update(dt, state, facingLeft, *audioManager);
     keyPressed = spaceDown;
     return false;
 }
 
 bool Controller::updateStep(
     float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
-    std::list<std::unique_ptr<Interactable>>& interactables
+    std::list<std::unique_ptr<Interactable>>& interactables,
+    std::shared_ptr<DialogueBox> sharedDialogueBox
 ) {
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : interactables) {
         if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
             npc->update(
-                dt, Player::State::Idle, false,
+                dt, State::Idle, false,
                 { player.getPosition().x + 48.f, player.getPosition().y + 32.f }
             );
         }
     }
-    return getInput(dt, window, collisions, interactables);
+    return getInput(dt, window, collisions, interactables, sharedDialogueBox);
 }

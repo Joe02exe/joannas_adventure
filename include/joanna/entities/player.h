@@ -1,7 +1,8 @@
 #pragma once
 
-#include "./animation.h"
+#include "./entityutils.h"
 #include "./inventory.h"
+#include "joanna/systems/audiomanager.h"
 
 #include <SFML/Graphics.hpp>
 #include <memory>
@@ -10,15 +11,13 @@
 
 class Player {
   public:
-    enum class State { Idle, Walking, Running };
-    enum class Direction { Left, Right };
-
     Player(
         const std::string& idlePath, const std::string& walkPath,
         const std::string& runPath, const sf::Vector2f& startPos
     );
 
-    void update(float dt, State state, bool movingRight);
+    void
+    update(float dt, State state, bool movingRight, AudioManager& pManager);
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
 

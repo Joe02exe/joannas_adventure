@@ -7,14 +7,17 @@
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
 #include "joanna/systems/menu.h"
+#include "joanna/utils/dialogue_box.h"
 #include "joanna/utils/logger.h"
 #include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
-#include <imgui.h>
-#include <imgui-SFML.h>
+#include "joanna/entities/entityutils.h"
+#include "joanna/systems/audiomanager.h"
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
+#include <imgui-SFML.h>
+#include <imgui.h>
 
 Game::Game() = default;
 
@@ -22,14 +25,24 @@ void Game::run() {
 
     WindowManager windowManager(900, 900, "Joanna's Farm");
 
+    AudioManager audioManager;
+    audioManager.set_current_music(MusicId::Overworld);
+
     sf::RenderWindow& window = windowManager.getWindow();
     window.setFramerateLimit(60);
-    Controller controller(windowManager);
+    Controller controller(windowManager, audioManager);
 
     std::list<std::unique_ptr<Interactable>> interactables;
 
+    FontRenderer fontRendererDialog("assets/font/Pixellari.ttf");
+    if (!fontRendererDialog.isLoaded()) {
+        Logger::error("Failed to load font for Dialog rendering");
+    }
+
+    auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRendererDialog);
     interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 100.f }, "assets/player/npc/joe.png", "buttons/talk_T.png"
+        sf::Vector2f{ 220.f, 100.f }, "assets/player/npc/joe.png",
+        "buttons/talk_T.png", sharedDialogueBox
     ));
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
@@ -58,8 +71,9 @@ void Game::run() {
 
         float dt = clock.restart().asSeconds();
 
-        bool resetClock =
-            controller.updateStep(dt, window, collisions, interactables);
+        bool resetClock = controller.updateStep(
+            dt, window, collisions, interactables, sharedDialogueBox
+        );
         if (resetClock) {
             clock.restart();
         }
@@ -74,7 +88,8 @@ void Game::run() {
                 // world view
                 target.setView(controller.getPlayerView());
                 renderEngine.render(
-                    target, controller.getPlayer(), tileManager, interactables
+                    target, controller.getPlayer(), tileManager, interactables,
+                    sharedDialogueBox
                 );
 
                 // keep for debugging player hitbox
@@ -96,7 +111,8 @@ void Game::run() {
                 // minimap
                 target.setView(windowManager.getMiniMapView());
                 renderEngine.render(
-                    target, controller.getPlayer(), tileManager, interactables
+                    target, controller.getPlayer(), tileManager, interactables,
+                    sharedDialogueBox
                 );
 
                 // ui

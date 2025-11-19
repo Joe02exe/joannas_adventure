@@ -5,8 +5,7 @@
 Interactable::Interactable(
     const sf::FloatRect& box, const std::string& buttonTexturePath,
     const std::string& spriteTexturePath,
-    const std::optional<sf::FloatRect>& collisionBox,
-    Player::Direction direction
+    const std::optional<sf::FloatRect>& collisionBox, Direction direction
 
 )
     : Entity(

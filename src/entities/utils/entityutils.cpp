@@ -1,4 +1,4 @@
-#include "joanna/entities/animation.h"
+#include "joanna/entities/entityutils.h"
 
 #include "joanna/utils/resourcemanager.h"
 

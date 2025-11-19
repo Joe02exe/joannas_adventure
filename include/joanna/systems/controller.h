@@ -1,8 +1,10 @@
 #pragma once
 
+#include "audiomanager.h"
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/interactable.h"
 #include "joanna/entities/player.h"
+#include "joanna/utils/dialogue_box.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -10,19 +12,21 @@
 
 class Controller {
   public:
-    Controller(WindowManager& windowManager);
+    Controller(WindowManager& windowManager, AudioManager& audioManager);
 
     bool getInput(
         float dt, sf::RenderWindow& window,
         const std::vector<sf::FloatRect>& collisions,
-        std::list<std::unique_ptr<Interactable>>& interactables
+        std::list<std::unique_ptr<Interactable>>& interactables,
+        std::shared_ptr<DialogueBox> sharedDialogueBox
 
     );
 
     bool updateStep(
         float dt, sf::RenderWindow& window,
         std::vector<sf::FloatRect>& collisions,
-        std::list<std::unique_ptr<Interactable>>& interactables
+        std::list<std::unique_ptr<Interactable>>& interactables,
+        std::shared_ptr<DialogueBox> sharedDialogueBox
 
     );
 
@@ -40,6 +44,7 @@ class Controller {
 
   private:
     WindowManager* windowManager;
+    AudioManager* audioManager;
     Player player;
     sf::View playerView;
     sf::View miniMapView;
