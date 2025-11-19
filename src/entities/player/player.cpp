@@ -1,4 +1,5 @@
 #include "joanna/entities/player.h"
+#include "joanna/systems/audiomanager.h"
 
 Player::Player(
     const std::string& idlePath, const std::string& walkPath,
@@ -14,13 +15,19 @@ Player::Player(
     sprite->setPosition(startPos);
 }
 
-void Player::update(float dt, State state, bool facingLeft) {
-    facing = facingLeft ? Direction::Left : Direction::Right;
+void Player::update(
+    float dt, State state, bool movingRight, AudioManager& pManager
+) {
+    facing = movingRight ? Direction::Left : Direction::Right;
     switchState(state);
 
     frameTimer += dt;
     const auto& anim = animations[currentState];
     if (frameTimer >= anim.frameTime) {
+        if(state != State::Idle && currentFrame % 4 == 0) {
+            pManager.play_sfx(SfxId::Footstep);
+        }
+
         frameTimer -= anim.frameTime; // keep leftover time
         currentFrame = (currentFrame + 1) % anim.frames.size();
         applyFrame();

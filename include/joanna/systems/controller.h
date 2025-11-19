@@ -1,5 +1,6 @@
 #pragma once
 
+#include "audiomanager.h"
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/interactable.h"
 #include "joanna/entities/player.h"
@@ -11,7 +12,7 @@
 
 class Controller {
   public:
-    Controller(WindowManager& windowManager);
+    Controller(WindowManager& windowManager, AudioManager& audioManager);
 
     bool getInput(
         float dt, sf::RenderWindow& window,
@@ -43,6 +44,7 @@ class Controller {
 
   private:
     WindowManager* windowManager;
+    AudioManager* audioManager;
     Player player;
     sf::View playerView;
     sf::View miniMapView;

@@ -2,6 +2,7 @@
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/entityutils.h"
 #include "joanna/entities/inventory.h"
+#include "joanna/systems/audiomanager.h"
 #include "joanna/systems/menu.h"
 #include "joanna/utils/logger.h"
 
@@ -10,8 +11,10 @@
 #include <algorithm>
 #include <joanna/entities/npc.h>
 
-Controller::Controller(WindowManager& windowManager)
-    : windowManager(&windowManager), playerView(windowManager.getMainView()),
+Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
+    : windowManager(&windowManager),
+      audioManager(&audioManager),
+      playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()),
       player(
           "assets/player/main/idle.png", "assets/player/main/walk.png",
@@ -144,7 +147,7 @@ bool Controller::getInput(
     // subtract half the size of character
     player.setPosition({ playerView.getCenter().x - 48.f,
                          playerView.getCenter().y - 32.f });
-    player.update(dt, state, facingLeft);
+    player.update(dt, state, facingLeft, *audioManager);
     keyPressed = spaceDown;
     return false;
 }

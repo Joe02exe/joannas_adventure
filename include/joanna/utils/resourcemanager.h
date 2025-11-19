@@ -2,6 +2,7 @@
 
 #include "joanna/utils/logger.h"
 
+#include <SFML/Graphics/Font.hpp>
 #include <memory>
 #include <mutex>
 #include <string>

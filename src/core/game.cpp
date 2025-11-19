@@ -13,6 +13,7 @@
 
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "joanna/entities/entityutils.h"
+#include "joanna/systems/audiomanager.h"
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 #include <imgui-SFML.h>
@@ -24,9 +25,12 @@ void Game::run() {
 
     WindowManager windowManager(900, 900, "Joanna's Farm");
 
+    AudioManager audioManager;
+    audioManager.set_current_music(MusicId::Overworld);
+
     sf::RenderWindow& window = windowManager.getWindow();
     window.setFramerateLimit(60);
-    Controller controller(windowManager);
+    Controller controller(windowManager, audioManager);
 
     std::list<std::unique_ptr<Interactable>> interactables;
 

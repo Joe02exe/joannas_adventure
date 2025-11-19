@@ -7,7 +7,7 @@ project(
         LANGUAGES CXX
 )
 
-find_package(SFML CONFIG REQUIRED COMPONENTS Graphics)
+find_package(SFML CONFIG REQUIRED COMPONENTS Graphics Audio)
 find_package(spdlog CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
@@ -34,7 +34,7 @@ target_compile_definitions(main PRIVATE
 
 enable_testing()
 
-target_link_libraries(main PRIVATE SFML::Graphics)
+target_link_libraries(main PRIVATE SFML::Graphics SFML::Audio)
 
 target_link_libraries(main PRIVATE spdlog::spdlog)
 
