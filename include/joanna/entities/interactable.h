@@ -1,5 +1,6 @@
 #pragma once
 
+#include "joanna/entities/entityutils.h"
 #include "joanna/entities/interactionbutton.h"
 #include "joanna/entities/player.h"
 #include "joanna/utils/logger.h"
@@ -13,7 +14,7 @@ class Interactable {
         const sf::FloatRect& box, const std::string& buttonTexturePath,
         const std::string& spriteTexturePath,
         const std::optional<sf::FloatRect>& collisionBox = std::nullopt,
-        Player::Direction direction = Player::Direction::Right
+        Direction direction = Direction::Right
     );
 
     virtual ~Interactable() = default;
@@ -32,7 +33,7 @@ class Interactable {
 
     void setCollisionBox(const sf::FloatRect& box);
 
-    void flipFace(const Player::Direction direction);
+    void flipFace(const Direction direction);
 
     std::optional<sf::FloatRect> getCollisionBox();
 
@@ -44,6 +45,6 @@ class Interactable {
     sf::Texture texture;
     InteractionButton button;
     std::optional<sf::FloatRect> collisionBox;
-    std::optional<Player::Direction> direction;
+    std::optional<Direction> direction;
     const float interactionDistance = 16.f;
 };

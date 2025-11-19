@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./animation.h"
+#include "./entityutils.h"
 #include "./inventory.h"
 
 #include <SFML/Graphics.hpp>
@@ -10,9 +10,6 @@
 
 class Player {
   public:
-    enum class State { Idle, Walking, Running };
-    enum class Direction { Left, Right };
-
     Player(
         const std::string& idlePath, const std::string& walkPath,
         const std::string& runPath, const sf::Vector2f& startPos
