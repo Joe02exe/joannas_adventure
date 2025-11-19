@@ -1,0 +1,18 @@
+repos:
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: clang-format
+        entry: clang-format -i
+        language: system
+        args: [-style=file]  # Loads style from .clang-format file
+        files: ^(src|include/joanna)/.*\.(cpp|cc|cxx|h|hpp)$ # Limits to specific dirs and file types
+      - id: clang-tidy
+        name: clang-tidy
+        entry: clang-tidy
+        language: system
+        args:
+          - --checks=.clang-tidy
+          - -p
+          - build # Loads checks from .clang-tidy file
+        files: ^(src|include/joanna)/.*\.(cpp|cc|cxx|h|hpp)$

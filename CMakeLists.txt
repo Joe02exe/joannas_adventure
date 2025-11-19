@@ -7,6 +7,8 @@ project(
         LANGUAGES CXX
 )
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 find_package(SFML CONFIG REQUIRED COMPONENTS Graphics Audio)
 find_package(spdlog CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
