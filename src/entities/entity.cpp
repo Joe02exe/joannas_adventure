@@ -66,7 +66,6 @@ void Entity::setPosition(const sf::Vector2f& position) {
     if (!collisionBox) // if entity has no collision, we don't want to set it
         return;
     const auto& cb = *collisionBox;
-    collisionBox = sf::FloatRect{ cb.position + delta, cb.size };
 }
 
 sf::FloatRect Entity::getBoundingBox() const {
@@ -75,4 +74,12 @@ sf::FloatRect Entity::getBoundingBox() const {
 
 void Entity::setCollisionBox(sf::FloatRect newCollisionBox) {
     this->collisionBox = newCollisionBox;
+}
+
+void Entity::setFacing(Direction newDirection) {
+    this->direction = newDirection;
+}
+
+Direction Entity::getFacing() const {
+    return direction.value_or(Direction::Right);
 }

@@ -5,7 +5,8 @@ RenderEngine::RenderEngine() {}
 
 void RenderEngine::render(
     sf::RenderTarget& target, Player& player, TileManager& tileManager,
-    std::list<std::unique_ptr<Interactable>>& interactables, std::shared_ptr<DialogueBox> dialogueBox
+    std::list<std::unique_ptr<Interactable>>& interactables,
+    std::shared_ptr<DialogueBox> dialogueBox
 ) {
     const auto& m_textures = tileManager.getGroundTextures();
     const auto& m_tiles = tileManager.getTiles();
@@ -28,7 +29,7 @@ void RenderEngine::render(
     }
 
     // draw collidable/decorative tiles with player sorting
-    float playerBottom = player.getPosition().y + 32.f;
+    float playerBottom = player.getPosition().y;
     bool playerDrawn = false;
 
     // draw iteractables below player

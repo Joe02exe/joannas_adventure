@@ -1,5 +1,6 @@
 #pragma once
 
+#include "./entity.h"
 #include "./entityutils.h"
 #include "./inventory.h"
 #include "joanna/systems/audiomanager.h"
@@ -9,7 +10,7 @@
 #include <string>
 #include <unordered_map>
 
-class Player {
+class Player: public Entity {
   public:
     Player(
         const std::string& idlePath, const std::string& walkPath,
@@ -21,14 +22,9 @@ class Player {
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
 
-    void setPosition(const sf::Vector2f& pos) const;
-    sf::Vector2f getPosition() const;
-
   private:
-    std::unique_ptr<sf::Sprite> sprite; // use pointer to avoid initialization
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
-    Direction facing = Direction::Right;
     Inventory inventory = Inventory(20);
 
     float frameTimer = 0.f;
@@ -36,5 +32,4 @@ class Player {
 
     void switchState(State newState);
     void applyFrame();
-    void flipIfNeeded();
 };

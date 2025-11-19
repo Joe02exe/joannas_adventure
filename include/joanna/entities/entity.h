@@ -1,7 +1,7 @@
 #pragma once
 
+#include "./entityutils.h"
 #include "joanna/entities/interactionbutton.h"
-#include "joanna/entities/player.h"
 #include "joanna/utils/logger.h"
 #include <SFML/Graphics.hpp>
 #include <optional>
@@ -36,6 +36,10 @@ class Entity {
     void setPosition(const sf::Vector2f& position);
 
     sf::FloatRect getBoundingBox() const;
+
+    void setFacing(Direction newDirection);
+
+    Direction getFacing() const;
 
   private:
     void setCollisionBox(sf::FloatRect newCollisionBox);

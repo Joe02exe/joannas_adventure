@@ -12,8 +12,7 @@
 #include <joanna/entities/npc.h>
 
 Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
-    : windowManager(&windowManager),
-      audioManager(&audioManager),
+    : windowManager(&windowManager), audioManager(&audioManager),
       playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()),
       player(
@@ -134,19 +133,15 @@ bool Controller::getInput(
         dir *= 0.7071f; // approx 1/sqrt(2)
     }
 
-    // draw the player hitbox
-    const sf::FloatRect playerHitBox(
-        { player.getPosition().x + 48.f, player.getPosition().y + 32.f },
-        { 10.f, 8.f }
+    sf::Vector2f nextMove = moveWithCollisions(
+        dir, player.getCollisionBox().value_or(sf::FloatRect{}), collisions
     );
-
-    sf::Vector2f nextMove = moveWithCollisions(dir, playerHitBox, collisions);
     playerView.move(nextMove);
     windowManager->getMiniMapView().move(nextMove);
 
     // subtract half the size of character
-    player.setPosition({ playerView.getCenter().x - 48.f,
-                         playerView.getCenter().y - 32.f });
+    player.setPosition({ playerView.getCenter().x, playerView.getCenter().y });
+
     player.update(dt, state, facingLeft, *audioManager);
     keyPressed = spaceDown;
     return false;

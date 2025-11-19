@@ -21,7 +21,7 @@ void Interactable::renderButton(sf::RenderTarget& target) {
 
 bool Interactable::canPlayerInteract(const sf::Vector2f& playerPos) {
     sf::Vector2f pos = this->getPosition();
-    float dx = playerPos.x - pos.x + 48;
-    float dy = playerPos.y - pos.y + 32;
+    float dx = playerPos.x - pos.x;
+    float dy = playerPos.y - pos.y;
     return dx * dx + dy * dy <= interactionDistance * interactionDistance;
 }
