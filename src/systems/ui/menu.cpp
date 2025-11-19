@@ -1,4 +1,6 @@
 #include "joanna/systems/menu.h"
+
+#include "joanna/core/savegamemanager.h"
 #include "joanna/utils/logger.h"
 #include "joanna/utils/resourcemanager.h"
 
@@ -8,7 +10,9 @@
 #include <SFML/Window/Window.hpp>
 
 Menu::Menu(WindowManager& windowManager) : windowManager(windowManager) {
-    this->font = ResourceManager<sf::Font>::getInstance()->get("assets/font/minecraft.ttf");
+    this->font = ResourceManager<sf::Font>::getInstance()->get(
+        "assets/font/minecraft.ttf"
+    );
     this->font.setSmooth(false);
     pos = 0;
     pressed = theselect = false;
@@ -118,6 +122,13 @@ void Menu::loop_events() {
                 break;
             }
             if (pos == 2) {
+                SaveGameManager saveManager("joanna_save");
+                GameState state;
+                state.player.x = 10.0f;
+                state.player.y = 20.0f;
+                state.player.health = 75;
+                state.score = 1500;
+                saveManager.saveGame(state);
                 Logger::info("Save selected");
                 pressed = false;
                 theselect = false;
