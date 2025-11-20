@@ -1,5 +1,6 @@
 #include "joanna/core/savegamemanager.h"
 #include <cstdlib>
+#include "nlohmann/json.hpp"
 #include <fstream>
 
 using json = nlohmann::json;

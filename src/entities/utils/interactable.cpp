@@ -1,6 +1,5 @@
 #include "joanna/entities/interactable.h"
 #include "joanna/entities/player.h"
-#include "joanna/utils/filesystem.h"
 #include "joanna/utils/resourcemanager.h"
 
 Interactable::Interactable(
