@@ -91,6 +91,7 @@ void Game::run() {
                     target, controller.getPlayer(), tileManager, interactables,
                     sharedDialogueBox
                 );
+                // also draw a blue dot for the player position
 
                 // keep for debugging player hitbox
                 // const sf::FloatRect playerHitBox(

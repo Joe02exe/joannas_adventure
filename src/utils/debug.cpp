@@ -14,17 +14,15 @@ void DebugUI::init(sf::RenderWindow& window) {
     ImGui::GetIO().FontGlobalScale = 2.5f;
 }
 
-void DebugUI::processEvent(
-    const sf::Window& window, const sf::Event& event
-) const {
+void DebugUI::processEvent(const sf::Window& window, const sf::Event& event)
+    const {
     if (enabled) {
         ImGui::SFML::ProcessEvent(window, event);
     }
 }
 
-void DebugUI::update(
-    const float dt, sf::RenderWindow& window, Player& player
-) const {
+void DebugUI::update(const float dt, sf::RenderWindow& window, Player& player)
+    const {
     if (!enabled) {
         return;
     }
@@ -35,13 +33,21 @@ void DebugUI::update(
     ImGui::Text(
         "Player pos: %.2f, %.2f", player.getPosition().x, player.getPosition().y
     );
-    float input_x = player.getPosition().x;
-    float input_y = player.getPosition().y;
+
+    // persistent UI state so user edits aren't lost each frame
+    static float input_x = 0.f;
+    static float input_y = 0.f;
+    // sync initial values (only if not interacting)
+    if (!ImGui::IsAnyItemActive()) {
+        input_x = player.getPosition().x;
+        input_y = player.getPosition().y;
+    }
+
     if (ImGui::InputFloat("Set Player Position X", &input_x)) {
-        player.setPosition({input_x, player.getPosition().y}); // Update player position when input changes
+        player.setPosition({ input_x, player.getPosition().y });
     }
     if (ImGui::InputFloat("Set Player Position Y", &input_y)) {
-        player.setPosition({player.getPosition().x, input_y}); // Update player position when input changes
+        player.setPosition({ player.getPosition().x, input_y });
     }
     ImGui::End();
 }

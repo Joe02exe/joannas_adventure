@@ -1,30 +1,32 @@
 #include "joanna/entities/player.h"
 #include "joanna/systems/audiomanager.h"
+#include "joanna/utils/resourcemanager.h"
 
 Player::Player(
     const std::string& idlePath, const std::string& walkPath,
     const std::string& runPath, const sf::Vector2f& startPos
-){
+)
+    : Entity(
+          sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
+          ResourceManager<sf::Texture>::getInstance()->get(idlePath),
+          sf::FloatRect({ startPos.x, startPos.y }, { 10, 8 }), Direction::Right
+      ),
+      inventory(20) {
     animations[State::Idle] = Animation(idlePath, { 96, 64 });
     animations[State::Walking] = Animation(walkPath, { 96, 64 });
     animations[State::Running] = Animation(runPath, { 96, 64 });
-
-    //  Construct sprite dynamically
-    sprite = std::make_unique<sf::Sprite>(animations[State::Idle].texture);
-    sprite->setTextureRect(animations[State::Idle].frames[0]);
-    sprite->setPosition(startPos);
 }
 
 void Player::update(
     float dt, State state, bool movingRight, AudioManager& pManager
 ) {
-    facing = movingRight ? Direction::Left : Direction::Right;
+    setFacing(movingRight ? Direction::Right : Direction::Left);
     switchState(state);
 
     frameTimer += dt;
     const auto& anim = animations[currentState];
     if (frameTimer >= anim.frameTime) {
-        if(state != State::Idle && currentFrame % 4 == 0) {
+        if (state != State::Idle && currentFrame % 4 == 0) {
             pManager.play_sfx(SfxId::Footstep);
         }
 
@@ -32,23 +34,13 @@ void Player::update(
         currentFrame = (currentFrame + 1) % anim.frames.size();
         applyFrame();
     }
-    flipIfNeeded();
+    flipFace(getFacing());
 }
 
 void Player::applyFrame() {
     const auto& anim = animations[currentState];
-    sprite->setTexture(anim.texture);
-    sprite->setTextureRect(anim.frames[currentFrame]);
-}
-
-void Player::flipIfNeeded() {
-    if (facing == Direction::Left) {
-        sprite->setScale({ -1.f, 1.f });
-        sprite->setOrigin({ 96.f, 0.f });
-    } else {
-        sprite->setScale({ 1.f, 1.f });
-        sprite->setOrigin({ 0.f, 0.f });
-    }
+    setTexture(anim.texture);
+    setFrame(anim.frames[currentFrame]);
 }
 
 void Player::switchState(State newState) {
@@ -61,18 +53,12 @@ void Player::switchState(State newState) {
 }
 
 void Player::draw(sf::RenderTarget& target) const {
-    target.draw(*sprite);
+    Entity::render(target);
     inventory.draw(target);
 }
 
-void Player::setPosition(const sf::Vector2f& pos) const {
-    sprite->setPosition(pos);
-}
-
-sf::Vector2f Player::getPosition() const {
-    return sprite->getPosition();
-}
-
-void Player::addItemToInventory(const Item& item, const std::uint32_t quantity) {
+void Player::addItemToInventory(
+    const Item& item, const std::uint32_t quantity
+) {
     inventory.addItem(item, quantity);
 }

@@ -1,12 +1,10 @@
 #pragma once
 
-#include <string>
 #include <spdlog/spdlog.h>
-
-#define LOGGING_ENABLED true
+#include <string>
 
 class Logger {
-public:
+  public:
     static void info(const std::string& message);
     static void warning(const std::string& message);
     static void error(const std::string& message);

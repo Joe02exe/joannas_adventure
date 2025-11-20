@@ -8,7 +8,7 @@ NPC::NPC(
     : Interactable(
           sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
           buttonTexturePath, npcTexturePath,
-          sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 12 }),
+          sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 10 }),
           Direction::Left
       ),
       dialogueBox(dialogueBox) {
@@ -42,21 +42,13 @@ void NPC::update(
         currentFrame = (currentFrame + 1) % anim.frames.size();
         applyFrame();
     }
-    const Direction direction =
-        this->getCollisionBox().has_value() &&
-                this->getCollisionBox()->position.x < playerPos.x
-            ? Direction::Left
-            : Direction::Right;
+    const Direction direction = this->getPosition().x < playerPos.x
+                                    ? Direction::Left
+                                    : Direction::Right;
     flipFace(direction);
 
     if (dialogueBox && dialogueBox->isActive()) {
-        if (auto collisionBox = getCollisionBox()) {
-            sf::Vector2f npcCenter(
-                collisionBox->position.x + collisionBox->size.x / 2,
-                collisionBox->position.y
-            );
-            dialogueBox->update(dt, npcCenter);
-        } // This updates typewriter and bubble geometry
+        dialogueBox->update(dt, getPosition());
     }
 }
 
