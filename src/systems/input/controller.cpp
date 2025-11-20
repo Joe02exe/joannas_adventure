@@ -139,8 +139,14 @@ bool Controller::getInput(
     playerView.move(nextMove);
     windowManager->getMiniMapView().move(nextMove);
 
-    // subtract half the size of character
-    player.setPosition({ playerView.getCenter().x, playerView.getCenter().y });
+    Logger::info(
+        "Player view: ({}, {})", playerView.getCenter().x,
+        playerView.getCenter().y
+    );
+    Logger::info(
+        "Player pos: ({}, {})", player.getPosition().x, player.getPosition().y
+    );
+    player.setPosition(player.getPosition() + nextMove);
 
     player.update(dt, state, facingLeft, *audioManager);
     keyPressed = spaceDown;
@@ -155,10 +161,7 @@ bool Controller::updateStep(
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : interactables) {
         if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
-            npc->update(
-                dt, State::Idle, false,
-                { player.getPosition().x + 48.f, player.getPosition().y + 32.f }
-            );
+            npc->update(dt, State::Idle, false, player.getPosition());
         }
     }
     return getInput(dt, window, collisions, interactables, sharedDialogueBox);

@@ -1,5 +1,4 @@
 #include "joanna/entities/entity.h"
-#include "joanna/entities/player.h"
 #include "joanna/utils/resourcemanager.h"
 
 Entity::Entity(
@@ -60,20 +59,19 @@ sf::Vector2f Entity::getPosition() const {
 }
 
 void Entity::setPosition(const sf::Vector2f& position) {
+    Logger::info(
+        "Setting entity {} position to ({}, {})", id, position.x, position.y
+    );
     const sf::Vector2f delta = position - getPosition();
     sprite->setPosition(getBoundingBox().position + delta);
-    setCollisionBox({ { collisionBox->position + delta }, collisionBox->size });
     if (!collisionBox) // if entity has no collision, we don't want to set it
         return;
-    const auto& cb = *collisionBox;
+    this->collisionBox =
+        sf::FloatRect({ collisionBox->position + delta }, collisionBox->size);
 }
 
 sf::FloatRect Entity::getBoundingBox() const {
     return { sprite->getPosition(), boundingBox.size };
-}
-
-void Entity::setCollisionBox(sf::FloatRect newCollisionBox) {
-    this->collisionBox = newCollisionBox;
 }
 
 void Entity::setFacing(Direction newDirection) {

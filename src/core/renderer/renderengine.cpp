@@ -29,7 +29,7 @@ void RenderEngine::render(
     }
 
     // draw collidable/decorative tiles with player sorting
-    float playerBottom = player.getPosition().y;
+    float playerBottom = player.getCollisionBox().value().position.y;
     bool playerDrawn = false;
 
     // draw iteractables below player
@@ -65,7 +65,6 @@ void RenderEngine::render(
 
         // If the player is still not drawn (player above all tiles)
         if (!playerDrawn) {
-            Logger::info("Player drawn last in tile rendering");
             player.draw(target);
         }
 

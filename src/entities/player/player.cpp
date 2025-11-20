@@ -9,8 +9,7 @@ Player::Player(
     : Entity(
           sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
           ResourceManager<sf::Texture>::getInstance()->get(idlePath),
-          sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 12 }),
-          Direction::Right
+          sf::FloatRect({ startPos.x, startPos.y }, { 10, 8 }), Direction::Right
       ),
       inventory(20) {
     animations[State::Idle] = Animation(idlePath, { 96, 64 });

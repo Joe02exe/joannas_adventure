@@ -1,8 +1,8 @@
 #pragma once
 
-#include "./entityutils.h"
-#include "./player.h"
+#include "joanna/entities/entityutils.h"
 #include "joanna/entities/interactable.h"
+#include "joanna/entities/player.h"
 #include "joanna/utils/dialogue_box.h"
 #include <SFML/Graphics.hpp>
 #include <unordered_map>

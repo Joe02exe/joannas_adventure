@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./entityutils.h"
+#include "joanna/entities/entityutils.h"
 #include "joanna/entities/interactionbutton.h"
 #include "joanna/utils/logger.h"
 #include <SFML/Graphics.hpp>
@@ -42,7 +42,6 @@ class Entity {
     Direction getFacing() const;
 
   private:
-    void setCollisionBox(sf::FloatRect newCollisionBox);
     static inline uint32_t NEXT_ID = 1;
     const uint32_t id;
     sf::FloatRect boundingBox;

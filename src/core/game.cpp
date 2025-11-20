@@ -91,22 +91,6 @@ void Game::run() {
                     target, controller.getPlayer(), tileManager, interactables,
                     sharedDialogueBox
                 );
-
-                // render collision box of player and player position by getting
-                // these of the player in a red box
-                if (auto playerCollisionBox =
-                        controller.getPlayer().getCollisionBox()) {
-                    sf::RectangleShape collisionBoxRect;
-                    collisionBoxRect.setSize({ playerCollisionBox->size.x,
-                                               playerCollisionBox->size.y });
-                    collisionBoxRect.setPosition(
-                        { playerCollisionBox->position.x,
-                          playerCollisionBox->position.y }
-                    );
-                    collisionBoxRect.setFillColor(sf::Color(255, 0, 0, 50));
-                    target.draw(collisionBoxRect);
-                };
-
                 // also draw a blue dot for the player position
 
                 // keep for debugging player hitbox
