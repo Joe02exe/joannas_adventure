@@ -9,8 +9,8 @@ class Menu {
     int pos;
     bool pressed, theselect;
 
-    WindowManager& windowManager;
-    Controller& controller;
+    WindowManager* windowManager;
+    Controller* controller;
     sf::Font font;
     sf::Texture image;
 
@@ -25,6 +25,8 @@ class Menu {
   protected:
     void set_values();
     void loop_events();
+    void updateSelection(std::size_t newPos);
+    void handleSelection();
     void draw_all();
 
   public:

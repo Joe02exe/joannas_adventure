@@ -6,16 +6,15 @@
 
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Window.hpp>
 
-Menu::Menu(WindowManager& windowManager, Controller& controller) : windowManager(windowManager),
-                                           controller(controller) {
+Menu::Menu(WindowManager& windowManager, Controller& controller)
+    : pos(0), windowManager(&windowManager), controller(&controller) {
     this->font = ResourceManager<sf::Font>::getInstance()->get(
         "assets/font/minecraft.ttf"
     );
     this->font.setSmooth(false);
-    pos = 0;
+
     pressed = theselect = false;
 
     set_values();
@@ -34,12 +33,12 @@ void Menu::set_values() {
     // Compute total height
     float totalHeight = -spacing; // remove extra after last
     for (std::size_t i = 0; i < options.size(); ++i) {
-        totalHeight += sizes[i] + spacing;
+        totalHeight += static_cast<float>(sizes[i]) + spacing;
     }
 
     // Starting Y to vertically center
     float startY =
-        windowManager.getMainView().getCenter().y - totalHeight / 2.f;
+        windowManager->getMainView().getCenter().y - (totalHeight / 2.f);
 
     for (std::size_t i = 0; i < options.size(); ++i) {
         sf::Text text(font);
@@ -51,14 +50,14 @@ void Menu::set_values() {
         // Horizontal centering
         sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin({ bounds.size.x / 2.f, 0.f });
-        text.setPosition({ windowManager.getMainView().getCenter().x,
+        text.setPosition({ windowManager->getMainView().getCenter().x,
                            std::floor(startY) });
         Logger::info(
             "Menu option '{}' positioned at ({}, {})", options[i],
             text.getPosition().x, text.getPosition().y
         );
 
-        startY += sizes[i] + spacing;
+        startY += static_cast<float>(sizes[i]) + spacing;
 
         // Move into vector
         texts.push_back(std::move(text));
@@ -72,103 +71,104 @@ void Menu::set_values() {
 }
 
 void Menu::loop_events() {
-    while (const std::optional<sf::Event> event =
-               windowManager.getWindow().pollEvent()) {
+    auto& window = windowManager->getWindow();
+
+    while (const std::optional<sf::Event> event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
-            windowManager.getWindow().close();
+            window.close();
+            return;
         }
 
-        // windowManager.pollEvents();
-
-        pos_mouse = sf::Mouse::getPosition(windowManager.getWindow());
-        mouse_coord = windowManager.getWindow().mapPixelToCoords(pos_mouse);
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && !pressed) {
-            if (pos < 5) {
-                ++pos;
-                texts[pos].setOutlineThickness(1);
-                texts[pos - 1].setOutlineThickness(0);
-                theselect = false;
-                pressed = true;
+        // Handle navigation keys (W/S)
+        if (!pressed) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && pos < 5) {
+                updateSelection(pos + 1);
+            } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) &&
+                       pos > 1) {
+                updateSelection(pos - 1);
             }
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && !pressed) {
-            if (pos > 1) {
-                --pos;
-                texts[pos].setOutlineThickness(1);
-                texts[pos + 1].setOutlineThickness(0);
-                theselect = false;
-                pressed = true;
-            }
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) &&
-            !theselect) {
-            theselect = true;
-            Logger::info("Exit from menu");
-            break;
-        }
-
+        // Reset pressed flag if no navigation keys are pressed
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) &&
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
             pressed = false;
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter) &&
-            !theselect) {
-            theselect = true;
-            if (pos == 1) {
-                Logger::info("Play selected");
-                break;
-            }
-            if (pos == 2) {
-                SaveGameManager saveManager("joanna_save");
-                auto playerPos = controller.getPlayer().getPosition();
-                GameState state;
-                state.player.x = playerPos.x;
-                state.player.y = playerPos.y;
-                saveManager.saveGame(state);
-                Logger::info("Save selected");
-                pressed = false;
-                theselect = false;
-                break;
-            }
-            if (pos == 3) {
-                Logger::info("Options selected");
-                pressed = false;
-                theselect = false;
-                break;
-            }
-            if (pos == 4) {
-                Logger::info("About selected");
-                pressed = false;
-                theselect = false;
-                break;
-            }
-            if (pos == 5) {
-                windowManager.getWindow().close();
+        // Handle action keys (Space/Enter)
+        if (!theselect) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
+                sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter)) {
+                handleSelection();
+                break; // exit the loop after a selection
             }
         }
     }
 }
 
+// Helper to update the selection visually
+void Menu::updateSelection(const std::size_t newPos) {
+    texts[pos].setOutlineThickness(0); // deselect previous
+    pos = static_cast<int>(newPos);
+    texts[pos].setOutlineThickness(1); // select new
+    theselect = false;
+    pressed = true;
+}
+
+// Helper to handle menu selection actions
+void Menu::handleSelection() {
+    theselect = true;
+
+    switch (pos) {
+        case 1:
+            Logger::info("Play selected");
+            break;
+        case 2: {
+            const SaveGameManager saveManager;
+            auto playerPos = controller->getPlayer().getPosition();
+            GameState state;
+            state.player.x = playerPos.x;
+            state.player.y = playerPos.y;
+            saveManager.saveGame(state);
+            Logger::info("Save selected");
+            theselect = false;
+            pressed = false;
+            break;
+        }
+        case 3:
+            Logger::info("Options selected");
+            theselect = false;
+            pressed = false;
+            break;
+        case 4:
+            Logger::info("About selected");
+            theselect = false;
+            pressed = false;
+            break;
+        case 5:
+            windowManager->getWindow().close();
+            break;
+        default:
+            break;
+    }
+}
+
 void Menu::draw_all() {
-    windowManager.setView(windowManager.getMainView());
-    windowManager.getWindow().clear(sf::Color::Black);
+    windowManager->setView(windowManager->getMainView());
+    windowManager->getWindow().clear(sf::Color::Black);
 
     for (const auto& t : texts) {
-        windowManager.getWindow().draw(t);
+        windowManager->getWindow().draw(t);
     }
-    windowManager.pollEvents();
-    windowManager.getWindow().display();
+    windowManager->pollEvents();
+    windowManager->getWindow().display();
 }
 
 void Menu::show() {
-    auto tmp = windowManager.getWindow().getView();
-    while (windowManager.getWindow().isOpen() && !theselect) {
+    auto tmp = windowManager->getWindow().getView();
+    while (windowManager->getWindow().isOpen() && !theselect) {
         loop_events();
         draw_all();
     }
-    windowManager.getWindow().setView(tmp);
+    windowManager->getWindow().setView(tmp);
 }

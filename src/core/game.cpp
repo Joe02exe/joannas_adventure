@@ -53,21 +53,26 @@ void Game::run() {
 
     sf::Clock clock;
 
-    SaveGameManager manager("joanna_save");
+    Menu menu(windowManager, controller);
+    menu.show();
+
+    SaveGameManager manager;
     GameState state = manager.loadGame();
     Logger::info("Load game");
-    Logger::info("Player x: ", state.player.x);
-    Logger::info("Player y: ", state.player.y);
+    Logger::info("Player x: {}", state.player.x);
+    Logger::info("Player y: {}", state.player.y);
     controller.getPlayer().setPosition(
         sf::Vector2f(state.player.x, state.player.y)
     );
+    controller.getPlayerView().setCenter(
+        sf::Vector2f(state.player.x, state.player.y)
+    );
+    controller.getMiniMapView().setCenter(
+        sf::Vector2f(state.player.x, state.player.y)
+    );
 
-    Logger::info("Player X ", controller.getPlayer().getPosition().x);
-    Logger::info("Player Y ", controller.getPlayer().getPosition().y);
-
-    exit(0);
-    Menu menu(windowManager, controller);
-    menu.show();
+    Logger::info("Player X {}", controller.getPlayer().getPosition().x);
+    Logger::info("Player Y {}", controller.getPlayer().getPosition().y);
 
     clock.reset();
 

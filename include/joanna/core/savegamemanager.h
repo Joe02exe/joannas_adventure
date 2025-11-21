@@ -16,7 +16,7 @@ struct GameState {
 
 class SaveGameManager {
   public:
-    SaveGameManager(const std::string gameName);
+    SaveGameManager();
 
     void saveGame(const GameState& state) const;
     [[nodiscard]] GameState loadGame() const;

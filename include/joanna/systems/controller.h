@@ -30,11 +30,11 @@ class Controller {
 
     );
 
-    sf::View& getPlayerView() {
+    sf::View& getPlayerView() const {
         return playerView;
     }
 
-    sf::View& getMiniMapView() {
+    sf::View& getMiniMapView() const {
         return miniMapView;
     }
 

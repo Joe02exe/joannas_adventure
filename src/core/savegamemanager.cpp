@@ -2,14 +2,13 @@
 
 #include "joanna/utils/logger.h"
 
-#include <cstdlib>
 #include "nlohmann/json.hpp"
+#include <cstdlib>
 #include <fstream>
 
 using json = nlohmann::json;
 
-SaveGameManager::SaveGameManager(const std::string gameName)
-    : m_gameName(std::move(gameName)) {
+SaveGameManager::SaveGameManager() : m_gameName("Joanna") {
     std::filesystem::create_directories(getSaveDirectory());
 }
 
@@ -62,12 +61,11 @@ GameState SaveGameManager::loadGame() const {
         file >> j;
 
         if (j.contains("player")) {
-            Logger::warning("here");
             state.player.x = j["player"].value("x", 0.0f);
             state.player.y = j["player"].value("y", 0.0f);
         }
     }
-    Logger::info("Player x: ", state.player.x);
-    Logger::info("Player y: ", state.player.y);
+    Logger::info("Player x: {}", state.player.x);
+    Logger::info("Player y: {}", state.player.y);
     return state;
 }
