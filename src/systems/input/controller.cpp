@@ -104,7 +104,7 @@ bool Controller::getInput(
         }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-        Menu menu(*windowManager);
+        Menu menu(*windowManager, *this);
         menu.show();
         return true;
     }

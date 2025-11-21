@@ -1,5 +1,6 @@
 #pragma once
 
+#include "controller.h"
 #include "joanna/core/windowmanager.h"
 
 #include <SFML/Graphics.hpp>
@@ -9,6 +10,7 @@ class Menu {
     bool pressed, theselect;
 
     WindowManager& windowManager;
+    Controller& controller;
     sf::Font font;
     sf::Texture image;
 
@@ -26,6 +28,6 @@ class Menu {
     void draw_all();
 
   public:
-    Menu(WindowManager& windowManager);
+    Menu(WindowManager& windowManager, Controller& controller);
     void show();
 };

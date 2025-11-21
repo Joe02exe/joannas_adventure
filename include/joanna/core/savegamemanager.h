@@ -18,7 +18,7 @@ class SaveGameManager {
   public:
     SaveGameManager(const std::string gameName);
 
-    void saveGame(const GameState& state);
+    void saveGame(const GameState& state) const;
     [[nodiscard]] GameState loadGame() const;
     [[nodiscard]] bool saveExists() const;
 

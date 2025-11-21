@@ -1,4 +1,7 @@
 #include "joanna/core/savegamemanager.h"
+
+#include "joanna/utils/logger.h"
+
 #include <cstdlib>
 #include "nlohmann/json.hpp"
 #include <fstream>
@@ -38,9 +41,9 @@ bool SaveGameManager::saveExists() const {
     return std::filesystem::exists(getSaveFilePath());
 }
 
-void SaveGameManager::saveGame(const GameState& state) {
+void SaveGameManager::saveGame(const GameState& state) const {
     json j;
-    j["player"]["health"] = state.player.health;
+    // j["player"]["health"] = state.player.health;
     j["player"]["x"] = state.player.x;
     j["player"]["y"] = state.player.y;
     j["score"] = state.score;
@@ -59,11 +62,12 @@ GameState SaveGameManager::loadGame() const {
         file >> j;
 
         if (j.contains("player")) {
-            state.player.health = j["player"].value("health", 100);
+            Logger::warning("here");
             state.player.x = j["player"].value("x", 0.0f);
             state.player.y = j["player"].value("y", 0.0f);
         }
-        state.score = j.value("score", 0);
     }
+    Logger::info("Player x: ", state.player.x);
+    Logger::info("Player y: ", state.player.y);
     return state;
 }

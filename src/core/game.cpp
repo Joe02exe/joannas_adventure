@@ -12,6 +12,7 @@
 #include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "joanna/core/savegamemanager.h"
 #include "joanna/entities/entityutils.h"
 #include "joanna/systems/audiomanager.h"
 #include <SFML/System/Vector2.hpp>
@@ -59,7 +60,18 @@ void Game::run() {
 
     sf::Clock clock;
 
-    Menu menu(windowManager);
+    SaveGameManager manager("joanna_save");
+    GameState state = manager.loadGame();
+    Logger::info("Load game");
+    Logger::info("Player x: ", state.player.x);
+    Logger::info("Player y: ", state.player.y);
+    controller.getPlayer().setPosition(sf::Vector2f(state.player.x, state.player.y));
+
+    Logger::info("Player X ", controller.getPlayer().getPosition().x);
+    Logger::info("Player Y ", controller.getPlayer().getPosition().y);
+
+    exit(0);
+    Menu menu(windowManager, controller);
     menu.show();
 
     clock.reset();

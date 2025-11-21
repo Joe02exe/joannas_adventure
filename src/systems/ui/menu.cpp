@@ -9,7 +9,8 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Window.hpp>
 
-Menu::Menu(WindowManager& windowManager) : windowManager(windowManager) {
+Menu::Menu(WindowManager& windowManager, Controller& controller) : windowManager(windowManager),
+                                           controller(controller) {
     this->font = ResourceManager<sf::Font>::getInstance()->get(
         "assets/font/minecraft.ttf"
     );
@@ -123,11 +124,10 @@ void Menu::loop_events() {
             }
             if (pos == 2) {
                 SaveGameManager saveManager("joanna_save");
+                auto playerPos = controller.getPlayer().getPosition();
                 GameState state;
-                state.player.x = 10.0f;
-                state.player.y = 20.0f;
-                state.player.health = 75;
-                state.score = 1500;
+                state.player.x = playerPos.x;
+                state.player.y = playerPos.y;
                 saveManager.saveGame(state);
                 Logger::info("Save selected");
                 pressed = false;
