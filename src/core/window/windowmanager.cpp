@@ -30,6 +30,7 @@ WindowManager::WindowManager(
     DebugUI::init(window);
 
     setCenter(initialPos);
+    window.setFramerateLimit(60);
 }
 
 void WindowManager::setCenter(const sf::Vector2f& center) {

@@ -12,7 +12,6 @@
 #include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "joanna/entities/entityutils.h"
 #include "joanna/systems/audiomanager.h"
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
@@ -29,33 +28,27 @@ void Game::run() {
     audioManager.set_current_music(MusicId::Overworld);
 
     sf::RenderWindow& window = windowManager.getWindow();
-    window.setFramerateLimit(60);
     Controller controller(windowManager, audioManager);
 
     std::list<std::unique_ptr<Interactable>> interactables;
 
-    FontRenderer fontRendererDialog("assets/font/Pixellari.ttf");
-    if (!fontRendererDialog.isLoaded()) {
-        Logger::error("Failed to load font for Dialog rendering");
-    }
+    FontRenderer fontRenderer("assets/font/Pixellari.ttf");
 
-    auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRendererDialog);
+    auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
     interactables.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 220.f, 100.f }, "assets/player/npc/joe.png",
-        "buttons/talk_T.png", sharedDialogueBox
+        "assets/buttons/talk_T.png", sharedDialogueBox
     ));
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
     for (auto& entity : interactables) {
-        if (entity->getCollisionBox().has_value()) {
-            collisions.push_back(entity->getCollisionBox().value());
+        if (auto box = entity->getCollisionBox()) {
+            collisions.push_back(*box);
         }
     }
 
     RenderEngine renderEngine;
     PostProcessing postProc(900, 900);
-
-    FontRenderer fontRenderer("assets/font/minecraft.ttf");
 
     sf::Clock clock;
 
@@ -119,13 +112,12 @@ void Game::run() {
                 // ui
                 target.setView(windowManager.getDefaultView());
 
-                // target.setView(windowManager.getDefaultView());
                 fontRenderer.drawTextUI(
                     target, "Inventory UI []",
                     { std::floor(target.getView().getCenter().x - 100.f),
                       std::floor(
                           target.getView().getCenter().y +
-                          target.getSize().y / 2.f - 50.f
+                          (static_cast<float>(target.getSize().y) / 2.f) - 50.f
                       ) },
                     24
                 );
