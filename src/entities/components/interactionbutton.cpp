@@ -7,8 +7,9 @@ InteractionButton::InteractionButton(
 )
     : box({ box.position.x + box.size.x / 2 + 3.f,
             box.position.y + box.size.y / 2 + 3.f },
-          { 18.f, 19.f }) {
-    texture = ResourceManager<sf::Texture>::getInstance()->get(texturePath);
+          { 18.f, 19.f }),
+      texture(ResourceManager<sf::Texture>::getInstance()->get(texturePath)) {
+
     sprite = std::make_unique<sf::Sprite>(texture);
     sprite->setScale({ 0.5f, 0.5f });
     sprite->setPosition({ this->box.position.x, this->box.position.y });

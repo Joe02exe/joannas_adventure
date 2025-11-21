@@ -1,18 +1,12 @@
+fail_fast: false
 repos:
-  - repo: local
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
     hooks:
       - id: clang-format
-        name: clang-format
-        entry: clang-format -i
-        language: system
-        args: [-style=file]  # Loads style from .clang-format file
-        files: ^(src|include/joanna)/.*\.(cpp|cc|cxx|h|hpp)$ # Limits to specific dirs and file types
+        args: ["-style=file", "-i"]
+        files: ^(src|include/joanna)/.*\.(c|cpp|h|hpp)$
+
       - id: clang-tidy
-        name: clang-tidy
-        entry: clang-tidy
-        language: system
-        args:
-          - --checks=.clang-tidy
-          - -p
-          - build # Loads checks from .clang-tidy file
-        files: ^(src|include/joanna)/.*\.(cpp|cc|cxx|h|hpp)$
+        args: ["-p=build"]
+        files: ^(src|include/joanna)/.*\.(c|cpp|h|hpp)$

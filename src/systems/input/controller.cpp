@@ -12,16 +12,16 @@
 #include <joanna/entities/npc.h>
 
 Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
-    : windowManager(&windowManager), audioManager(&audioManager),
-      playerView(windowManager.getMainView()),
-      miniMapView(windowManager.getMiniMapView()),
+    : windowManager(windowManager), audioManager(audioManager),
       player(
           "assets/player/main/idle.png", "assets/player/main/walk.png",
           "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
-      ) {}
+      ),
+      playerView(windowManager.getMainView()),
+      miniMapView(windowManager.getMiniMapView()) {}
 
 // clang-format off
-const bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
+bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
     const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f >= box.position.x + box.size.x;
     const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f <= box.position.x;
      
@@ -61,7 +61,7 @@ bool Controller::getInput(
     float dt, sf::RenderWindow& window,
     const std::vector<sf::FloatRect>& collisions,
     std::list<std::unique_ptr<Interactable>>& interactables,
-    std::shared_ptr<DialogueBox> sharedDialogueBox
+    const std::shared_ptr<DialogueBox>& sharedDialogueBox
 
 ) {
     float factor = 30.0f;
@@ -103,7 +103,7 @@ bool Controller::getInput(
         }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-        Menu menu(*windowManager, *this);
+        Menu menu(windowManager, *this);
         menu.show();
         return true;
     }
@@ -117,7 +117,7 @@ bool Controller::getInput(
     bool anyInteractionPoissible = std::any_of(
         interactables.begin(), interactables.end(),
         [this](const auto& obj) {
-            if (auto npc = dynamic_cast<NPC*>(obj.get())) {
+            if (auto* npc = dynamic_cast<NPC*>(obj.get())) {
                 return npc->canPlayerInteract(player.getPosition());
             }
             return false;
@@ -137,7 +137,7 @@ bool Controller::getInput(
         dir, player.getCollisionBox().value_or(sf::FloatRect{}), collisions
     );
     playerView.move(nextMove);
-    windowManager->getMiniMapView().move(nextMove);
+    windowManager.getMiniMapView().move(nextMove);
 
     Logger::info(
         "Player view: ({}, {})", playerView.getCenter().x,
@@ -148,7 +148,7 @@ bool Controller::getInput(
     );
     player.setPosition(player.getPosition() + nextMove);
 
-    player.update(dt, state, facingLeft, *audioManager);
+    player.update(dt, state, facingLeft, audioManager);
     keyPressed = spaceDown;
     return false;
 }
@@ -156,7 +156,7 @@ bool Controller::getInput(
 bool Controller::updateStep(
     float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
     std::list<std::unique_ptr<Interactable>>& interactables,
-    std::shared_ptr<DialogueBox> sharedDialogueBox
+    const std::shared_ptr<DialogueBox>& sharedDialogueBox
 ) {
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : interactables) {

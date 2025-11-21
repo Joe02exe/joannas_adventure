@@ -18,7 +18,7 @@ class Controller {
         float dt, sf::RenderWindow& window,
         const std::vector<sf::FloatRect>& collisions,
         std::list<std::unique_ptr<Interactable>>& interactables,
-        std::shared_ptr<DialogueBox> sharedDialogueBox
+        const std::shared_ptr<DialogueBox>& sharedDialogueBox
 
     );
 
@@ -26,7 +26,7 @@ class Controller {
         float dt, sf::RenderWindow& window,
         std::vector<sf::FloatRect>& collisions,
         std::list<std::unique_ptr<Interactable>>& interactables,
-        std::shared_ptr<DialogueBox> sharedDialogueBox
+        const std::shared_ptr<DialogueBox>& sharedDialogueBox
 
     );
 
@@ -43,11 +43,11 @@ class Controller {
     }
 
   private:
-    WindowManager* windowManager;
-    AudioManager* audioManager;
+    WindowManager& windowManager;
+    AudioManager& audioManager;
     Player player;
-    sf::View playerView;
-    sf::View miniMapView;
+    sf::View& playerView;
+    sf::View& miniMapView;
     bool facingLeft = false;
     bool keyPressed = false;
 };
