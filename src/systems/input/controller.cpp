@@ -12,8 +12,7 @@
 #include <joanna/entities/npc.h>
 
 Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
-    : windowManager(&windowManager),
-      audioManager(&audioManager),
+    : windowManager(&windowManager), audioManager(&audioManager),
       playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()),
       player(
@@ -134,19 +133,21 @@ bool Controller::getInput(
         dir *= 0.7071f; // approx 1/sqrt(2)
     }
 
-    // draw the player hitbox
-    const sf::FloatRect playerHitBox(
-        { player.getPosition().x + 48.f, player.getPosition().y + 32.f },
-        { 10.f, 8.f }
+    sf::Vector2f nextMove = moveWithCollisions(
+        dir, player.getCollisionBox().value_or(sf::FloatRect{}), collisions
     );
-
-    sf::Vector2f nextMove = moveWithCollisions(dir, playerHitBox, collisions);
     playerView.move(nextMove);
     windowManager->getMiniMapView().move(nextMove);
 
-    // subtract half the size of character
-    player.setPosition({ playerView.getCenter().x - 48.f,
-                         playerView.getCenter().y - 32.f });
+    Logger::info(
+        "Player view: ({}, {})", playerView.getCenter().x,
+        playerView.getCenter().y
+    );
+    Logger::info(
+        "Player pos: ({}, {})", player.getPosition().x, player.getPosition().y
+    );
+    player.setPosition(player.getPosition() + nextMove);
+
     player.update(dt, state, facingLeft, *audioManager);
     keyPressed = spaceDown;
     return false;
@@ -160,10 +161,7 @@ bool Controller::updateStep(
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : interactables) {
         if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
-            npc->update(
-                dt, State::Idle, false,
-                { player.getPosition().x + 48.f, player.getPosition().y + 32.f }
-            );
+            npc->update(dt, State::Idle, false, player.getPosition());
         }
     }
     return getInput(dt, window, collisions, interactables, sharedDialogueBox);
