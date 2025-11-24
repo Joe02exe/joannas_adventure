@@ -36,7 +36,7 @@ void Game::run() {
 
     auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
     interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 100.f }, "assets/player/npc/joe.png",
+        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
         "assets/buttons/talk_T.png", sharedDialogueBox
     ));
     TileManager tileManager;

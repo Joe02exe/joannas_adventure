@@ -15,10 +15,13 @@ Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
     : windowManager(windowManager), audioManager(audioManager),
       player(
           "assets/player/main/idle.png", "assets/player/main/walk.png",
-          "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
+          "assets/player/main/run.png", sf::Vector2f{ 150.f, 400.f }
       ),
       playerView(windowManager.getMainView()),
-      miniMapView(windowManager.getMiniMapView()) {}
+      miniMapView(windowManager.getMiniMapView()) {
+        playerView.setCenter(player.getPosition());
+        miniMapView.setCenter(player.getPosition());
+      }
 
 // clang-format off
 bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
@@ -110,7 +113,7 @@ bool Controller::getInput(
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
             sharedDialogueBox->nextLine(
-            ); // Advances to next line or closes dialogue
+            );
         }
     }
 
