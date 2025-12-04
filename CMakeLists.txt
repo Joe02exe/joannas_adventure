@@ -11,7 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(SFML CONFIG REQUIRED COMPONENTS Graphics Audio)
 find_package(spdlog CONFIG REQUIRED)
-find_package(RapidJSON CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
 
 find_package(GTest CONFIG REQUIRED)
@@ -40,7 +40,7 @@ target_link_libraries(main PRIVATE SFML::Graphics SFML::Audio)
 
 target_link_libraries(main PRIVATE spdlog::spdlog)
 
-target_link_libraries(main PRIVATE rapidjson)
+target_link_libraries(main PRIVATE nlohmann_json::nlohmann_json)
 
 target_link_libraries(main PRIVATE ImGui-SFML::ImGui-SFML)
 

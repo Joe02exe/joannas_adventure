@@ -1,6 +1,7 @@
 #include "joanna/entities/inventory.h"
 
 #include "joanna/utils/resourcemanager.h"
+#include "joanna/world/tilemanager.h"
 
 #include <algorithm>
 #include <utility>
@@ -124,7 +125,7 @@ std::size_t Inventory::slotsUsedUnlocked() const {
             slots += 1;
         } else {
             slots += kv.second.quantity;
-}
+        }
     }
     return slots;
 }
@@ -155,4 +156,119 @@ void Inventory::draw(sf::RenderTarget& target) const {
     target.setView(target.getDefaultView());
     target.draw(text);
     target.setView(view);
+}
+
+void Inventory::displayInventory(
+    sf::RenderTarget& target, TileManager& tileManager
+) {
+
+    // Lock inventory for safe read
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    // Convert unordered_map to vector for display order
+    std::vector<StoredItem> vec;
+    vec.reserve(items_.size());
+    for (const auto& p : items_)
+        vec.push_back(p.second);
+
+    //--------------------------------------------
+    // Layout configuration
+    //--------------------------------------------
+    const std::size_t columns = 8;
+    const float slotSize = 64.f;
+    const float padding = 6.f;
+    // Outer background
+    std::size_t itemCount = vec.size();
+    std::size_t rows = (itemCount + columns - 1) / columns;
+    float totalWidth =
+        columns * slotSize + padding * (columns - 1) + 2 * padding;
+    float totalHeight = static_cast<float>(rows) * slotSize +
+                        padding * (static_cast<float>(rows) - 1) + 2 * padding;
+
+    const sf::Vector2f startPos(0.f, 0.f);
+
+    sf::RectangleShape bg({ totalWidth, totalHeight });
+    bg.setPosition(startPos - sf::Vector2f(padding, padding));
+    bg.setFillColor(sf::Color(25, 25, 25, 200));
+    bg.setOutlineThickness(1.f);
+    bg.setOutlineColor(sf::Color(180, 180, 180, 120));
+    target.draw(bg);
+
+    //--------------------------------------------
+    // Draw items
+    //--------------------------------------------
+    for (std::size_t i = 0; i < itemCount; ++i) {
+        std::size_t col = i % columns;
+        std::size_t row = i / columns;
+
+        sf::Vector2f slotPos{
+            startPos.x + static_cast<float>(col) * (slotSize + padding),
+            startPos.y + static_cast<float>(row) * (slotSize + padding)
+        };
+
+        // Slot rectangle
+        sf::RectangleShape slot({ slotSize, slotSize });
+        slot.setPosition(slotPos);
+        slot.setFillColor(sf::Color(40, 40, 40, 200));
+        slot.setOutlineThickness(1.f);
+        slot.setOutlineColor(sf::Color(120, 120, 120, 200));
+        target.draw(slot);
+
+        const StoredItem& st = vec[i];
+
+        //----------------------------------------
+        // Item name (top centered)
+        //----------------------------------------
+        sf::Text name(font);
+        name.setString(st.item.name);
+        name.setCharacterSize(14);
+        name.setFillColor(sf::Color::White);
+
+        sf::FloatRect tb = name.getLocalBounds();
+        name.setOrigin({ tb.position.y + tb.size.y / 2.f, tb.position.x });
+        name.setPosition({ slotPos.x + slotSize / 2.f, slotPos.y + 4.f });
+
+        target.draw(name);
+
+        //----------------------------------------
+        // Quantity (bottom-right)
+        //----------------------------------------
+        if (st.quantity > 1) {
+            sf::Text qText(font);
+            qText.setString(std::to_string(st.quantity));
+            qText.setCharacterSize(16);
+            sf::Text shadow = qText;
+
+            qText.setFillColor(sf::Color::White);
+            shadow.setFillColor(sf::Color(0, 0, 0, 200));
+
+            sf::FloatRect qb = qText.getLocalBounds();
+            sf::Vector2f pos({ slotPos.x + slotSize - qb.size.y - 6.f -
+                                   qb.position.y,
+                               slotPos.y + slotSize - qb.size.x - 6.f });
+
+            shadow.setPosition(pos + sf::Vector2f(1.f, 1.f));
+            qText.setPosition(pos);
+
+            target.draw(shadow);
+            target.draw(qText);
+        }
+
+        //----------------------------------------
+        // Simple visual icon (colored square)
+        //   (You can replace this with actual textures later)
+        //----------------------------------------
+        // sf::RectangleShape icon({ slotSize * 0.5f, slotSize * 0.5f });
+
+        sf::Sprite icon = tileManager.getTextureById(691);
+
+        float scale = (slotSize * 0.5f) / 16.f;
+        icon.setScale({ scale, scale });
+        icon.setScale({ (slotSize * 0.5f) / icon.getLocalBounds().size.y,
+                        (slotSize * 0.5f) / icon.getLocalBounds().size.x });
+        icon.setPosition({ slotPos.x + (slotSize - (16.f * scale)) / 2.f,
+                           slotPos.y + (slotSize - (16.f * scale)) / 2.f + 8.f }
+        );
+        target.draw(icon);
+    }
 }

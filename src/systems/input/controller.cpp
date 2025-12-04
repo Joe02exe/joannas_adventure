@@ -1,4 +1,5 @@
 #include "joanna/systems/controller.h"
+
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/entityutils.h"
 #include "joanna/entities/inventory.h"
@@ -64,8 +65,8 @@ bool Controller::getInput(
     float dt, sf::RenderWindow& window,
     const std::vector<sf::FloatRect>& collisions,
     std::list<std::unique_ptr<Interactable>>& interactables,
-    const std::shared_ptr<DialogueBox>& sharedDialogueBox
-
+    const std::shared_ptr<DialogueBox>& sharedDialogueBox,
+    TileManager& tileManager, RenderEngine& renderEngine
 ) {
     float factor = 30.0f;
 
@@ -94,9 +95,17 @@ bool Controller::getInput(
         dir *= 1.5f;
         state = State::Running;
     }
+    bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
+    if (eDown && !keyPressed) {
+        Logger::info("Inventory opened");
+        displayInventory = !displayInventory;
+    }
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
-        player.addItemToInventory(Item("test", "test"));
+        player.addItemToInventory(
+            Item("test_" + std::to_string(counter), "test")
+        );
+        counter++;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
         for (auto& entity : interactables) {
@@ -106,8 +115,11 @@ bool Controller::getInput(
         }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-        Menu menu(windowManager);
-        menu.show();
+        Menu menu(windowManager, *this);
+        menu.show(
+            renderEngine, tileManager, interactables, sharedDialogueBox,
+            audioManager
+        );
         return true;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
@@ -142,24 +154,26 @@ bool Controller::getInput(
     playerView.move(nextMove);
     windowManager.getMiniMapView().move(nextMove);
 
-    Logger::info(
-        "Player view: ({}, {})", playerView.getCenter().x,
-        playerView.getCenter().y
-    );
-    Logger::info(
-        "Player pos: ({}, {})", player.getPosition().x, player.getPosition().y
-    );
+    // Logger::info(
+    //     "Player view: ({}, {})", playerView.getCenter().x,
+    //     playerView.getCenter().y
+    // );
+    // Logger::info(
+    //     "Player pos: ({}, {})", player.getPosition().x,
+    //     player.getPosition().y
+    // );
     player.setPosition(player.getPosition() + nextMove);
 
     player.update(dt, state, facingLeft, audioManager);
-    keyPressed = spaceDown;
+    keyPressed = spaceDown || eDown;
     return false;
 }
 
 bool Controller::updateStep(
     float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
     std::list<std::unique_ptr<Interactable>>& interactables,
-    const std::shared_ptr<DialogueBox>& sharedDialogueBox
+    const std::shared_ptr<DialogueBox>& sharedDialogueBox,
+    TileManager& tileManager, RenderEngine& renderEngine
 ) {
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : interactables) {
@@ -167,5 +181,8 @@ bool Controller::updateStep(
             npc->update(dt, State::Idle, false, player.getPosition());
         }
     }
-    return getInput(dt, window, collisions, interactables, sharedDialogueBox);
+    return getInput(
+        dt, window, collisions, interactables, sharedDialogueBox, tileManager,
+        renderEngine
+    );
 }
