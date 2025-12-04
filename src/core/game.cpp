@@ -12,6 +12,7 @@
 #include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "joanna/core/savegamemanager.h"
 #include "joanna/systems/audiomanager.h"
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
@@ -52,8 +53,29 @@ void Game::run() {
 
     sf::Clock clock;
 
-    Menu menu(windowManager);
-    menu.show();
+    Menu menu(windowManager, controller);
+    menu.show(
+        renderEngine, tileManager, interactables, sharedDialogueBox,
+        audioManager
+    );
+
+    SaveGameManager manager;
+    GameState state = manager.loadGame();
+    Logger::info("Load game");
+    Logger::info("Player x: {}", state.player.x);
+    Logger::info("Player y: {}", state.player.y);
+    controller.getPlayer().setPosition(
+        sf::Vector2f(state.player.x, state.player.y)
+    );
+    controller.getPlayerView().setCenter(
+        sf::Vector2f(state.player.x, state.player.y)
+    );
+    controller.getMiniMapView().setCenter(
+        sf::Vector2f(state.player.x, state.player.y)
+    );
+
+    Logger::info("Player X {}", controller.getPlayer().getPosition().x);
+    Logger::info("Player Y {}", controller.getPlayer().getPosition().y);
 
     clock.reset();
 
@@ -65,7 +87,8 @@ void Game::run() {
         float dt = clock.restart().asSeconds();
 
         bool resetClock = controller.updateStep(
-            dt, window, collisions, interactables, sharedDialogueBox
+            dt, window, collisions, interactables, sharedDialogueBox,
+            tileManager, renderEngine
         );
         if (resetClock) {
             clock.restart();
@@ -109,9 +132,15 @@ void Game::run() {
                     sharedDialogueBox
                 );
 
-                // ui
+                // inventory
                 target.setView(windowManager.getDefaultView());
+                if (controller.renderInventory()) {
+                    controller.getPlayer().getInventory().displayInventory(
+                        target, tileManager
+                    );
+                }
 
+                // ui
                 fontRenderer.drawTextUI(
                     target, "Inventory UI []",
                     { std::floor(target.getView().getCenter().x - 100.f),
