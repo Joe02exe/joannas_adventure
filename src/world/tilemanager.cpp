@@ -11,7 +11,7 @@
 
 TileManager::TileManager()
     : tsonParser(), m_currentMap(nullptr), m_textures(), m_tiles() {
-    if (!loadMap("./assets/environment/map/map_village3.json")) {
+    if (!loadMap("./assets/environment/map/newmap.json")) {
         Logger::error("Failed to load map!");
     }
     Logger::info("Map loaded successfully");
@@ -64,8 +64,10 @@ sf::FloatRect calculatePixelRect(
 
     for (int y = 0; y < texRect.size.y; ++y) {
         for (int x = 0; x < texRect.size.x; ++x) {
-            sf::Color c = img.getPixel({ static_cast<unsigned int>(texRect.position.x + x),
-                                         static_cast<unsigned int>(texRect.position.y + y )});
+            sf::Color c = img.getPixel(
+                { static_cast<unsigned int>(texRect.position.x + x),
+                  static_cast<unsigned int>(texRect.position.y + y) }
+            );
             if (c.a > 0) { // if pixel is not transparent
                 hasOpaque = true;
                 if (x < left)
