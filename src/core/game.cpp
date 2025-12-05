@@ -65,6 +65,14 @@ void Game::run() {
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
         "assets/buttons/talk_T.png", sharedDialogueBox
     ));
+
+    interactables.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 160.f, 110.f }, 
+        "assets/player/npc/Pirat.png",
+        "assets/buttons/talk_T.png", 
+        sharedDialogueBox
+    ));
+
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
     for (auto& entity : interactables) {
