@@ -40,15 +40,49 @@ class Inventory {
 
     void setCapacity(std::size_t cap);
     void draw(sf::RenderTarget& target) const;
-    void displayInventory(sf::RenderTarget& target, TileManager& tileManager);
+
+    void drawSlot(
+        sf::RenderTarget& target, float slotSize, float padding,
+        sf::Vector2f startPos, std::size_t i, std::size_t col, std::size_t row,
+        sf::Vector2f& slotPos
+    ) const;
+
+    void drawItemName(
+        sf::RenderTarget& target, float slotSize, sf::Vector2f slotPos,
+        StoredItem& st
+    ) const;
+
+    void drawItemQuantity(
+        sf::RenderTarget& target, float slotSize, sf::Vector2f slotPos,
+        StoredItem& st
+    ) const;
+
+    void drawItemSprite(
+        sf::RenderTarget& target, TileManager& tileManager, float slotSize,
+        sf::Vector2f slotPos, StoredItem& st
+    ) const;
+
+    void drawItems(
+        sf::RenderTarget& target, TileManager& tileManager,
+        std::vector<StoredItem> vec, std::size_t columns, float slotSize,
+        float padding, std::size_t itemCount, sf::Vector2f startPos
+    ) const;
+
+    void
+    displayInventory(sf::RenderTarget& target, TileManager& tileManager) const;
 
     std::size_t capacity() const;
+
+    std::unordered_map<int, std::string> mapGidToName() const {
+        return idToString;
+    }
 
   private:
     // Internal helpers assume mutex held
     std::size_t slotsUsedUnlocked() const;
     sf::Font font;
-    mutable std::mutex mutex_;
     std::unordered_map<std::string, StoredItem> items_;
     std::size_t capacity_;
+    std::unordered_map<int, std::string> idToString = { { 691, "carrot" },
+                                                        { 3050, "sword" } };
 };

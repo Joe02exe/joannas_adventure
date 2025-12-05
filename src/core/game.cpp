@@ -14,6 +14,8 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "joanna/core/savegamemanager.h"
 #include "joanna/systems/audiomanager.h"
+#include "joanna/utils/resourcemanager.h"
+
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 #include <imgui-SFML.h>
@@ -139,17 +141,6 @@ void Game::run() {
                         target, tileManager
                     );
                 }
-
-                // ui
-                fontRenderer.drawTextUI(
-                    target, "Inventory UI []",
-                    { std::floor(target.getView().getCenter().x - 100.f),
-                      std::floor(
-                          target.getView().getCenter().y +
-                          (static_cast<float>(target.getSize().y) / 2.f) - 50.f
-                      ) },
-                    24
-                );
             },
             nullptr
         );

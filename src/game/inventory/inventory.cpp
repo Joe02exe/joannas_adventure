@@ -23,8 +23,6 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
     if (quantity == 0) {
         return 0;
     }
-    std::lock_guard<std::mutex> lk(mutex_);
-
     const std::size_t usedSlots = slotsUsedUnlocked();
 
     const auto it = items_.find(item.id);
@@ -64,7 +62,6 @@ Inventory::removeItem(const std::string& id, std::uint32_t quantity) {
     if (quantity == 0) {
         return 0;
     }
-    std::lock_guard<std::mutex> lk(mutex_);
     const auto it = items_.find(id);
     if (it == items_.end()) {
         return 0;
@@ -79,23 +76,19 @@ Inventory::removeItem(const std::string& id, std::uint32_t quantity) {
 }
 
 bool Inventory::hasItem(const std::string& id) const {
-    std::lock_guard<std::mutex> lk(mutex_);
     return items_.find(id) != items_.end();
 }
 
 std::uint32_t Inventory::getQuantity(const std::string& id) const {
-    std::lock_guard<std::mutex> lk(mutex_);
     auto it = items_.find(id);
     return (it == items_.end()) ? 0u : it->second.quantity;
 }
 
 std::size_t Inventory::slotsUsed() const {
-    std::lock_guard<std::mutex> lk(mutex_);
     return slotsUsedUnlocked();
 }
 
 std::vector<StoredItem> Inventory::listItems() const {
-    std::lock_guard<std::mutex> lk(mutex_);
     std::vector<StoredItem> out;
     out.reserve(items_.size());
     for (const auto& [fst, snd] : items_) {
@@ -105,12 +98,10 @@ std::vector<StoredItem> Inventory::listItems() const {
 }
 
 void Inventory::clear() {
-    std::lock_guard<std::mutex> lk(mutex_);
     items_.clear();
 }
 
 void Inventory::setCapacity(std::size_t cap) {
-    std::lock_guard<std::mutex> lk(mutex_);
     capacity_ = cap;
 }
 
@@ -158,12 +149,108 @@ void Inventory::draw(sf::RenderTarget& target) const {
     target.setView(view);
 }
 
+void Inventory::drawSlot(
+    sf::RenderTarget& target, const float slotSize, const float padding,
+    const sf::Vector2f startPos, std::size_t i, std::size_t col,
+    std::size_t row, sf::Vector2f& slotPos
+) const {
+    slotPos = { startPos.x + static_cast<float>(col) * (slotSize + padding),
+                startPos.y + static_cast<float>(row) * (slotSize + padding) };
+
+    // Slot rectangle
+    sf::RectangleShape slot({ slotSize, slotSize });
+    slot.setPosition(slotPos);
+    slot.setFillColor(sf::Color(40, 40, 40, 200));
+    slot.setOutlineThickness(1.f);
+    slot.setOutlineColor(sf::Color(120, 120, 120, 200));
+    target.draw(slot);
+}
+
+void Inventory::drawItemName(
+    sf::RenderTarget& target, const float slotSize, sf::Vector2f slotPos,
+    StoredItem& st
+) const {
+    sf::Text name(font);
+    name.setString(st.item.name);
+    name.setCharacterSize(14);
+    name.setFillColor(sf::Color::White);
+
+    sf::FloatRect tb = name.getLocalBounds();
+    name.setOrigin({ tb.position.x + tb.size.x / 2.f, tb.position.y });
+    name.setPosition({ slotPos.x + slotSize / 2.f, slotPos.y + 4.f });
+
+    target.draw(name);
+}
+
+void Inventory::drawItemQuantity(
+    sf::RenderTarget& target, const float slotSize, sf::Vector2f slotPos,
+    StoredItem& st
+) const {
+    if (st.quantity > 1) {
+        sf::Text qText(font);
+        qText.setString(std::to_string(st.quantity));
+        qText.setCharacterSize(16);
+        sf::Text shadow = qText;
+
+        qText.setFillColor(sf::Color::White);
+        shadow.setFillColor(sf::Color(0, 0, 0, 200));
+
+        sf::FloatRect qb = qText.getLocalBounds();
+        sf::Vector2f pos({ slotPos.x + slotSize - qb.size.y - 6.f -
+                               qb.position.y,
+                           slotPos.y + slotSize - qb.size.x - 6.f });
+
+        shadow.setPosition(pos + sf::Vector2f(1.f, 1.f));
+        qText.setPosition(pos);
+
+        target.draw(shadow);
+        target.draw(qText);
+    }
+}
+
+void Inventory::drawItemSprite(
+    sf::RenderTarget& target, TileManager& tileManager, const float slotSize,
+    sf::Vector2f slotPos, StoredItem& st
+) const {
+    sf::Sprite icon = tileManager.getTextureById(std::stoi(st.item.id));
+
+    auto bounds = icon.getLocalBounds();
+    float targetSize = slotSize * 0.5f;
+    float scale = targetSize / bounds.size.x; // assuming square icon
+
+    icon.setScale({ scale, scale });
+    icon.setPosition({ slotPos.x + (slotSize - (16.f * scale)) / 2.f,
+                       slotPos.y + (slotSize - (16.f * scale)) / 2.f + 8.f });
+    Logger::info(
+        "Draw icon at position ({}, {})", icon.getPosition().x,
+        icon.getPosition().y
+    );
+    target.draw(icon);
+}
+
+void Inventory::drawItems(
+    sf::RenderTarget& target, TileManager& tileManager,
+    std::vector<StoredItem> vec, const std::size_t columns,
+    const float slotSize, const float padding, std::size_t itemCount,
+    const sf::Vector2f startPos
+) const {
+    for (std::size_t i = 0; i < itemCount; ++i) {
+        const std::size_t col = i % columns;
+        const std::size_t row = i / columns;
+
+        sf::Vector2f slotPos;
+        StoredItem& st = vec[i];
+
+        drawSlot(target, slotSize, padding, startPos, i, col, row, slotPos);
+        drawItemName(target, slotSize, slotPos, st);
+        drawItemQuantity(target, slotSize, slotPos, st);
+        drawItemSprite(target, tileManager, slotSize, slotPos, st);
+    }
+}
+
 void Inventory::displayInventory(
     sf::RenderTarget& target, TileManager& tileManager
-) {
-
-    // Lock inventory for safe read
-    std::lock_guard<std::mutex> lock(mutex_);
+) const {
 
     // Convert unordered_map to vector for display order
     std::vector<StoredItem> vec;
@@ -171,21 +258,21 @@ void Inventory::displayInventory(
     for (const auto& p : items_)
         vec.push_back(p.second);
 
-    //--------------------------------------------
-    // Layout configuration
-    //--------------------------------------------
     const std::size_t columns = 8;
     const float slotSize = 64.f;
     const float padding = 6.f;
     // Outer background
     std::size_t itemCount = vec.size();
-    std::size_t rows = (itemCount + columns - 1) / columns;
+    std::size_t rows = (itemCount + columns) / columns;
     float totalWidth =
         columns * slotSize + padding * (columns - 1) + 2 * padding;
     float totalHeight = static_cast<float>(rows) * slotSize +
                         padding * (static_cast<float>(rows) - 1) + 2 * padding;
 
-    const sf::Vector2f startPos(0.f, 0.f);
+    const sf::Vector2f startPos(
+        (target.getDefaultView().getSize().x - totalWidth) / 2,
+        target.getDefaultView().getSize().y - totalHeight
+    );
 
     sf::RectangleShape bg({ totalWidth, totalHeight });
     bg.setPosition(startPos - sf::Vector2f(padding, padding));
@@ -194,81 +281,8 @@ void Inventory::displayInventory(
     bg.setOutlineColor(sf::Color(180, 180, 180, 120));
     target.draw(bg);
 
-    //--------------------------------------------
-    // Draw items
-    //--------------------------------------------
-    for (std::size_t i = 0; i < itemCount; ++i) {
-        std::size_t col = i % columns;
-        std::size_t row = i / columns;
-
-        sf::Vector2f slotPos{
-            startPos.x + static_cast<float>(col) * (slotSize + padding),
-            startPos.y + static_cast<float>(row) * (slotSize + padding)
-        };
-
-        // Slot rectangle
-        sf::RectangleShape slot({ slotSize, slotSize });
-        slot.setPosition(slotPos);
-        slot.setFillColor(sf::Color(40, 40, 40, 200));
-        slot.setOutlineThickness(1.f);
-        slot.setOutlineColor(sf::Color(120, 120, 120, 200));
-        target.draw(slot);
-
-        const StoredItem& st = vec[i];
-
-        //----------------------------------------
-        // Item name (top centered)
-        //----------------------------------------
-        sf::Text name(font);
-        name.setString(st.item.name);
-        name.setCharacterSize(14);
-        name.setFillColor(sf::Color::White);
-
-        sf::FloatRect tb = name.getLocalBounds();
-        name.setOrigin({ tb.position.y + tb.size.y / 2.f, tb.position.x });
-        name.setPosition({ slotPos.x + slotSize / 2.f, slotPos.y + 4.f });
-
-        target.draw(name);
-
-        //----------------------------------------
-        // Quantity (bottom-right)
-        //----------------------------------------
-        if (st.quantity > 1) {
-            sf::Text qText(font);
-            qText.setString(std::to_string(st.quantity));
-            qText.setCharacterSize(16);
-            sf::Text shadow = qText;
-
-            qText.setFillColor(sf::Color::White);
-            shadow.setFillColor(sf::Color(0, 0, 0, 200));
-
-            sf::FloatRect qb = qText.getLocalBounds();
-            sf::Vector2f pos({ slotPos.x + slotSize - qb.size.y - 6.f -
-                                   qb.position.y,
-                               slotPos.y + slotSize - qb.size.x - 6.f });
-
-            shadow.setPosition(pos + sf::Vector2f(1.f, 1.f));
-            qText.setPosition(pos);
-
-            target.draw(shadow);
-            target.draw(qText);
-        }
-
-        //----------------------------------------
-        // Simple visual icon (colored square)
-        //   (You can replace this with actual textures later)
-        //----------------------------------------
-        // sf::RectangleShape icon({ slotSize * 0.5f, slotSize * 0.5f });
-
-        sf::Sprite icon = tileManager.getTextureById(691);
-
-        float scale = (slotSize * 0.5f) / 16.f;
-        icon.setScale({ scale, scale });
-        icon.setScale({ (slotSize * 0.5f) / icon.getLocalBounds().size.y,
-                        (slotSize * 0.5f) / icon.getLocalBounds().size.x });
-        icon.setPosition({ slotPos.x + (slotSize - (16.f * scale)) / 2.f,
-                           slotPos.y + (slotSize - (16.f * scale)) / 2.f + 8.f }
-        );
-        target.draw(icon);
-    }
+    drawItems(
+        target, tileManager, vec, columns, slotSize, padding, itemCount,
+        startPos
+    );
 }

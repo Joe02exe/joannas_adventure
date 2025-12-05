@@ -287,7 +287,7 @@ void Menu::render(
 
     render_engine.render(
         windowManager->getWindow(), controller->getPlayer(), tileManager,
-        interactable, std::move(dialogueBox)
+        interactable, dialogueBox
     );
 
     for (std::size_t i = 0; i < texts.size(); ++i) {

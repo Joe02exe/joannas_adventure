@@ -20,9 +20,9 @@ Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
       ),
       playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()) {
-        playerView.setCenter(player.getPosition());
-        miniMapView.setCenter(player.getPosition());
-      }
+    playerView.setCenter(player.getPosition());
+    miniMapView.setCenter(player.getPosition());
+}
 
 // clang-format off
 bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
@@ -102,10 +102,22 @@ bool Controller::getInput(
     }
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
-        player.addItemToInventory(
-            Item("test_" + std::to_string(counter), "test")
-        );
-        counter++;
+        for (auto& item : tileManager.getRenderObjects()) {
+            auto playerPos = player.getPosition();
+            auto itemPos = item.position;
+            float dx = playerPos.x - static_cast<float>(itemPos.x);
+            float dy = playerPos.y - static_cast<float>(itemPos.y);
+            if (dx * dx + dy * dy <= 16.f * 16.f) {
+                if (tileManager.removeObjectById(static_cast<int>(item.id))) {
+                    auto map = player.getInventory().mapGidToName();
+                    player.addItemToInventory(Item(
+                        std::to_string(item.gid),
+                        map[static_cast<int>(item.gid)]
+                    ));
+                    break;
+                }
+            }
+        }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
         for (auto& entity : interactables) {
@@ -124,8 +136,7 @@ bool Controller::getInput(
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
-            sharedDialogueBox->nextLine(
-            );
+            sharedDialogueBox->nextLine();
         }
     }
 

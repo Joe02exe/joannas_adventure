@@ -22,11 +22,16 @@ struct TileRenderInfo {
 
 struct RenderObject {
     uint32_t id = 0;
+    uint32_t gid = 0;
     sf::Vector2i position;
     sf::Sprite sprite; // renamed from 'texture' for clarity
 
     // Explicit default constructor
-    RenderObject(const uint32_t id, const sf::Vector2i pos, sf::Sprite sprite) : id(id), position(pos), sprite(std::move(sprite)) {
+    RenderObject(
+        const uint32_t id, uint32_t gid, const sf::Vector2i pos,
+        sf::Sprite sprite
+    )
+        : id(id), gid(gid), position(pos), sprite(std::move(sprite)) {
         // sf::Sprite is automatically default constructed here
     }
 };
@@ -57,11 +62,17 @@ class TileManager {
         return m_collidables;
     }
 
+    [[nodiscard]] const std::vector<RenderObject>& getRenderObjects() const {
+        return m_objects;
+    }
+
     [[nodiscard]] const std::vector<TileRenderInfo>& getOverlayTiles() const {
         return m_overlayTiles;
     }
 
     sf::Sprite getTextureById(int id);
+
+    bool removeObjectById(int id);
 
   private:
     void processLayer(const std::string& layerName);
