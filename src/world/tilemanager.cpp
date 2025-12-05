@@ -11,7 +11,7 @@
 
 TileManager::TileManager()
     : tsonParser(), m_currentMap(nullptr), m_textures(), m_tiles() {
-    if (!loadMap("./assets/environment/map/map_village3.json")) {
+    if (!loadMap("./assets/environment/map/newmap.json")) {
         Logger::error("Failed to load map!");
     }
     Logger::info("Map loaded successfully");

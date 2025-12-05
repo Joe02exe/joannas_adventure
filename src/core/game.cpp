@@ -12,6 +12,8 @@
 #include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Texture.hpp"
 #include "joanna/core/savegamemanager.h"
 #include "joanna/systems/audiomanager.h"
 #include <SFML/System/Vector2.hpp>
@@ -24,6 +26,29 @@ Game::Game() = default;
 void Game::run() {
 
     WindowManager windowManager(900, 900, "Joanna's Farm");
+
+    // temporal loading screen (font is still not the same as in the final
+    // version)
+    sf::Texture loadingTexture;
+    if (loadingTexture.loadFromFile("assets/images/loading.gif")) {
+        sf::Sprite loadingSprite(loadingTexture);
+
+        // Scale sprite to fit window size
+        sf::Vector2u windowSize = windowManager.getWindow().getSize();
+        sf::Vector2u textureSize = loadingTexture.getSize();
+
+        float scaleX = static_cast<float>(windowSize.x) /
+                       static_cast<float>(textureSize.x);
+        float scaleY = static_cast<float>(windowSize.y) /
+                       static_cast<float>(textureSize.y);
+
+        loadingSprite.setScale({ scaleX, scaleY });
+        loadingSprite.setPosition({ 0.f, 0.f });
+
+        windowManager.getWindow().clear();
+        windowManager.getWindow().draw(loadingSprite);
+        windowManager.getWindow().display();
+    }
 
     AudioManager audioManager;
     audioManager.set_current_music(MusicId::Overworld);
