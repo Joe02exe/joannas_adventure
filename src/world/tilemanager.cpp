@@ -11,7 +11,7 @@
 
 TileManager::TileManager()
     : tsonParser(), m_currentMap(nullptr), m_textures(), m_tiles() {
-    if (!loadMap("./assets/environment/map/map_village3.json")) {
+    if (!loadMap("./assets/environment/map/map_village4.json")) {
         Logger::error("Failed to load map!");
     }
     Logger::info("Map loaded successfully");
@@ -34,6 +34,7 @@ bool TileManager::loadMap(const std::string& path) {
     processLayer("decorations");
     processLayer("decoration_overlay");
     processLayer("overlay");
+    processLayer("items");
 
     // Sort all collidable tiles by bottom y + offset
     std::stable_sort(
@@ -97,8 +98,18 @@ void TileManager::processLayer(const std::string& layerName) {
     if (!m_currentMap) {
         return;
     }
+    Logger::info("Layer {}", layerName);
 
     tson::Layer* layer = m_currentMap->getLayer(layerName);
+    if (layer->getType() == tson::LayerType::ObjectGroup)
+    {
+        for (auto &obj : layer->getObjects())
+        {
+            RenderObject object(obj.getGid(), {obj.getPosition().x, obj.getPosition().y}, getTextureById(obj.getGid()));
+            m_objects.push_back(object);
+        }
+    }
+
     if (!layer || layer->getType() != tson::LayerType::TileLayer) {
         return;
     }
