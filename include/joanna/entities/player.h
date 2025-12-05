@@ -22,6 +22,10 @@ class Player: public Entity {
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
 
+    Inventory& getInventory() {
+        return inventory;
+    }
+
   private:
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;

@@ -1,10 +1,10 @@
 #include "joanna/world/tilemanager.h"
 #include "joanna/entities/player.h"
 #include "joanna/utils/logger.h"
+#include "joanna/utils/resourcemanager.h"
 #include "spdlog/spdlog.h"
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <string>
@@ -83,20 +83,20 @@ sf::FloatRect calculatePixelRect(
     }
 
     if (!hasOpaque) {
-        return sf::FloatRect({ 0.f, 0.f }, { 0.f, 0.f });
+        return { { 0.f, 0.f }, { 0.f, 0.f } };
     }
 
     // Translate local pixel bounds to world position
-    return sf::FloatRect(
-        { pos.x + static_cast<float>(left), pos.y + static_cast<float>(top) },
-        { static_cast<float>(right - left + 1),
-          static_cast<float>(bottom - top + 1) }
-    );
+    return { { pos.x + static_cast<float>(left),
+               pos.y + static_cast<float>(top) },
+             { static_cast<float>(right - left + 1),
+               static_cast<float>(bottom - top + 1) } };
 }
 
 void TileManager::processLayer(const std::string& layerName) {
-    if (!m_currentMap)
+    if (!m_currentMap) {
         return;
+    }
 
     tson::Layer* layer = m_currentMap->getLayer(layerName);
     if (!layer || layer->getType() != tson::LayerType::TileLayer) {
@@ -172,4 +172,23 @@ void TileManager::clear() {
     m_textures.clear();
     m_collisionRects.clear();
     m_currentMap.reset();
+}
+
+sf::Sprite TileManager::getTextureById(const int id) {
+    sf::Texture& texture = ResourceManager<sf::Texture>::getInstance()->get(
+        "assets/environment/map/tileset.png"
+    );
+
+    const int TILE_W = 16;
+    const int TILE_H = 16;
+
+    const int tilesPerRow = static_cast<int>(texture.getSize().x / TILE_W);
+
+    int tx = (id % tilesPerRow) * TILE_W;
+    int ty = (id / tilesPerRow) * TILE_H;
+
+    // sprite from tileset
+    sf::Sprite icon(texture);
+    icon.setTextureRect(sf::IntRect({ tx, ty }, { TILE_W, TILE_H }));
+    return icon;
 }

@@ -1,15 +1,17 @@
 #pragma once
 
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <mutex>
 
 #include <SFML/Graphics.hpp>
 
+class TileManager;
+
 struct Item {
-    std::string id;        // unique identifier - tile id
-    std::string name;      // display name
+    std::string id;   // unique identifier - tile id
+    std::string name; // display name
     bool stackable = true;
 
     Item() = default;
@@ -25,7 +27,7 @@ struct StoredItem {
 };
 
 class Inventory {
-public:
+  public:
     explicit Inventory(std::size_t capacity = 100);
 
     std::uint32_t addItem(const Item& item, std::uint32_t quantity = 1);
@@ -38,10 +40,11 @@ public:
 
     void setCapacity(std::size_t cap);
     void draw(sf::RenderTarget& target) const;
+    void displayInventory(sf::RenderTarget& target, TileManager& tileManager);
 
     std::size_t capacity() const;
 
-private:
+  private:
     // Internal helpers assume mutex held
     std::size_t slotsUsedUnlocked() const;
     sf::Font font;

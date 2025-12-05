@@ -16,7 +16,6 @@ int main() {
     Logger::info("Infinite resources enabled");
 #endif
 
-    Game game;
-    game.run();
+    Game::run();
     return 0;
 }
