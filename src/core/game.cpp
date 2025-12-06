@@ -157,6 +157,9 @@ void Game::run() {
             );
             postProc.apply(window, clock.getElapsedTime().asSeconds());
         } else if (gameState == GameState::Combat) {
+            sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
+            combatView.setViewport(windowManager.getMainView().getViewport());
+            window.setView(combatView);
             combatSystem.render(window);
         }
 

@@ -34,7 +34,7 @@ void CombatSystem::update(float dt) {
 
 void CombatSystem::render(sf::RenderTarget& target) {
     // draw static background
-    sf::RectangleShape background(sf::Vector2f(target.getSize()));
+    sf::RectangleShape background(target.getView().getSize());
     background.setFillColor(sf::Color(50, 50, 150));
     target.draw(background);
 
@@ -44,15 +44,15 @@ void CombatSystem::render(sf::RenderTarget& target) {
     // Placeholder rendering for scaffolding -> store plaayer and enemy pos later in the system
     sf::RectangleShape playerShape(sf::Vector2f(50.f, 50.f));
     playerShape.setFillColor(sf::Color::Green);
-    playerShape.setPosition({ static_cast<float>(target.getSize().x) * 0.75f,
-                              static_cast<float>(target.getSize().y) * 0.5f });
+    playerShape.setPosition({ target.getView().getSize().x * 0.75f,
+                              target.getView().getSize().y * 0.5f });
     target.draw(playerShape);
 
     // Draw Enemy (Left side)
     sf::RectangleShape enemyShape(sf::Vector2f(50.f, 50.f));
     enemyShape.setFillColor(sf::Color::Red);
-    enemyShape.setPosition({ static_cast<float>(target.getSize().x) * 0.25f,
-                             static_cast<float>(target.getSize().y) * 0.5f });
+    enemyShape.setPosition({ target.getView().getSize().x * 0.25f,
+                             target.getView().getSize().y * 0.5f });
     target.draw(enemyShape);
 
     // Draw attack buttons for player later
@@ -60,9 +60,9 @@ void CombatSystem::render(sf::RenderTarget& target) {
         // Simple visual representation of buttons
         sf::RectangleShape button(sf::Vector2f(100.f, 40.f));
         button.setFillColor(sf::Color::White);
-        button.setPosition({ static_cast<float>(target.getSize().x) * 0.5f -
+        button.setPosition({ target.getView().getSize().x * 0.5f -
                                  50.f,
-                             static_cast<float>(target.getSize().y) * 0.8f });
+                             target.getView().getSize().y * 0.8f });
         target.draw(button);
     }
 }
