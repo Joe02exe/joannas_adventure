@@ -1,0 +1,22 @@
+{
+    "Joe": [
+        {
+            "priority": 1,
+            "text": [
+                "Ostia, didn't see you there traveler!", "My name is Giovannino.",
+                "I would like to show you around...",
+                "... but someone stole my bike and I want to catch him."
+            ]
+        }
+    ],
+    "Pirat": [
+        {
+            "priority": 1,
+            "text": [
+                "The skeletons have stolen my treasure!",
+                "Bring it back to me...",
+                "Arrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+            ]
+        }
+    ]
+}

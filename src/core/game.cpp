@@ -20,6 +20,7 @@
 #include <cmath>
 #include <imgui-SFML.h>
 #include <imgui.h>
+#include <fstream>
 
 Game::Game() = default;
 
@@ -60,17 +61,20 @@ void Game::run() {
 
     FontRenderer fontRenderer("assets/font/Pixellari.ttf");
 
+    std::ifstream file("assets/dialog/dialog.json");
+    NPC::jsonData = json::parse(file);
     auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
     interactables.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
-        "assets/buttons/talk_T.png", sharedDialogueBox
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
     ));
 
     interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 160.f, 110.f }, 
+        sf::Vector2f{ 160.f, 110.f },
         "assets/player/npc/Pirat.png",
         "assets/buttons/talk_T.png", 
-        sharedDialogueBox
+        sharedDialogueBox,
+        "Pirat"
     ));
 
     TileManager tileManager;
