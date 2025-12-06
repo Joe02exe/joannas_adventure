@@ -26,7 +26,8 @@ void NPC::setDialogue(const std::vector<std::string>& messages) {
     }
 }
 
-void NPC::interact() {
+void NPC::interact(Player& player) {
+    auto& inventory = player.getInventory();
     auto dialogList = jsonData[dialogId];
     std::sort(dialogList.begin(), dialogList.end(), 
         [](const nlohmann::json& a, const nlohmann::json& b) {
@@ -35,12 +36,26 @@ void NPC::interact() {
     );
 
     for(auto& entry : dialogList){
-        if(true) {
+        bool conditionMet = true;
+        if(entry.contains("req") && !entry["req"].is_null()) {
+            json req = entry["req"];
+            std::string type = req["type"];
+            if (type == "ITEM") {
+                std::string itemId = req["id"];
+                int amount = req["amount"];
+                if (inventory.getQuantity(itemId) < amount) {
+                    conditionMet = false;
+                }
+                else {
+                    inventory.removeItem(itemId, amount);
+                }
+            }
+        }
+        if(conditionMet) {
             dialogueBox->setDialogue(entry["text"]);
             dialogueBox->show();
             return;
         }
-        Logger::info(entry["text"]);
     }
 }
 

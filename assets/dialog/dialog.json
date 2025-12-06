@@ -6,7 +6,19 @@
                 "Ostia, didn't see you there traveler!", "My name is Giovannino.",
                 "I would like to show you around...",
                 "... but someone stole my bike and I want to catch him."
-            ]
+            ],
+            "req": null
+        },
+        {
+            "priority": 2,
+            "text": [
+                "Thanks for the carrots!"
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "test",
+                "amount": 5
+            }
         }
     ],
     "Pirat": [

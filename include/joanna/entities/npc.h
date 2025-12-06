@@ -18,7 +18,7 @@ class NPC: public Interactable {
         std::shared_ptr<DialogueBox> dialogueBox,
         std::string dialogId);
 
-    void interact() override;
+    void interact(Player& player) override;
 
     void update(
         float dt, State state, bool facingLeft, const sf::Vector2f& playerPos
