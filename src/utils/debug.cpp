@@ -1,7 +1,6 @@
 #include "joanna/utils/debug.h"
-
+#include <fmt/format.h>
 #include "joanna/entities/player.h"
-#include "joanna/utils/logger.h"
 
 #include <imgui-SFML.h>
 #include <imgui.h>
@@ -21,8 +20,10 @@ void DebugUI::processEvent(const sf::Window& window, const sf::Event& event)
     }
 }
 
-void DebugUI::update(const float dt, sf::RenderWindow& window, Player& player)
-    const {
+void DebugUI::update(
+    const float dt, sf::RenderWindow& window, Player& player,
+    GameState& gameState, CombatSystem& combatSystem, Enemy* testEnemy
+) const {
     if (!enabled) {
         return;
     }
@@ -48,6 +49,17 @@ void DebugUI::update(const float dt, sf::RenderWindow& window, Player& player)
     }
     if (ImGui::InputFloat("Set Player Position Y", &input_y)) {
         player.setPosition({ player.getPosition().x, input_y });
+    }
+
+    if (gameState == GameState::Overworld) {
+        if (ImGui::Button("Start Combat")) {
+            gameState = GameState::Combat;
+            combatSystem.startCombat(player, testEnemy);
+        }
+    } else {
+        if (ImGui::Button("End Combat")) {
+            gameState = GameState::Overworld;
+        }
     }
     ImGui::End();
 }

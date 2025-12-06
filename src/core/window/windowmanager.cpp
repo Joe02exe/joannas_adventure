@@ -38,10 +38,17 @@ void WindowManager::setCenter(const sf::Vector2f& center) {
     miniMapView.setCenter(center);
 }
 
-void WindowManager::pollEvents() {
+void WindowManager::pollEvents(
+    const std::function<void(const sf::Event&)>& onEvent
+) {
 
     while (const std::optional<sf::Event> event = window.pollEvent()) {
         debug_ui.processEvent(window, *event);
+
+        if (onEvent) {
+            onEvent(*event);
+        }
+
         if (event->is<sf::Event::Closed>()) {
             window.close();
         }
@@ -53,7 +60,7 @@ void WindowManager::pollEvents() {
             sf::FloatRect miniViewport;
             miniViewport.position = { mainViewport.position.x +
                                           mainViewport.size.x -
-                                          MINI_MAP_SIZE * mainViewport.size.x,
+                                          (MINI_MAP_SIZE * mainViewport.size.x),
                                       mainViewport.position.y };
             miniViewport.size = { MINI_MAP_SIZE * mainViewport.size.x,
                                   MINI_MAP_SIZE * mainViewport.size.y };

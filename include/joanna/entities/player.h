@@ -3,6 +3,7 @@
 #include "./entity.h"
 #include "./entityutils.h"
 #include "./inventory.h"
+#include "joanna/core/combat_types.h"
 #include "joanna/systems/audiomanager.h"
 
 #include <SFML/Graphics.hpp>
@@ -32,4 +33,12 @@ class Player: public Entity {
 
     void switchState(State newState);
     void applyFrame();
+
+  public:
+    std::vector<Attack> attacks;
+    void takeDamage(int amount);
+
+    int getHealth() const {
+        return 100;
+    }
 };

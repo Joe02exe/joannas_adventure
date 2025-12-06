@@ -1,4 +1,11 @@
 #include "joanna/entities/player.h"
+#include <iostream>
+
+void Player::takeDamage(int amount) {
+    //TODO also subtract health from player
+    std::cout << "Player took " << amount << " damage\n";
+}
+
 #include "joanna/systems/audiomanager.h"
 #include "joanna/utils/resourcemanager.h"
 

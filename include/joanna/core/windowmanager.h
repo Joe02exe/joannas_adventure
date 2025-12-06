@@ -8,21 +8,43 @@
 #include <SFML/System/Vector2.hpp>
 
 class WindowManager {
-public:
-    WindowManager(unsigned width = 900, unsigned height = 900, const std::string& title = "Game", sf::Vector2f initialPos = { 150.f, 165.f});
+  public:
+    WindowManager(
+        unsigned width = 900, unsigned height = 900,
+        const std::string& title = "Game",
+        sf::Vector2f initialPos = { 150.f, 165.f }
+    );
     void handleResize(unsigned newWidth, unsigned newHeight);
     void setView(const sf::View& v);
     void clear();
     void display();
     void setCenter(const sf::Vector2f& center);
-    sf::RenderWindow& getWindow() { return window; }
-    sf::View& getMainView() { return mainView; }
-    sf::View& getMiniMapView() { return miniMapView; }
-    DebugUI getDebugUI() { return debug_ui; }
-    const sf::View& getDefaultView() { return window.getDefaultView(); }
-    void pollEvents(); 
+
+    sf::RenderWindow& getWindow() {
+        return window;
+    }
+
+    sf::View& getMainView() {
+        return mainView;
+    }
+
+    sf::View& getMiniMapView() {
+        return miniMapView;
+    }
+
+    DebugUI getDebugUI() {
+        return debug_ui;
+    }
+
+    const sf::View& getDefaultView() {
+        return window.getDefaultView();
+    }
+
+    void
+    pollEvents(const std::function<void(const sf::Event&)>& onEvent = nullptr);
     void render();
-private:
+
+  private:
     sf::RenderWindow window;
     sf::View mainView;
     sf::View miniMapView;

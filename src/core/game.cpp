@@ -82,77 +82,88 @@ void Game::run() {
 
     clock.reset();
 
+    // Combat System Init -> replace with goblin later
+    std::unique_ptr<Enemy> testEnemy = std::make_unique<Enemy>(
+        sf::Vector2f(0, 0), "assets/player/npc/joe.png"
+    );
+
+    CombatSystem combatSystem;
+    GameState gameState = GameState::Overworld;
+
     while (window.isOpen()) {
 
         // handle resizing events
-        windowManager.pollEvents();
+        windowManager.pollEvents([&](const sf::Event& event) {
+            if (const auto* closed = event.getIf<sf::Event::Closed>()) {
+                window.close();
+            }
+            if (gameState == GameState::Combat) {
+                sf::Event e = event;
+                combatSystem.handleInput(e);
+            }
+        });
 
         float dt = clock.restart().asSeconds();
 
-        bool resetClock = controller.updateStep(
-            dt, window, collisions, interactables, sharedDialogueBox
-        );
-        if (resetClock) {
-            clock.restart();
+        if (gameState == GameState::Overworld) {
+            bool resetClock = controller.updateStep(
+                dt, window, collisions, interactables, sharedDialogueBox
+            );
+            if (resetClock) {
+                clock.restart();
+            }
+        } else if (gameState == GameState::Combat) {
+            combatSystem.update(dt);
         }
 
         windowManager.clear();
-        controller.getPlayerView().setViewport(
-            windowManager.getMainView().getViewport()
+
+        if (gameState == GameState::Overworld) {
+            controller.getPlayerView().setViewport(
+                windowManager.getMainView().getViewport()
+            );
+
+            postProc.drawScene(
+                [&](sf::RenderTarget& target, const sf::View& view) {
+                    // world view
+                    target.setView(controller.getPlayerView());
+                    renderEngine.render(
+                        target, controller.getPlayer(), tileManager,
+                        interactables, sharedDialogueBox
+                    );
+
+                    // minimap
+                    target.setView(windowManager.getMiniMapView());
+                    renderEngine.render(
+                        target, controller.getPlayer(), tileManager,
+                        interactables, sharedDialogueBox
+                    );
+
+                    // ui
+                    target.setView(windowManager.getDefaultView());
+
+                    fontRenderer.drawTextUI(
+                        target, "Inventory UI []",
+                        { std::floor(target.getView().getCenter().x - 100.f),
+                          std::floor(
+                              target.getView().getCenter().y +
+                              (static_cast<float>(target.getSize().y) / 2.f) -
+                              50.f
+                          ) },
+                        24
+                    );
+                },
+                nullptr
+            );
+            postProc.apply(window, clock.getElapsedTime().asSeconds());
+        } else if (gameState == GameState::Combat) {
+            combatSystem.render(window);
+        }
+
+        windowManager.getDebugUI().update(
+            dt, window, controller.getPlayer(), gameState, combatSystem,
+            testEnemy.get()
         );
-
-        postProc.drawScene(
-            [&](sf::RenderTarget& target, const sf::View& view) {
-                // world view
-                target.setView(controller.getPlayerView());
-                renderEngine.render(
-                    target, controller.getPlayer(), tileManager, interactables,
-                    sharedDialogueBox
-                );
-                // also draw a blue dot for the player position
-
-                // keep for debugging player hitbox
-                // const sf::FloatRect playerHitBox(
-                //     { controller.getPlayer().getPosition().x + 48.f,
-                //       controller.getPlayer().getPosition().y + 32.f },
-                //     { 10.f, 8.f }
-                // );
-                // // render hitbox as red rectangle for debugging
-                // sf::RectangleShape hitboxRect;
-                // hitboxRect.setSize({ playerHitBox.size.x, playerHitBox.size.y
-                // }
-                // );
-                // hitboxRect.setPosition({ playerHitBox.position.x,
-                //                          playerHitBox.position.y });
-                // hitboxRect.setFillColor(sf::Color(255, 0, 0, 50));
-                // target.draw(hitboxRect);
-
-                // minimap
-                target.setView(windowManager.getMiniMapView());
-                renderEngine.render(
-                    target, controller.getPlayer(), tileManager, interactables,
-                    sharedDialogueBox
-                );
-
-                // ui
-                target.setView(windowManager.getDefaultView());
-
-                fontRenderer.drawTextUI(
-                    target, "Inventory UI []",
-                    { std::floor(target.getView().getCenter().x - 100.f),
-                      std::floor(
-                          target.getView().getCenter().y +
-                          (static_cast<float>(target.getSize().y) / 2.f) - 50.f
-                      ) },
-                    24
-                );
-            },
-            nullptr
-        );
-
-        postProc.apply(window, clock.getElapsedTime().asSeconds());
-
-        windowManager.getDebugUI().update(dt, window, controller.getPlayer());
 
         windowManager.render();
 
