@@ -103,14 +103,14 @@ bool Controller::getInput(
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
         player.addItemToInventory(
-            Item("test_" + std::to_string(counter), "test")
+            Item("test", "test")
         );
         counter++;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) && !sharedDialogueBox->isActive()) {
         for (auto& entity : interactables) {
             if (entity->canPlayerInteract(player.getPosition())) {
-                entity->interact();
+                entity->interact(player);
             }
         }
     }
