@@ -31,6 +31,7 @@ void Player::update(
     switchState(state);
 
     frameTimer += dt;
+    Logger::info("dt: " + std::to_string(dt));
     const auto& anim = animations[currentState];
     if (frameTimer >= anim.frameTime) {
         if (state != State::Idle && currentFrame % 4 == 0) {

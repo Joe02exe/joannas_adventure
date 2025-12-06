@@ -83,8 +83,8 @@ void Game::run() {
     clock.reset();
 
     // Combat System Init -> replace with goblin later
-    std::unique_ptr<Enemy> testEnemy = std::make_unique<Enemy>(
-        sf::Vector2f(0, 0), "assets/player/npc/joe.png"
+    Enemy testEnemy = Enemy(
+        sf::Vector2f(0, 0), "assets/player/enemies/goblin/idle.png"
     );
 
     CombatSystem combatSystem;
@@ -165,7 +165,7 @@ void Game::run() {
 
         windowManager.getDebugUI().update(
             dt, window, controller.getPlayer(), gameState, combatSystem,
-            testEnemy.get()
+            testEnemy
         );
 
         windowManager.render();

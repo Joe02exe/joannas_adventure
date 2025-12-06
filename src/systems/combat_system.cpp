@@ -3,19 +3,73 @@
 #include <SFML/Window/Event.hpp>
 #include <iostream>
 
-CombatSystem::CombatSystem() = default;
+CombatSystem::CombatSystem() {
+    if (!backgroundTexture.loadFromFile("assets/images/combat_background_cave.png")) {
+        std::cerr << "Failed to load combat background!\n";
+    }
+}
 
-void CombatSystem::startCombat(Player& p, Enemy* e) {
+void CombatSystem::startCombat(Player& p, Enemy& e) {
     player = &p;
-    enemy = e;
+    enemy = &e;
     currentState = CombatState::PlayerTurn;
     turnTimer = 0.0f;
     std::cout << "Combat Started!\n";
+    
+    // Save state
+    playerState.position = player->getPosition();
+    playerState.scale = player->getScale();
+    playerState.facing = player->getFacing();
+
+    if (enemy) {
+        enemyState.position = enemy->getPosition();
+        enemyState.scale = enemy->getScale();
+        enemyState.facing = enemy->getFacing();
+    }
+    
+    // Position entities for combat
+    // Assuming screen size 900x900 (logical view)
+    // Player on Left, Enemy on Right
+    sf::Vector2f playerPos(-100.f, 300);
+    sf::Vector2f enemyPos(430.f, 300);
+
+    player->setPosition(playerPos);
+    enemy->setPosition(enemyPos);
+    // Face each other
+    player->setFacing(Direction::Left);
+    enemy->setFacing(Direction::Right);
+    
+    // Scale them up
+    player->setScale({7.f, 7.f});
+    enemy->setScale({7.f, 7.f});
+    
+}
+
+void CombatSystem::endCombat() {
+    if (player != nullptr) {
+        player->setPosition(playerState.position);
+        player->setScale(playerState.scale);
+        player->setFacing(playerState.facing);
+        // Reset facing visual
+        player->flipFace(playerState.facing);
+    }
+    if (enemy != nullptr) {
+        enemy->setPosition(enemyState.position);
+        enemy->setScale(enemyState.scale);
+        enemy->setFacing(enemyState.facing);
+        // Reset facing visual
+        enemy->flipFace(enemyState.facing);
+    }
 }
 
 void CombatSystem::update(float dt) {
     if (player == nullptr || enemy == nullptr)
         return;
+    dt -= 0.007f; // just for visual purpose
+    // Update animations
+    static AudioManager dummyAudio; 
+    player->update(dt, State::Idle, false, dummyAudio);
+    enemy->update(dt);
 
     if (currentState == CombatState::EnemyTurn) {
         turnTimer += dt;
@@ -34,26 +88,28 @@ void CombatSystem::update(float dt) {
 
 void CombatSystem::render(sf::RenderTarget& target) {
     // draw static background
-    sf::RectangleShape background(target.getView().getSize());
-    background.setFillColor(sf::Color(50, 50, 150));
-    target.draw(background);
+    // draw static background
+    sf::Sprite backgroundSprite(backgroundTexture);
+    sf::Vector2f viewSize = target.getView().getSize();
+    sf::Vector2u textureSize = backgroundTexture.getSize();
+
+    float scaleX = viewSize.x / static_cast<float>(textureSize.x);
+    float scaleY = viewSize.y / static_cast<float>(textureSize.y);
+
+    backgroundSprite.setScale({ scaleX, scaleY });
+    backgroundSprite.setPosition({ 0.f, 0.f });
+    target.draw(backgroundSprite);
 
     if (player == nullptr || enemy == nullptr)
         return;
 
-    // Placeholder rendering for scaffolding -> store plaayer and enemy pos later in the system
-    sf::RectangleShape playerShape(sf::Vector2f(50.f, 50.f));
-    playerShape.setFillColor(sf::Color::Green);
-    playerShape.setPosition({ target.getView().getSize().x * 0.75f,
-                              target.getView().getSize().y * 0.5f });
-    target.draw(playerShape);
+    // Draw Player (Right side)
+    // Player draw uses its position, which we set in startCombat
+    player->draw(target);
 
     // Draw Enemy (Left side)
-    sf::RectangleShape enemyShape(sf::Vector2f(50.f, 50.f));
-    enemyShape.setFillColor(sf::Color::Red);
-    enemyShape.setPosition({ target.getView().getSize().x * 0.25f,
-                             target.getView().getSize().y * 0.5f });
-    target.draw(enemyShape);
+    // Enemy draw uses its position, which we set in startCombat
+    enemy->draw(target);
 
     // Draw attack buttons for player later
     if (currentState == CombatState::PlayerTurn) {

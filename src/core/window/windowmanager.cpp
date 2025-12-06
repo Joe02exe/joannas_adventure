@@ -60,7 +60,7 @@ void WindowManager::pollEvents(
             sf::FloatRect miniViewport;
             miniViewport.position = { mainViewport.position.x +
                                           mainViewport.size.x -
-                                          (MINI_MAP_SIZE * mainViewport.size.x),
+                                          MINI_MAP_SIZE * mainViewport.size.x,
                                       mainViewport.position.y };
             miniViewport.size = { MINI_MAP_SIZE * mainViewport.size.x,
                                   MINI_MAP_SIZE * mainViewport.size.y };

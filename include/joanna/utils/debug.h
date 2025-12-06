@@ -13,7 +13,7 @@ class DebugUI {
     void processEvent(const sf::Window& window, const sf::Event& event) const;
     void update(
         float dt, sf::RenderWindow& window, Player& player,
-        GameState& gameState, CombatSystem& combatSystem, Enemy* testEnemy
+        GameState& gameState, CombatSystem& combatSystem, Enemy& testEnemy
     ) const;
     void render(sf::RenderWindow& window) const;
     static void shutdown();

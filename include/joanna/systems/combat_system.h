@@ -5,11 +5,18 @@
 #include "joanna/entities/player.h"
 #include <SFML/Graphics.hpp>
 
+struct EntityState {
+    sf::Vector2f position;
+    sf::Vector2f scale;
+    Direction facing;
+};
+
 class CombatSystem {
   public:
     CombatSystem();
 
-    void startCombat(Player& player, Enemy* enemy);
+    void startCombat(Player& player, Enemy& enemy);
+    void endCombat();
     void update(float dt);
     void render(sf::RenderTarget& target);
     void handleInput(sf::Event& event);
@@ -21,6 +28,12 @@ class CombatSystem {
   private:
     Player* player = nullptr;
     Enemy* enemy = nullptr;
+    
+    EntityState playerState;
+    EntityState enemyState;
+
+    sf::Texture backgroundTexture;
+
     CombatState currentState = CombatState::PlayerTurn;
 
     float turnTimer = 0.0f;

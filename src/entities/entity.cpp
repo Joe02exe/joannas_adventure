@@ -30,11 +30,12 @@ void Entity::setFrame(const sf::IntRect& textureRect) {
 
 void Entity::flipFace(const Direction direction) {
     this->direction = direction;
+    float width = sprite->getLocalBounds().size.x;
     if (direction == Direction::Right) {
-        sprite->setScale({ -1.f, 1.f });
-        sprite->setOrigin({ 96.f, 0.f });
+        sprite->setScale({ -currentScale.x, currentScale.y });
+        sprite->setOrigin({ width, 0.f });
     } else {
-        sprite->setScale({ 1.f, 1.f });
+        sprite->setScale({ currentScale.x, currentScale.y });
         sprite->setOrigin({ 0.f, 0.f });
     }
 }
@@ -76,8 +77,19 @@ sf::FloatRect Entity::getBoundingBox() const {
 
 void Entity::setFacing(Direction newDirection) {
     this->direction = newDirection;
+    flipFace(newDirection);
 }
 
 Direction Entity::getFacing() const {
     return direction.value_or(Direction::Right);
+}
+
+void Entity::setScale(const sf::Vector2f& scale) {
+    currentScale = scale;
+    // Re-apply facing to update scale and origin
+    flipFace(getFacing());
+}
+
+sf::Vector2f Entity::getScale() const {
+    return currentScale;
 }

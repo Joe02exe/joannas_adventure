@@ -22,7 +22,7 @@ void DebugUI::processEvent(const sf::Window& window, const sf::Event& event)
 
 void DebugUI::update(
     const float dt, sf::RenderWindow& window, Player& player,
-    GameState& gameState, CombatSystem& combatSystem, Enemy* testEnemy
+    GameState& gameState, CombatSystem& combatSystem, Enemy& testEnemy
 ) const {
     if (!enabled) {
         return;
@@ -59,6 +59,7 @@ void DebugUI::update(
     } else {
         if (ImGui::Button("End Combat")) {
             gameState = GameState::Overworld;
+            combatSystem.endCombat();
         }
     }
     ImGui::End();
