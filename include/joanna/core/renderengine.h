@@ -6,11 +6,13 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <list>
 #include "joanna/entities/interactable.h"
+#include "joanna/entities/enemy.h"
+#include "joanna/systems/combat_system.h"
 
 class RenderEngine {
   public:
     RenderEngine();
 
     void
-    render(sf::RenderTarget& target, Player& player, TileManager& tileManager, std::list<std::unique_ptr<Interactable>>& interactables, std::shared_ptr<DialogueBox> dialogueBox);
+    render(sf::RenderTarget& target, Player& player, TileManager& tileManager, std::list<std::unique_ptr<Entity>>& entities, std::shared_ptr<DialogueBox> dialogueBox);
 };

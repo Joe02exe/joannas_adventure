@@ -17,7 +17,7 @@ class Controller {
     bool getInput(
         float dt, sf::RenderWindow& window,
         const std::vector<sf::FloatRect>& collisions,
-        std::list<std::unique_ptr<Interactable>>& interactables,
+        std::list<std::unique_ptr<Entity>>& entities,
         const std::shared_ptr<DialogueBox>& sharedDialogueBox
 
     );
@@ -25,7 +25,7 @@ class Controller {
     bool updateStep(
         float dt, sf::RenderWindow& window,
         std::vector<sf::FloatRect>& collisions,
-        std::list<std::unique_ptr<Interactable>>& interactables,
+        std::list<std::unique_ptr<Entity>>& entities,
         const std::shared_ptr<DialogueBox>& sharedDialogueBox
 
     );

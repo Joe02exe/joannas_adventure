@@ -10,7 +10,9 @@ Enemy::Enemy(const sf::Vector2f& startPos, const std::string& idlePath)
           sf::FloatRect(
               { startPos.x - 48.f, startPos.y - 32.f }, { 96.f, 64.f }
           ),
-          ResourceManager<sf::Texture>::getInstance()->get(idlePath)
+          ResourceManager<sf::Texture>::getInstance()->get(idlePath),
+          sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 10 }),
+          Direction::Right
       ) {
 
     animations[State::Idle] = Animation(idlePath, { 96, 64 }, 8);

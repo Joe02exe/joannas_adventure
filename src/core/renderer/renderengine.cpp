@@ -5,7 +5,7 @@ RenderEngine::RenderEngine() {}
 
 void RenderEngine::render(
     sf::RenderTarget& target, Player& player, TileManager& tileManager,
-    std::list<std::unique_ptr<Interactable>>& interactables,
+    std::list<std::unique_ptr<Entity>>& entities,
     std::shared_ptr<DialogueBox> dialogueBox
 ) {
     const auto& m_textures = tileManager.getGroundTextures();
@@ -33,7 +33,7 @@ void RenderEngine::render(
     bool playerDrawn = false;
 
     // draw iteractables below player
-    for (auto& entity : interactables) {
+    for (auto& entity : entities) {
         if (entity->getCollisionBox().has_value()) {
             float middleEntity = entity->getCollisionBox().value().position.y;
             if (middleEntity < playerBottom) {
@@ -54,30 +54,32 @@ void RenderEngine::render(
         drawTile(tile);
     }
 
-    // draw interactables above player
-    for (auto& entity : interactables) {
+    // draw entities above player
+    for (auto& entity : entities) {
         if (entity->getCollisionBox().has_value()) {
             float middleEntity = entity->getCollisionBox().value().position.y;
             if (middleEntity >= playerBottom) {
                 entity->render(target);
             }
         }
+    }
 
-        // If the player is still not drawn (player above all tiles)
-        if (!playerDrawn) {
-            player.draw(target);
-        }
+    // If the player is still not drawn (player above all tiles)
+    if (!playerDrawn) {
+        player.draw(target);
+    }
 
-        for (auto& entity : interactables) {
-            if (entity->canPlayerInteract(player.getPosition())) {
-                entity->renderButton(target);
+    for (auto& entity : entities) {
+        if(Interactable* interactable = dynamic_cast<Interactable*>(entity.get())  ){
+            if (interactable->canPlayerInteract(player.getPosition())) {
+                interactable->renderButton(target);
             }
         }
+    }
 
-        // draw overlay tiles
-        for (const auto& tile : m_overlayTiles) {
-            drawTile(tile);
-        }
+    // draw overlay tiles
+    for (const auto& tile : m_overlayTiles) {
+        drawTile(tile);
     }
 
     if (dialogueBox->isActive()) {

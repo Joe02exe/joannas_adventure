@@ -32,7 +32,7 @@ void NPC::interact() {
 }
 
 void NPC::update(
-    float dt, State state, bool facingLeft, const sf::Vector2f& playerPos
+    float dt, State state, const sf::Vector2f& playerPos
 ) {
     frameTimer += dt;
 

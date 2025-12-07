@@ -26,47 +26,27 @@ void Game::run() {
 
     WindowManager windowManager(900, 900, "Joanna's Farm");
 
-    // temporal loading screen (font is still not the same as in the final
-    // version)
-    sf::Texture loadingTexture;
-    if (loadingTexture.loadFromFile("assets/images/loading.gif")) {
-        sf::Sprite loadingSprite(loadingTexture);
-
-        // Scale sprite to fit window size
-        sf::Vector2u windowSize = windowManager.getWindow().getSize();
-        sf::Vector2u textureSize = loadingTexture.getSize();
-
-        float scaleX = static_cast<float>(windowSize.x) /
-                       static_cast<float>(textureSize.x);
-        float scaleY = static_cast<float>(windowSize.y) /
-                       static_cast<float>(textureSize.y);
-
-        loadingSprite.setScale({ scaleX, scaleY });
-        loadingSprite.setPosition({ 0.f, 0.f });
-
-        windowManager.getWindow().clear();
-        windowManager.getWindow().draw(loadingSprite);
-        windowManager.getWindow().display();
-    }
-
     AudioManager audioManager;
     audioManager.set_current_music(MusicId::Overworld);
 
     sf::RenderWindow& window = windowManager.getWindow();
     Controller controller(windowManager, audioManager);
 
-    std::list<std::unique_ptr<Interactable>> interactables;
+    std::list<std::unique_ptr<Entity>> entities;
 
     FontRenderer fontRenderer("assets/font/Pixellari.ttf");
 
     auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
-    interactables.push_back(std::make_unique<NPC>(
+    entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
         "assets/buttons/talk_T.png", sharedDialogueBox
     ));
+    std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png");
+    Enemy* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
+    entities.push_back(std::move(enemy));
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
-    for (auto& entity : interactables) {
+    for (auto& entity : entities) {
         if (auto box = entity->getCollisionBox()) {
             collisions.push_back(*box);
         }
@@ -81,10 +61,6 @@ void Game::run() {
     menu.show();
 
     clock.reset();
-
-    // Combat System Init -> replace with goblin later
-    Enemy testEnemy =
-        Enemy(sf::Vector2f(0, 0), "assets/player/enemies/goblin/idle.png");
 
     CombatSystem combatSystem;
     GameState gameState = GameState::Overworld;
@@ -106,7 +82,7 @@ void Game::run() {
 
         if (gameState == GameState::Overworld) {
             bool resetClock = controller.updateStep(
-                dt, window, collisions, interactables, sharedDialogueBox
+                dt, window, collisions, entities, sharedDialogueBox
             );
             if (resetClock) {
                 clock.restart();
@@ -128,14 +104,14 @@ void Game::run() {
                     target.setView(controller.getPlayerView());
                     renderEngine.render(
                         target, controller.getPlayer(), tileManager,
-                        interactables, sharedDialogueBox
+                        entities, sharedDialogueBox
                     );
 
                     // minimap
                     target.setView(windowManager.getMiniMapView());
                     renderEngine.render(
                         target, controller.getPlayer(), tileManager,
-                        interactables, sharedDialogueBox
+                        entities, sharedDialogueBox
                     );
 
                     // ui
@@ -163,8 +139,7 @@ void Game::run() {
         }
 
         windowManager.getDebugUI().update(
-            dt, window, controller.getPlayer(), gameState, combatSystem,
-            testEnemy
+            dt, window, controller.getPlayer(), gameState, combatSystem, *enemyPtr
         );
 
         windowManager.render();
