@@ -28,17 +28,24 @@ class CombatSystem {
   private:
     Player* player = nullptr;
     Enemy* enemy = nullptr;
-    
+
+    enum class TurnPhase { Input, Approaching, Attacking, Returning, EndTurn };
+
     EntityState playerState;
     EntityState enemyState;
 
-    sf::Texture backgroundTexture;
-    sf::Texture attackButtonTexture;
+    const sf::Texture backgroundTexture;
+    const sf::Texture attackButtonTexture;
 
     CombatState currentState = CombatState::PlayerTurn;
+    TurnPhase phase = TurnPhase::Input;
 
     float turnTimer = 0.0f;
-    const float turnDuration = 1.0f; // Delay between turns for pacing
 
-    void performEnemyAttack();
+    sf::Vector2f startPos;
+    sf::Vector2f targetPos;
+    Attack currentAttack;
+
+    void updatePlayerTurn(float dt, State& pState, State& eState);
+    void updateEnemyTurn(float dt, State& pState, State& eState);
 };
