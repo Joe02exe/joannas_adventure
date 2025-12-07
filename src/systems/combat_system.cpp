@@ -4,14 +4,13 @@
 #include <SFML/Window/Event.hpp>
 #include <iostream>
 
-CombatSystem::CombatSystem() {
-    backgroundTexture = ResourceManager<sf::Texture>::getInstance()->get(
-        "assets/images/combat_background_cave.png"
-    );
-    attackButtonTexture = ResourceManager<sf::Texture>::getInstance()->get(
-        "assets/buttons/attack.png"
-    );
-}
+CombatSystem::CombatSystem()
+    : backgroundTexture(ResourceManager<sf::Texture>::getInstance()->get(
+          "assets/images/combat_background_cave.png"
+      )),
+      attackButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
+          "assets/buttons/attack.png"
+      )) {}
 
 void CombatSystem::startCombat(Player& p, Enemy& e) {
     player = &p;
@@ -113,7 +112,7 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
         }
 
         turnTimer += dt;
-        if (turnTimer >= 0.9f) { // Extended to fit animation
+        if (turnTimer >= 0.9f) {
             enemy->takeDamage(currentAttack.damage);
             phase = TurnPhase::Returning;
             turnTimer = 0.0f;
@@ -130,7 +129,7 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
             phase = TurnPhase::EndTurn;
         }
     } else if (phase == TurnPhase::EndTurn) {
-        if (enemy->getHealth() <= 0) {
+        if (eState == State::Dead) {
             currentState = CombatState::Victory;
             std::cout << "Victory!\n";
         } else {
@@ -197,7 +196,7 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
             phase = TurnPhase::EndTurn;
         }
     } else if (phase == TurnPhase::EndTurn) {
-        if (player->getHealth() <= 0) {
+        if (pState == State::Dead) {
             currentState = CombatState::Defeat;
             std::cout << "Defeat!\n";
         } else {
