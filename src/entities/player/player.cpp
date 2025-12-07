@@ -1,6 +1,7 @@
 #include "joanna/entities/player.h"
 #include "joanna/systems/audiomanager.h"
 #include "joanna/utils/resourcemanager.h"
+#include "joanna/world/tilemanager.h"
 
 Player::Player(
     const std::string& idlePath, const std::string& walkPath,
@@ -31,7 +32,8 @@ void Player::update(
         }
 
         frameTimer -= anim.frameTime; // keep leftover time
-        currentFrame = (currentFrame + 1) % anim.frames.size();
+        currentFrame =
+            (currentFrame + 1) % static_cast<int>(anim.frames.size());
         applyFrame();
     }
     flipFace(getFacing());
@@ -53,8 +55,7 @@ void Player::switchState(State newState) {
 }
 
 void Player::draw(sf::RenderTarget& target) const {
-    Entity::render(target);
-    inventory.draw(target);
+    render(target);
 }
 
 void Player::addItemToInventory(

@@ -1,3 +1,12 @@
+#include "joanna/world/tilemanager.h"
+#include "joanna/world/tilemanager.h"
+#include "joanna/world/tilemanager.h"
+#include "joanna/world/tilemanager.h"
+#include "joanna/world/tilemanager.h"
+#include "joanna/world/tilemanager.h"
+#include "joanna/world/tilemanager.h"
+#include "joanna/world/tilemanager.h"
+
 #include <algorithm>
 #include <cstdint>
 
@@ -3794,7 +3803,7 @@ class Object {
     [[nodiscard]] inline tson::TiledClass*
     getClass(); /*! Declared in tileson_forward.hpp */
     [[nodiscard]] inline bool isVisible() const;
-    [[nodiscard]] inline const Vector2i& getPosition() const;
+    [[nodiscard]] inline const tson::Vector2i& getPosition() const;
 
     [[nodiscard]] inline const std::vector<tson::Vector2i>& getPolygons() const;
     [[nodiscard]] inline const std::vector<tson::Vector2i>&

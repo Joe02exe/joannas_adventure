@@ -55,7 +55,7 @@ class Controller {
     sf::View& miniMapView;
     bool facingLeft = false;
     bool keyPressed = false;
-    bool displayInventory = false;
+    bool displayInventory = true;
 
     int counter = 0;
 };

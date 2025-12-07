@@ -4,6 +4,7 @@
 #include "./entityutils.h"
 #include "./inventory.h"
 #include "joanna/systems/audiomanager.h"
+#include "joanna/world/tilemanager.h"
 
 #include <SFML/Graphics.hpp>
 #include <memory>

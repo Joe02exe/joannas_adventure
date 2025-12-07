@@ -16,11 +16,13 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "joanna/core/savegamemanager.h"
 #include "joanna/systems/audiomanager.h"
+#include "joanna/utils/resourcemanager.h"
+
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
+#include <fstream>
 #include <imgui-SFML.h>
 #include <imgui.h>
-#include <fstream>
 
 Game::Game() = default;
 
@@ -70,11 +72,8 @@ void Game::run() {
     ));
 
     interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 160.f, 110.f },
-        "assets/player/npc/Pirat.png",
-        "assets/buttons/talk_T.png", 
-        sharedDialogueBox,
-        "Pirat"
+        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
     ));
 
     TileManager tileManager;
@@ -176,17 +175,6 @@ void Game::run() {
                         target, tileManager
                     );
                 }
-
-                // ui
-                fontRenderer.drawTextUI(
-                    target, "Inventory UI []",
-                    { std::floor(target.getView().getCenter().x - 100.f),
-                      std::floor(
-                          target.getView().getCenter().y +
-                          (static_cast<float>(target.getSize().y) / 2.f) - 50.f
-                      ) },
-                    24
-                );
             },
             nullptr
         );

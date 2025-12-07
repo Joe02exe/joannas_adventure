@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -17,6 +18,22 @@ struct TileRenderInfo {
     sf::IntRect textureRect;
     sf::Vector2f position;
     std::optional<sf::FloatRect> collisionBox;
+};
+
+struct RenderObject {
+    uint32_t id = 0;
+    uint32_t gid = 0;
+    sf::Vector2i position;
+    sf::Sprite sprite; // renamed from 'texture' for clarity
+
+    // Explicit default constructor
+    RenderObject(
+        const uint32_t id, uint32_t gid, const sf::Vector2i pos,
+        sf::Sprite sprite
+    )
+        : id(id), gid(gid), position(pos), sprite(std::move(sprite)) {
+        // sf::Sprite is automatically default constructed here
+    }
 };
 
 class TileManager {
@@ -45,11 +62,17 @@ class TileManager {
         return m_collidables;
     }
 
+    [[nodiscard]] const std::vector<RenderObject>& getRenderObjects() const {
+        return m_objects;
+    }
+
     [[nodiscard]] const std::vector<TileRenderInfo>& getOverlayTiles() const {
         return m_overlayTiles;
     }
 
     sf::Sprite getTextureById(int id);
+
+    bool removeObjectById(int id);
 
   private:
     void processLayer(const std::string& layerName);
@@ -63,4 +86,5 @@ class TileManager {
     std::vector<TileRenderInfo> m_tiles;
     std::vector<TileRenderInfo> m_collidables;
     std::vector<TileRenderInfo> m_overlayTiles;
+    std::vector<RenderObject> m_objects;
 };

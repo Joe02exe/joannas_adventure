@@ -34,6 +34,7 @@ bool TileManager::loadMap(const std::string& path) {
     processLayer("decorations");
     processLayer("decoration_overlay");
     processLayer("overlay");
+    processLayer("items");
 
     // Sort all collidable tiles by bottom y + offset
     std::stable_sort(
@@ -70,14 +71,18 @@ sf::FloatRect calculatePixelRect(
             );
             if (c.a > 0) { // if pixel is not transparent
                 hasOpaque = true;
-                if (x < left)
+                if (x < left) {
                     left = x;
-                if (x > right)
+                }
+                if (x > right) {
                     right = x;
-                if (y < top)
+                }
+                if (y < top) {
                     top = y;
-                if (y > bottom)
+                }
+                if (y > bottom) {
                     bottom = y;
+                }
             }
         }
     }
@@ -99,6 +104,17 @@ void TileManager::processLayer(const std::string& layerName) {
     }
 
     tson::Layer* layer = m_currentMap->getLayer(layerName);
+    if (layer->getType() == tson::LayerType::ObjectGroup) {
+        for (auto& obj : layer->getObjects()) {
+            RenderObject object(
+                obj.getId(), obj.getGid(),
+                { obj.getPosition().x, obj.getPosition().y },
+                getTextureById(static_cast<int>(obj.getGid()))
+            );
+            m_objects.push_back(object);
+        }
+    }
+
     if (!layer || layer->getType() != tson::LayerType::TileLayer) {
         return;
     }
@@ -168,6 +184,7 @@ void TileManager::loadTexture(const std::string& imagePath) {
 
 void TileManager::clear() {
     m_tiles.clear();
+    m_objects.clear();
     m_collidables.clear();
     m_textures.clear();
     m_collisionRects.clear();
@@ -175,9 +192,10 @@ void TileManager::clear() {
 }
 
 sf::Sprite TileManager::getTextureById(const int id) {
-    sf::Texture& texture = ResourceManager<sf::Texture>::getInstance()->get(
-        "assets/environment/map/tileset.png"
-    );
+    const sf::Texture& texture =
+        ResourceManager<sf::Texture>::getInstance()->get(
+            "assets/environment/map/tileset.png"
+        );
 
     const int TILE_W = 16;
     const int TILE_H = 16;
@@ -191,4 +209,18 @@ sf::Sprite TileManager::getTextureById(const int id) {
     sf::Sprite icon(texture);
     icon.setTextureRect(sf::IntRect({ tx, ty }, { TILE_W, TILE_H }));
     return icon;
+}
+
+bool TileManager::removeObjectById(int id) {
+    auto before = m_objects.size();
+
+    m_objects.erase(
+        std::remove_if(
+            m_objects.begin(), m_objects.end(),
+            [id](const RenderObject& obj) { return obj.id == id; }
+        ),
+        m_objects.end()
+    );
+
+    return m_objects.size() < before; // true = something was removed
 }
