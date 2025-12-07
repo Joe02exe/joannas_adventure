@@ -276,7 +276,7 @@ void Menu::handleSelection() {
 
 void Menu::render(
     RenderEngine& render_engine, TileManager& tileManager,
-    std::list<std::unique_ptr<Interactable>>& interactable,
+    std::list<std::unique_ptr<Entity>>& entities,
     std::shared_ptr<DialogueBox> dialogueBox
 ) const {
     windowManager->setView(windowManager->getMainView());
@@ -287,7 +287,7 @@ void Menu::render(
 
     render_engine.render(
         windowManager->getWindow(), controller->getPlayer(), tileManager,
-        interactable, dialogueBox
+        entities, dialogueBox
     );
 
     for (std::size_t i = 0; i < texts.size(); ++i) {
@@ -338,14 +338,14 @@ void Menu::render(
 
 void Menu::show(
     RenderEngine& render_engine, TileManager& tileManager,
-    std::list<std::unique_ptr<Interactable>>& interactable,
+    std::list<std::unique_ptr<Entity>>& entities,
     const std::shared_ptr<DialogueBox>& dialogueBox, AudioManager& audioManager
 ) {
     const auto tmp = windowManager->getWindow().getView();
     while (windowManager->getWindow().isOpen() && !isItemClicked) {
 
         handleMenuEvents(audioManager);
-        render(render_engine, tileManager, interactable, dialogueBox);
+        render(render_engine, tileManager, entities, dialogueBox);
     }
     windowManager->getWindow().setView(tmp);
 }

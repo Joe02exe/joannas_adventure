@@ -21,7 +21,7 @@ class NPC: public Interactable {
     void interact(Player& player) override;
 
     void update(
-        float dt, State state, bool facingLeft, const sf::Vector2f& playerPos
+        float dt, State state, const sf::Vector2f& playerPos
     );
 
     void setDialogue(const std::vector<std::string>& messages);

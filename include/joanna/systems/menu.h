@@ -46,7 +46,7 @@ class Menu {
     void renderMouseCursor(sf::RenderTarget& window) const;
     void render(
         RenderEngine& render_engine, TileManager& tileManager,
-        std::list<std::unique_ptr<Interactable>>& interactable,
+        std::list<std::unique_ptr<Entity>>& entities,
         std::shared_ptr<DialogueBox> dialogueBox
     ) const;
 
@@ -54,7 +54,7 @@ class Menu {
     Menu(WindowManager& windowManager, Controller& controller);
     void show(
         RenderEngine& render_engine, TileManager& tileManager,
-        std::list<std::unique_ptr<Interactable>>& interactable,
+        std::list<std::unique_ptr<Entity>>& entities,
         const std::shared_ptr<DialogueBox>& dialogueBox,
         AudioManager& audioManager
     );

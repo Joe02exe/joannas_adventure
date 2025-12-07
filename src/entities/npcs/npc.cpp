@@ -17,7 +17,7 @@ NPC::NPC(
       ),
       dialogueBox(dialogueBox),
       dialogId(dialogId) {
-    animations[State::Idle] = Animation(npcTexturePath, { 96, 64 });
+    animations[State::Idle] = Animation(npcTexturePath, { 96, 64 }, 8);
 }
 
 void NPC::setDialogue(const std::vector<std::string>& messages) {
@@ -60,7 +60,7 @@ void NPC::interact(Player& player) {
 }
 
 void NPC::update(
-    float dt, State state, bool facingLeft, const sf::Vector2f& playerPos
+    float dt, State state, const sf::Vector2f& playerPos
 ) {
     frameTimer += dt;
 
@@ -71,9 +71,9 @@ void NPC::update(
         applyFrame();
     }
     const Direction direction = this->getPosition().x < playerPos.x
-                                    ? Direction::Left
-                                    : Direction::Right;
-    flipFace(direction);
+                                    ? Direction::Right
+                                    : Direction::Left;
+    setFacing(direction);
 
     if (dialogueBox && dialogueBox->isActive()) {
         dialogueBox->update(dt, getPosition());

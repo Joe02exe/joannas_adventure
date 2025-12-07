@@ -64,9 +64,10 @@ sf::Vector2f moveWithCollisions(
 bool Controller::getInput(
     float dt, sf::RenderWindow& window,
     const std::vector<sf::FloatRect>& collisions,
-    std::list<std::unique_ptr<Interactable>>& interactables,
+    std::list<std::unique_ptr<Entity>>& entities,
     const std::shared_ptr<DialogueBox>& sharedDialogueBox,
     TileManager& tileManager, RenderEngine& renderEngine
+
 ) {
     float factor = 30.0f;
 
@@ -119,18 +120,19 @@ bool Controller::getInput(
             }
         }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) &&
-        !sharedDialogueBox->isActive()) {
-        for (auto& entity : interactables) {
-            if (entity->canPlayerInteract(player.getPosition())) {
-                entity->interact(player);
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) && !sharedDialogueBox->isActive()) {
+        for (auto& entity : entities) {
+            if (Interactable* interactable = dynamic_cast<Interactable*>(entity.get())) {
+                if (interactable->canPlayerInteract(player.getPosition())) {
+                    interactable->interact(player);
+                }
             }
         }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
         Menu menu(windowManager, *this);
         menu.show(
-            renderEngine, tileManager, interactables, sharedDialogueBox,
+            renderEngine, tileManager, entities, sharedDialogueBox,
             audioManager
         );
         return true;
@@ -142,7 +144,7 @@ bool Controller::getInput(
     }
 
     bool anyInteractionPoissible = std::any_of(
-        interactables.begin(), interactables.end(),
+        entities.begin(), entities.end(),
         [this](const auto& obj) {
             if (auto* npc = dynamic_cast<NPC*>(obj.get())) {
                 return npc->canPlayerInteract(player.getPosition());
@@ -183,18 +185,21 @@ bool Controller::getInput(
 
 bool Controller::updateStep(
     float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
-    std::list<std::unique_ptr<Interactable>>& interactables,
+    std::list<std::unique_ptr<Entity>>& entities,
     const std::shared_ptr<DialogueBox>& sharedDialogueBox,
     TileManager& tileManager, RenderEngine& renderEngine
 ) {
     // This function can be used for fixed time step updates if needed in future
-    for (auto& entity : interactables) {
+    for (auto& entity : entities) {
         if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
-            npc->update(dt, State::Idle, false, player.getPosition());
+            npc->update(dt, State::Idle, player.getPosition());
+        }
+        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+            enemy->update(dt, State::Idle);
         }
     }
     return getInput(
-        dt, window, collisions, interactables, sharedDialogueBox, tileManager,
+        dt, window, collisions, entities, sharedDialogueBox, tileManager,
         renderEngine
     );
 }

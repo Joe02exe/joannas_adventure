@@ -25,8 +25,6 @@ class Entity {
 
     void setFrame(const sf::IntRect& textureRect);
 
-    void flipFace(const Direction direction);
-
     std::optional<sf::FloatRect> getCollisionBox() const;
 
     std::optional<sf::Vector2f> getCollisionBoxCenter() const;
@@ -41,6 +39,9 @@ class Entity {
 
     Direction getFacing() const;
 
+    void setScale(const sf::Vector2f& scale);
+    sf::Vector2f getScale() const;
+
   private:
     static inline uint32_t NEXT_ID = 1;
     const uint32_t id;
@@ -49,4 +50,5 @@ class Entity {
     sf::Texture texture;
     std::optional<sf::FloatRect> collisionBox;
     std::optional<Direction> direction;
+    sf::Vector2f currentScale = { 1.f, 1.f };
 };

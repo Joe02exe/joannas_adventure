@@ -6,17 +6,15 @@
 #include "joanna/world/tilemanager.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <list>
+#include "joanna/entities/interactable.h"
+#include "joanna/entities/enemy.h"
 
 class RenderEngine {
   public:
     RenderEngine();
 
-    void render(
-        sf::RenderTarget& target, Player& player, TileManager& tileManager,
-        std::list<std::unique_ptr<Interactable>>& interactables,
-        std::shared_ptr<DialogueBox>& dialogueBox
-    );
-
+    void
+    render(sf::RenderTarget& target, Player& player, TileManager& tileManager, std::list<std::unique_ptr<Entity>>& entities, std::shared_ptr<DialogueBox> dialogueBox);
   private:
     float offset = 0.f;
     float dir = 1.f;
