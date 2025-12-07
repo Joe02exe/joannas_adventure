@@ -3,12 +3,12 @@
 #include "extern/tileson.hpp"
 #include "joanna/entities/player.h"
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -20,34 +20,59 @@ struct TileRenderInfo {
     std::optional<sf::FloatRect> collisionBox;
 };
 
+struct RenderObject {
+    uint32_t id = 0;
+    uint32_t gid = 0;
+    sf::Vector2i position;
+    sf::Sprite sprite; // renamed from 'texture' for clarity
+
+    // Explicit default constructor
+    RenderObject(
+        const uint32_t id, uint32_t gid, const sf::Vector2i pos,
+        sf::Sprite sprite
+    )
+        : id(id), gid(gid), position(pos), sprite(std::move(sprite)) {
+        // sf::Sprite is automatically default constructed here
+    }
+};
+
 class TileManager {
   public:
     TileManager();
 
     bool loadMap(const std::string& path);
-    void render(sf::RenderTarget& target, Player& player);
+    // void render(sf::RenderTarget& target, Player& player);
     void clear();
 
     std::vector<sf::FloatRect>& getCollisionRects() {
         return m_collisionRects;
     }
 
-    const std::map<std::string, std::unique_ptr<sf::Texture>>&
+    [[nodiscard]] const std::map<std::string, std::unique_ptr<sf::Texture>>&
     getGroundTextures() const {
         return m_textures;
     }
 
-    const std::vector<TileRenderInfo>& getTiles() const {
+    [[nodiscard]] const std::vector<TileRenderInfo>& getTiles() const {
         return m_tiles;
     }
 
-    const std::vector<TileRenderInfo>& getCollidableTiles() const {
+    [[nodiscard]] const std::vector<TileRenderInfo>&
+    getCollidableTiles() const {
         return m_collidables;
     }
 
-    const std::vector<TileRenderInfo>& getOverlayTiles() const {
+    [[nodiscard]] const std::vector<RenderObject>& getRenderObjects() const {
+        return m_objects;
+    }
+
+    [[nodiscard]] const std::vector<TileRenderInfo>& getOverlayTiles() const {
         return m_overlayTiles;
     }
+
+    sf::Sprite getTextureById(int id);
+
+    bool removeObjectById(int id);
 
   private:
     void processLayer(const std::string& layerName);
@@ -61,4 +86,5 @@ class TileManager {
     std::vector<TileRenderInfo> m_tiles;
     std::vector<TileRenderInfo> m_collidables;
     std::vector<TileRenderInfo> m_overlayTiles;
+    std::vector<RenderObject> m_objects;
 };

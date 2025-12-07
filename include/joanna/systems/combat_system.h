@@ -1,6 +1,6 @@
 #pragma once
 
-#include "joanna/core/combat_types.h"
+#include "joanna/core/combattypes.h"
 #include "joanna/entities/enemy.h"
 #include "joanna/entities/player.h"
 #include <SFML/Graphics.hpp>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "audiomanager.h"
+#include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/interactable.h"
 #include "joanna/entities/player.h"
@@ -18,7 +19,8 @@ class Controller {
         float dt, sf::RenderWindow& window,
         const std::vector<sf::FloatRect>& collisions,
         std::list<std::unique_ptr<Entity>>& entities,
-        const std::shared_ptr<DialogueBox>& sharedDialogueBox
+        const std::shared_ptr<DialogueBox>& sharedDialogueBox,
+        TileManager& tileManager, RenderEngine& renderEngine
 
     );
 
@@ -26,20 +28,25 @@ class Controller {
         float dt, sf::RenderWindow& window,
         std::vector<sf::FloatRect>& collisions,
         std::list<std::unique_ptr<Entity>>& entities,
-        const std::shared_ptr<DialogueBox>& sharedDialogueBox
+        const std::shared_ptr<DialogueBox>& sharedDialogueBox,
+        TileManager& tileManager, RenderEngine& renderEngine
 
     );
 
-    sf::View& getPlayerView() {
+    sf::View& getPlayerView() const {
         return playerView;
     }
 
-    sf::View& getMiniMapView() {
+    sf::View& getMiniMapView() const {
         return miniMapView;
     }
 
     Player& getPlayer() {
         return player;
+    }
+
+    bool renderInventory() const {
+        return displayInventory;
     }
 
   private:
@@ -50,4 +57,7 @@ class Controller {
     sf::View& miniMapView;
     bool facingLeft = false;
     bool keyPressed = false;
+    bool displayInventory = true;
+
+    int counter = 0;
 };

@@ -48,9 +48,9 @@ sf::Vector2f Entity::getPosition() const {
 }
 
 void Entity::setPosition(const sf::Vector2f& position) {
-    Logger::info(
-        "Setting entity {} position to ({}, {})", id, position.x, position.y
-    );
+    // Logger::info(
+    //     "Setting entity {} position to ({}, {})", id, position.x, position.y
+    // );
     const sf::Vector2f delta = position - getPosition();
     sprite->setPosition(getBoundingBox().position + delta);
     if (!collisionBox) // if entity has no collision, we don't want to set it

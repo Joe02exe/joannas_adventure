@@ -214,7 +214,7 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
                 pState = State::Idle;
                 phase = TurnPhase::Returning;
                 turnTimer = 0.0f;
-                enemy->takeDamage(currentAttack.damage);
+                player->takeDamage(currentAttack.damage);
             }
         }
 

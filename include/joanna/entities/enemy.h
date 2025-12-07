@@ -1,6 +1,6 @@
 #pragma once
 
-#include "joanna/core/combat_types.h"
+#include "joanna/core/combattypes.h"
 #include "joanna/entities/entity.h"
 #include "joanna/entities/entityutils.h"
 #include <unordered_map>

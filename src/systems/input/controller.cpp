@@ -1,4 +1,5 @@
 #include "joanna/systems/controller.h"
+
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/entityutils.h"
 #include "joanna/entities/inventory.h"
@@ -19,9 +20,9 @@ Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
       ),
       playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()) {
-        playerView.setCenter(player.getPosition());
-        miniMapView.setCenter(player.getPosition());
-      }
+    playerView.setCenter(player.getPosition());
+    miniMapView.setCenter(player.getPosition());
+}
 
 // clang-format off
 bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
@@ -64,7 +65,8 @@ bool Controller::getInput(
     float dt, sf::RenderWindow& window,
     const std::vector<sf::FloatRect>& collisions,
     std::list<std::unique_ptr<Entity>>& entities,
-    const std::shared_ptr<DialogueBox>& sharedDialogueBox
+    const std::shared_ptr<DialogueBox>& sharedDialogueBox,
+    TileManager& tileManager, RenderEngine& renderEngine
 
 ) {
     float factor = 30.0f;
@@ -94,28 +96,50 @@ bool Controller::getInput(
         dir *= 1.5f;
         state = State::Running;
     }
+    bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
+    if (eDown && !keyPressed) {
+        Logger::info("Inventory opened");
+        displayInventory = !displayInventory;
+    }
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
-        player.addItemToInventory(Item("test", "test"));
+        for (auto& item : tileManager.getRenderObjects()) {
+            auto playerPos = player.getPosition();
+            auto itemPos = item.position;
+            float dx = playerPos.x - static_cast<float>(itemPos.x);
+            float dy = playerPos.y - static_cast<float>(itemPos.y);
+            if (dx * dx + dy * dy <= 16.f * 16.f) {
+                if (tileManager.removeObjectById(static_cast<int>(item.id))) {
+                    auto map = player.getInventory().mapGidToName();
+                    player.addItemToInventory(Item(
+                        std::to_string(item.gid),
+                        map[static_cast<int>(item.gid)]
+                    ));
+                    break;
+                }
+            }
+        }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) && !sharedDialogueBox->isActive()) {
         for (auto& entity : entities) {
             if (Interactable* interactable = dynamic_cast<Interactable*>(entity.get())) {
                 if (interactable->canPlayerInteract(player.getPosition())) {
-                    interactable->interact();
+                    interactable->interact(player);
                 }
             }
         }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-        Menu menu(windowManager);
-        menu.show();
+        Menu menu(windowManager, *this);
+        menu.show(
+            renderEngine, tileManager, entities, sharedDialogueBox,
+            audioManager
+        );
         return true;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
-            sharedDialogueBox->nextLine(
-            );
+            sharedDialogueBox->nextLine();
         }
     }
 
@@ -144,24 +168,26 @@ bool Controller::getInput(
     playerView.move(nextMove);
     windowManager.getMiniMapView().move(nextMove);
 
-    Logger::info(
-        "Player view: ({}, {})", playerView.getCenter().x,
-        playerView.getCenter().y
-    );
-    Logger::info(
-        "Player pos: ({}, {})", player.getPosition().x, player.getPosition().y
-    );
+    // Logger::info(
+    //     "Player view: ({}, {})", playerView.getCenter().x,
+    //     playerView.getCenter().y
+    // );
+    // Logger::info(
+    //     "Player pos: ({}, {})", player.getPosition().x,
+    //     player.getPosition().y
+    // );
     player.setPosition(player.getPosition() + nextMove);
 
     player.update(dt, state, facingLeft, audioManager);
-    keyPressed = spaceDown;
+    keyPressed = spaceDown || eDown;
     return false;
 }
 
 bool Controller::updateStep(
     float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
     std::list<std::unique_ptr<Entity>>& entities,
-    const std::shared_ptr<DialogueBox>& sharedDialogueBox
+    const std::shared_ptr<DialogueBox>& sharedDialogueBox,
+    TileManager& tileManager, RenderEngine& renderEngine
 ) {
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : entities) {
@@ -172,6 +198,8 @@ bool Controller::updateStep(
             enemy->update(dt, State::Idle);
         }
     }
-    
-    return getInput(dt, window, collisions, entities, sharedDialogueBox);
+    return getInput(
+        dt, window, collisions, entities, sharedDialogueBox, tileManager,
+        renderEngine
+    );
 }

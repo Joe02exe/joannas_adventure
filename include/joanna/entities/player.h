@@ -3,8 +3,9 @@
 #include "./entity.h"
 #include "./entityutils.h"
 #include "./inventory.h"
-#include "joanna/core/combat_types.h"
+#include "joanna/core/combattypes.h"
 #include "joanna/systems/audiomanager.h"
+#include "joanna/world/tilemanager.h"
 
 #include <SFML/Graphics.hpp>
 #include <memory>
@@ -27,6 +28,10 @@ class Player: public Entity {
 
     int getHealth() const {
         return health;
+    }
+
+    Inventory& getInventory() {
+        return inventory;
     }
 
   private:

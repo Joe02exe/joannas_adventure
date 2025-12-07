@@ -26,6 +26,8 @@ WindowManager::WindowManager(
         sf::FloatRect({ 0.75f, 0.f }, { MINI_MAP_SIZE, MINI_MAP_SIZE })
     );
 
+    window.setMouseCursorVisible(false);
+
     // ImGUI
     DebugUI::init(window);
 
@@ -38,35 +40,31 @@ void WindowManager::setCenter(const sf::Vector2f& center) {
     miniMapView.setCenter(center);
 }
 
-void WindowManager::pollEvents(
-    const std::function<void(const sf::Event&)>& onEvent
-) {
+void WindowManager::handleResizeEvent(sf::Vector2u newSize) {
+    sf::FloatRect mainViewport = computeMainViewPort(newSize);
+
+    sf::FloatRect miniViewport;
+    miniViewport.position = { mainViewport.position.x + mainViewport.size.x -
+                                  (MINI_MAP_SIZE * mainViewport.size.x),
+                              mainViewport.position.y };
+    miniViewport.size = { MINI_MAP_SIZE * mainViewport.size.x,
+                          MINI_MAP_SIZE * mainViewport.size.y };
+
+    mainView.setViewport(mainViewport);
+    miniMapView.setViewport(miniViewport);
+}
+
+void WindowManager::pollEvents() {
 
     while (const std::optional<sf::Event> event = window.pollEvent()) {
         debug_ui.processEvent(window, *event);
-
-        if (onEvent) {
-            onEvent(*event);
-        }
-
         if (event->is<sf::Event::Closed>()) {
             window.close();
         }
         if (const auto* resized = event->getIf<sf::Event::Resized>()) {
             sf::Vector2u newSize(resized->size.x, resized->size.y);
 
-            sf::FloatRect mainViewport = computeMainViewPort(newSize);
-
-            sf::FloatRect miniViewport;
-            miniViewport.position = { mainViewport.position.x +
-                                          mainViewport.size.x -
-                                          MINI_MAP_SIZE * mainViewport.size.x,
-                                      mainViewport.position.y };
-            miniViewport.size = { MINI_MAP_SIZE * mainViewport.size.x,
-                                  MINI_MAP_SIZE * mainViewport.size.y };
-
-            mainView.setViewport(mainViewport);
-            miniMapView.setViewport(miniViewport);
+            handleResizeEvent(newSize);
         }
     }
 }

@@ -22,7 +22,7 @@ void DebugUI::processEvent(const sf::Window& window, const sf::Event& event)
 
 void DebugUI::update(
     const float dt, sf::RenderWindow& window, Player& player,
-    GameState& gameState, CombatSystem& combatSystem, Enemy& testEnemy
+    GameStatus& gameStatus, CombatSystem& combatSystem, Enemy& testEnemy
 ) const {
     if (!enabled) {
         return;
@@ -51,14 +51,14 @@ void DebugUI::update(
         player.setPosition({ player.getPosition().x, input_y });
     }
 
-    if (gameState == GameState::Overworld) {
+    if (gameStatus == GameStatus::Overworld) {
         if (ImGui::Button("Start Combat")) {
-            gameState = GameState::Combat;
+            gameStatus = GameStatus::Combat;
             combatSystem.startCombat(player, testEnemy);
         }
     } else {
         if (ImGui::Button("End Combat")) {
-            gameState = GameState::Overworld;
+            gameStatus = GameStatus::Overworld;
             combatSystem.endCombat();
         }
     }

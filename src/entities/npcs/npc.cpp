@@ -1,9 +1,13 @@
 #include "joanna/entities/npc.h"
+#include <algorithm>
+
+json NPC::jsonData;
 
 NPC::NPC(
     const sf::Vector2f& startPos, const std::string& npcTexturePath,
     const std::string& buttonTexturePath,
-    std::shared_ptr<DialogueBox> dialogueBox
+    std::shared_ptr<DialogueBox> dialogueBox,
+    std::string dialogId
 )
     : Interactable(
           sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
@@ -11,7 +15,8 @@ NPC::NPC(
           sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 10 }),
           Direction::Left
       ),
-      dialogueBox(dialogueBox) {
+      dialogueBox(dialogueBox),
+      dialogId(dialogId) {
     animations[State::Idle] = Animation(npcTexturePath, { 96, 64 }, 8);
 }
 
@@ -21,14 +26,37 @@ void NPC::setDialogue(const std::vector<std::string>& messages) {
     }
 }
 
-void NPC::interact() {
-    dialogueBox->setDialogue(
-        { "Ostia, didn't see you there traveler!", "My name is Giovannino.",
-          "I would like to show you around...",
-          "... but someone stole my bike and I want to catch him." }
+void NPC::interact(Player& player) {
+    auto& inventory = player.getInventory();
+    auto dialogList = jsonData[dialogId];
+    std::sort(dialogList.begin(), dialogList.end(), 
+        [](const nlohmann::json& a, const nlohmann::json& b) {
+            return a["priority"] > b["priority"];
+        }
     );
 
-    dialogueBox->show();
+    for(auto& entry : dialogList){
+        bool conditionMet = true;
+        if(entry.contains("req") && !entry["req"].is_null()) {
+            json req = entry["req"];
+            std::string type = req["type"];
+            if (type == "ITEM") {
+                std::string itemId = req["id"];
+                int amount = req["amount"];
+                if (inventory.getQuantity(itemId) < amount) {
+                    conditionMet = false;
+                }
+                else {
+                    inventory.removeItem(itemId, amount);
+                }
+            }
+        }
+        if(conditionMet) {
+            dialogueBox->setDialogue(entry["text"]);
+            dialogueBox->show();
+            return;
+        }
+    }
 }
 
 void NPC::update(

@@ -89,4 +89,6 @@ void Enemy::applyFrame() {
 void Enemy::takeDamage(int amount) {
     health -= amount;
     health = std::max(health, 0);
+    std::cout << "Enemy took " << amount << " damage. Health: " << health
+              << "\n";
 }

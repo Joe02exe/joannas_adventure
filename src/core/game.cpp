@@ -14,9 +14,13 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "joanna/core/savegamemanager.h"
 #include "joanna/systems/audiomanager.h"
+#include "joanna/utils/resourcemanager.h"
+
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
+#include <fstream>
 #include <imgui-SFML.h>
 #include <imgui.h>
 
@@ -36,14 +40,22 @@ void Game::run() {
 
     FontRenderer fontRenderer("assets/font/Pixellari.ttf");
 
+    std::ifstream file("assets/dialog/dialog.json");
+    NPC::jsonData = json::parse(file);
     auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
     entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
-        "assets/buttons/talk_T.png", sharedDialogueBox
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
     ));
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png");
     Enemy* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
     entities.push_back(std::move(enemy));
+
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
+    ));
+
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
     for (auto& entity : entities) {
@@ -57,43 +69,69 @@ void Game::run() {
 
     sf::Clock clock;
 
-    Menu menu(windowManager);
-    menu.show();
+    Menu menu(windowManager, controller);
+    menu.show(
+        renderEngine, tileManager, entities, sharedDialogueBox,
+        audioManager
+    );
 
-    clock.reset();
+    // SaveGameManager manager;
+    // GameState state = manager.loadGame();
+    // Logger::info("Load game");
+    // Logger::info("Player x: {}", state.player.x);
+    // Logger::info("Player y: {}", state.player.y);
+    // controller.getPlayer().setPosition(
+    //     sf::Vector2f(state.player.x, state.player.y)
+    // );
+    // controller.getPlayerView().setCenter(
+    //     sf::Vector2f(state.player.x, state.player.y)
+    // );
+    // controller.getMiniMapView().setCenter(
+    //     sf::Vector2f(state.player.x, state.player.y)
+    // );
+
+    // Logger::info("Player X {}", controller.getPlayer().getPosition().x);
+    // Logger::info("Player Y {}", controller.getPlayer().getPosition().y);
+
+    clock.restart();
 
     CombatSystem combatSystem;
-    GameState gameState = GameState::Overworld;
+    GameStatus gameStatus = GameStatus::Overworld;
 
     while (window.isOpen()) {
 
         // handle resizing events
-        windowManager.pollEvents([&](const sf::Event& event) {
-            if (const auto* closed = event.getIf<sf::Event::Closed>()) {
+        while (auto event = window.pollEvent()) {
+            windowManager.getDebugUI().processEvent(window, *event);
+            if (const auto* closed = event->getIf<sf::Event::Closed>()) {
                 window.close();
             }
-            if (gameState == GameState::Combat) {
-                sf::Event e = event;
-                combatSystem.handleInput(e);
+            if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+                windowManager.handleResizeEvent({resized->size.x, resized->size.y});
             }
-        });
+            if (gameStatus == GameStatus::Combat) {
+                combatSystem.handleInput(*event);
+            }
+        }
 
         float dt = clock.restart().asSeconds();
+        if (dt <= 0.0f) dt = 0.0001f;
 
-        if (gameState == GameState::Overworld) {
+        if (gameStatus == GameStatus::Overworld) {
             bool resetClock = controller.updateStep(
-                dt, window, collisions, entities, sharedDialogueBox
+                dt, window, collisions, entities, sharedDialogueBox,
+            tileManager, renderEngine
             );
             if (resetClock) {
                 clock.restart();
             }
-        } else if (gameState == GameState::Combat) {
+        } else if (gameStatus == GameStatus::Combat) {
             combatSystem.update(dt);
         }
 
         windowManager.clear();
 
-        if (gameState == GameState::Overworld) {
+        if (gameStatus == GameStatus::Overworld) {
             controller.getPlayerView().setViewport(
                 windowManager.getMainView().getViewport()
             );
@@ -131,7 +169,7 @@ void Game::run() {
                 nullptr
             );
             postProc.apply(window, clock.getElapsedTime().asSeconds());
-        } else if (gameState == GameState::Combat) {
+        } else if (gameStatus == GameStatus::Combat) {
             sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
             combatView.setViewport(windowManager.getMainView().getViewport());
             window.setView(combatView);
@@ -139,8 +177,58 @@ void Game::run() {
         }
 
         windowManager.getDebugUI().update(
-            dt, window, controller.getPlayer(), gameState, combatSystem, *enemyPtr
+            dt, window, controller.getPlayer(), gameStatus, combatSystem, *enemyPtr
         );
+
+        if (gameStatus == GameStatus::Overworld) {
+            postProc.drawScene(
+                [&](sf::RenderTarget& target, const sf::View& view) {
+                    // world view
+                    target.setView(controller.getPlayerView());
+                    renderEngine.render(
+                        target, controller.getPlayer(), tileManager, entities,
+                        sharedDialogueBox
+                    );
+                    // also draw a blue dot for the player position
+
+                    // keep for debugging player hitbox
+                    // const sf::FloatRect playerHitBox(
+                    //     { controller.getPlayer().getPosition().x + 48.f,
+                    //       controller.getPlayer().getPosition().y + 32.f },
+                    //     { 10.f, 8.f }
+                    // );
+                    // // render hitbox as red rectangle for debugging
+                    // sf::RectangleShape hitboxRect;
+                    // hitboxRect.setSize({ playerHitBox.size.x, playerHitBox.size.y
+                    // }
+                    // );
+                    // hitboxRect.setPosition({ playerHitBox.position.x,
+                    //                          playerHitBox.position.y });
+                    // hitboxRect.setFillColor(sf::Color(255, 0, 0, 50));
+                    // target.draw(hitboxRect);
+
+                    // minimap
+                    target.setView(windowManager.getMiniMapView());
+                    renderEngine.render(
+                        target, controller.getPlayer(), tileManager, entities,
+                        sharedDialogueBox
+                    );
+
+                    // inventory
+                    target.setView(windowManager.getDefaultView());
+                    if (controller.renderInventory()) {
+                        controller.getPlayer().getInventory().displayInventory(
+                            target, tileManager
+                        );
+                    }
+                },
+                nullptr
+            );
+
+            postProc.apply(window, clock.getElapsedTime().asSeconds());
+        }
+
+
 
         windowManager.render();
 
