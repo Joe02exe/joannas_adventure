@@ -83,9 +83,8 @@ void Game::run() {
     clock.reset();
 
     // Combat System Init -> replace with goblin later
-    Enemy testEnemy = Enemy(
-        sf::Vector2f(0, 0), "assets/player/enemies/goblin/idle.png"
-    );
+    Enemy testEnemy =
+        Enemy(sf::Vector2f(0, 0), "assets/player/enemies/goblin/idle.png");
 
     CombatSystem combatSystem;
     GameState gameState = GameState::Overworld;

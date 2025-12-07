@@ -33,6 +33,7 @@ class CombatSystem {
     EntityState enemyState;
 
     sf::Texture backgroundTexture;
+    sf::Texture attackButtonTexture;
 
     CombatState currentState = CombatState::PlayerTurn;
 

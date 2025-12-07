@@ -1,12 +1,16 @@
 #include "joanna/systems/combat_system.h"
+#include "joanna/utils/resourcemanager.h"
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window/Event.hpp>
 #include <iostream>
 
 CombatSystem::CombatSystem() {
-    if (!backgroundTexture.loadFromFile("assets/images/combat_background_cave.png")) {
-        std::cerr << "Failed to load combat background!\n";
-    }
+    backgroundTexture = ResourceManager<sf::Texture>::getInstance()->get(
+        "assets/images/combat_background_cave.png"
+    );
+    attackButtonTexture = ResourceManager<sf::Texture>::getInstance()->get(
+        "assets/buttons/attack.png"
+    );
 }
 
 void CombatSystem::startCombat(Player& p, Enemy& e) {
@@ -15,7 +19,7 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     currentState = CombatState::PlayerTurn;
     turnTimer = 0.0f;
     std::cout << "Combat Started!\n";
-    
+
     // Save state
     playerState.position = player->getPosition();
     playerState.scale = player->getScale();
@@ -26,7 +30,7 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
         enemyState.scale = enemy->getScale();
         enemyState.facing = enemy->getFacing();
     }
-    
+
     // Position entities for combat
     // Assuming screen size 900x900 (logical view)
     // Player on Left, Enemy on Right
@@ -38,11 +42,10 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     // Face each other
     player->setFacing(Direction::Left);
     enemy->setFacing(Direction::Right);
-    
+
     // Scale them up
-    player->setScale({7.f, 7.f});
-    enemy->setScale({7.f, 7.f});
-    
+    player->setScale({ 7.f, 7.f });
+    enemy->setScale({ 7.f, 7.f });
 }
 
 void CombatSystem::endCombat() {
@@ -67,7 +70,7 @@ void CombatSystem::update(float dt) {
         return;
     dt -= 0.007f; // just for visual purpose
     // Update animations
-    static AudioManager dummyAudio; 
+    static AudioManager dummyAudio;
     player->update(dt, State::Idle, false, dummyAudio);
     enemy->update(dt);
 
@@ -113,13 +116,11 @@ void CombatSystem::render(sf::RenderTarget& target) {
 
     // Draw attack buttons for player later
     if (currentState == CombatState::PlayerTurn) {
-        // Simple visual representation of buttons
-        sf::RectangleShape button(sf::Vector2f(100.f, 40.f));
-        button.setFillColor(sf::Color::White);
-        button.setPosition({ target.getView().getSize().x * 0.5f -
-                                 50.f,
-                             target.getView().getSize().y * 0.8f });
-        target.draw(button);
+        sf::Sprite attackButtonSprite(attackButtonTexture);
+        attackButtonSprite.setScale({ 3, 3 });
+        attackButtonSprite.setPosition({ 95.f, 300.f });
+
+        target.draw(attackButtonSprite);
     }
 }
 
@@ -128,16 +129,18 @@ void CombatSystem::handleInput(sf::Event& event) {
         return;
 
     if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
-        if (keyEvent->code == sf::Keyboard::Key::Space) {
+        if (keyEvent->code == sf::Keyboard::Key::A) {
             // TODO Player animation
-            std::cout << "Player attacks!\n";
-            enemy->takeDamage(10);
-            if (enemy->getHealth() <= 0) {
-                currentState = CombatState::Victory;
-                std::cout << "Victory!\n";
-            } else {
-                currentState = CombatState::EnemyTurn;
-            }
+            std::cout << "Player attacks by pressing A!\n";
+        } else if (keyEvent->code == sf::Keyboard::Key::D) {
+            std::cout << "Player attacks by pressing D!\n";
+        }
+        enemy->takeDamage(10);
+        if (enemy->getHealth() <= 0) {
+            currentState = CombatState::Victory;
+            std::cout << "Victory!\n";
+        } else {
+            currentState = CombatState::EnemyTurn;
         }
     }
 }
