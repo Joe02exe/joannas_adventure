@@ -2,8 +2,13 @@
 #include <iostream>
 
 void Player::takeDamage(int amount) {
-    //TODO also subtract health from player
-    std::cout << "Player took " << amount << " damage\n";
+    health -= amount;
+    if (health < 0)
+        health = 0;
+    std::cout << "Player took " << amount << " damage. Health: " << health
+              << "\n";
+    // Trigger Hurt animation logic if needed, but CombatSystem handles state
+    // switch
 }
 
 #include "joanna/systems/audiomanager.h"
@@ -18,22 +23,37 @@ Player::Player(
           ResourceManager<sf::Texture>::getInstance()->get(idlePath),
           sf::FloatRect({ startPos.x, startPos.y }, { 10, 8 }), Direction::Right
       ),
-      inventory(20) {
-    animations[State::Idle] = Animation(idlePath, { 96, 64 });
-    animations[State::Walking] = Animation(walkPath, { 96, 64 });
-    animations[State::Running] = Animation(runPath, { 96, 64 });
+      health(100), maxHealth(100), inventory(20) {
+    animations[State::Idle] = Animation(idlePath, { 96, 64 }, 9);
+    animations[State::Walking] = Animation(walkPath, { 96, 64 }, 8);
+    animations[State::Running] = Animation(runPath, { 96, 64 }, 8);
+
+    // Load combat animations
+    animations[State::Attack] =
+        Animation("assets/player/main/attack.png", { 96, 64 }, 10);
+    animations[State::Roll] =
+        Animation("assets/player/main/roll.png", { 96, 64 }, 10);
+    animations[State::Hurt] =
+        Animation("assets/player/main/hurt.png", { 96, 64 }, 8);
+    animations[State::Dead] =
+        Animation("assets/player/main/dead.png", { 96, 64 }, 13);
+
+    // Initialize attacks
+    attacks.push_back({ "Attack", 10, State::Attack });
+    attacks.push_back({ "Roll", 15, State::Roll });
 }
 
 void Player::update(
-    float dt, State state, bool movingRight, AudioManager& pManager
+    float dt, State state, bool facingLeft, AudioManager& pManager
 ) {
-    setFacing(movingRight ? Direction::Right : Direction::Left);
+    setFacing(facingLeft ? Direction::Left : Direction::Right);
     switchState(state);
 
     frameTimer += dt;
     const auto& anim = animations[currentState];
     if (frameTimer >= anim.frameTime) {
-        if (state != State::Idle && currentFrame % 4 == 0) {
+        if ((state == State::Running || state == State::Walking) &&
+            currentFrame % 4 == 0) {
             pManager.play_sfx(SfxId::Footstep);
         }
 
@@ -41,7 +61,6 @@ void Player::update(
         currentFrame = (currentFrame + 1) % anim.frames.size();
         applyFrame();
     }
-    flipFace(getFacing());
 }
 
 void Player::applyFrame() {

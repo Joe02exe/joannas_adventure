@@ -1,27 +1,35 @@
 #include "joanna/entities/enemy.h"
 #include "joanna/utils/resourcemanager.h"
 
-#include <cstdlib> // for rand
+#include <algorithm>
+#include <cstdlib>  // for rand
+#include <iostream> // for std::cout
 
 Enemy::Enemy(const sf::Vector2f& startPos, const std::string& idlePath)
     : Entity(
-          sf::FloatRect({ startPos.x - 48.f, startPos.y - 32.f }, { 96.f, 64.f }), ResourceManager<sf::Texture>::getInstance()->get(idlePath)
-      ) { // Placeholder init
+          sf::FloatRect(
+              { startPos.x - 48.f, startPos.y - 32.f }, { 96.f, 64.f }
+          ),
+          ResourceManager<sf::Texture>::getInstance()->get(idlePath)
+      ) {
 
-    // We don't need to load texture here manually if we use Animation struct
-    // But for now let's keep it consistent or just use the animation map.
-    
-    // Initialize animations
-    // Assuming goblin idle is 32x32 per frame? Or maybe larger?
-    // User said "player/enemies/goblin/idle.png".
-    // Let's assume standard size for now, maybe 32x32 or 64x64.
-    // Player uses 96x64.
-    // Let's try to load it and see size or assume 32x32 based on "newmap.json" or similar?
-    // Actually, let's just use a reasonable default like 32x32 or 48x48.
-    // If the file is a strip, Animation struct handles it.
-    // Let's assume 32x32 for now as it's a common tile size.
-    animations[State::Idle] = Animation(idlePath, { 96, 64 });
-    
+    animations[State::Idle] = Animation(idlePath, { 96, 64 }, 8);
+    animations[State::Walking] =
+        Animation("assets/player/enemies/goblin/run.png", { 96, 64 }, 8);
+    animations[State::Running] =
+        Animation("assets/player/enemies/goblin/run.png", { 96, 64 }, 8);
+
+    animations[State::Attack] =
+        Animation("assets/player/enemies/goblin/attack.png", { 96, 64 }, 9);
+    animations[State::Roll] =
+        Animation("assets/player/enemies/goblin/roll.png", { 96, 64 }, 10);
+    animations[State::Hurt] =
+        Animation("assets/player/enemies/goblin/hurt.png", { 96, 64 }, 8);
+    animations[State::Dead] =
+        Animation("assets/player/enemies/goblin/dead.png", { 96, 64 }, 9);
+    animations[State::Mining] =
+        Animation("assets/player/enemies/goblin/mining.png", { 96, 64 }, 10);
+
     // Set initial texture
     applyFrame();
 
@@ -30,18 +38,25 @@ Enemy::Enemy(const sf::Vector2f& startPos, const std::string& idlePath)
     attacks.push_back({ "Bite", 10 });
 }
 
-void Enemy::update(float dt) {
+void Enemy::update(float dt, State state) {
+    if (currentState != state) {
+        switchState(state);
+    }
+
     frameTimer += dt;
     const auto& anim = animations[currentState];
-    // Safety check if animation has frames
-    if (!anim.frames.empty()) {
-        if (frameTimer >= anim.frameTime) {
-            frameTimer -= anim.frameTime;
-            currentFrame = (currentFrame + 1) % anim.frames.size();
-            applyFrame();
+    // Use frameCount from animation if we had it exposed, or just size of
+    // frames
+    float duration = anim.frames.size() * Animation::frameTime;
+
+    if (frameTimer >= Animation::frameTime) {
+        frameTimer -= Animation::frameTime;
+        currentFrame++;
+        if (currentFrame >= anim.frames.size()) {
+            currentFrame = 0;
         }
+        applyFrame();
     }
-    flipFace(getFacing());
 }
 
 void Enemy::draw(sf::RenderTarget& target) const {
@@ -59,17 +74,11 @@ void Enemy::switchState(State newState) {
 
 void Enemy::applyFrame() {
     const auto& anim = animations[currentState];
-    if (anim.frames.empty()) return;
     setTexture(anim.texture);
     setFrame(anim.frames[currentFrame]);
 }
 
 void Enemy::takeDamage(int amount) {
     health -= amount;
-    if (health < 0)
-        health = 0;
-}
-
-const Attack& Enemy::chooseAttack() {
-    return attacks[std::rand() % attacks.size()];
+    health = std::max(health, 0);
 }
