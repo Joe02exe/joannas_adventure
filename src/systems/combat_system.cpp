@@ -38,20 +38,20 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     enemy->setScale({ 7.f, 7.f });
 
     phase = TurnPhase::Input;
+    currentState = CombatState::PlayerTurn;
+    eState = State::Idle;
+    pState = State::Idle;
 }
 
 void CombatSystem::endCombat() {
-    if (player != nullptr) {
-        player->setPosition(playerState.position);
-        player->setScale(playerState.scale);
-        player->setFacing(playerState.facing);
-    }
-    if (enemy != nullptr) {
-        enemy->setPosition(enemyState.position);
-        enemy->setScale(enemyState.scale);
-        enemy->setFacing(enemyState.facing);
-        enemy->takeDamage(-100);
-    }
+    player->setPosition(playerState.position);
+    player->setScale(playerState.scale);
+    player->setFacing(playerState.facing);
+
+    enemy->setPosition(enemyState.position);
+    enemy->setScale(enemyState.scale);
+    enemy->setFacing(enemyState.facing);
+    enemy->takeDamage(-100);
 }
 
 void CombatSystem::update(float dt) {
@@ -66,7 +66,7 @@ void CombatSystem::update(float dt) {
     }
 
     // Determine facing for player
-    // Player faces Right (towards enemy) unless returning
+    // player faces right (towards enemy) unless returning
     bool facingLeft = false;
     if (currentState == CombatState::PlayerTurn &&
         phase == TurnPhase::Returning) {
@@ -81,10 +81,10 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
     if (phase == TurnPhase::Approaching) {
         pState = State::Running;
         sf::Vector2f dir = targetPos - player->getPosition();
-        float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-        if (dist > 10.f) {
-            dir /= dist;
-            player->setPosition(player->getPosition() + dir * 500.f * dt);
+        if (dir.x > 10.f) {
+            player->setPosition(
+                player->getPosition() + sf::Vector2f(500.f * dt, 0.f)
+            );
         } else {
             phase = TurnPhase::Attacking;
             turnTimer = 0.0f;
@@ -92,7 +92,6 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
     } else if (phase == TurnPhase::Attacking) {
         pState = currentAttack.animationState;
 
-        // Hurt animation logic: delay 0.2s, play once (approx 0.64s)
         if (currentAttack.name == "Attack") {
             if (turnTimer < 0.3f) {
                 eState = State::Idle;
@@ -107,15 +106,15 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
         } else {
         }
 
-        // Move player during Roll
+        // move player during roll
         if (currentAttack.name == "Roll") {
             sf::Vector2f rollTarget = enemy->getPosition();
-            rollTarget.x -= 90.f; // Stop right in front
+            rollTarget.x -= 90.f; // stop right in front
             sf::Vector2f dir = rollTarget - player->getPosition();
-            float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-            if (dist > 5.f) {
-                dir /= dist;
-                player->setPosition(player->getPosition() + dir * 800.f * dt);
+            if (dir.x > 5.f) {
+                player->setPosition(
+                    player->getPosition() + sf::Vector2f(800.f * dt, 0.f)
+                );
             }
             if (turnTimer < 0.2f) {
                 eState = State::Idle;
@@ -134,10 +133,10 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
     } else if (phase == TurnPhase::Returning) {
         pState = State::Running;
         sf::Vector2f dir = startPos - player->getPosition();
-        float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-        if (dist > 10.f) {
-            dir /= dist;
-            player->setPosition(player->getPosition() + dir * 500.f * dt);
+        if (dir.x < -10.f) {
+            player->setPosition(
+                player->getPosition() + sf::Vector2f(-500.f * dt, 0.f)
+            );
         } else {
             player->setPosition(startPos);
             phase = TurnPhase::EndTurn;
@@ -173,10 +172,10 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
         eState = State::Running;
         enemy->setFacing(Direction::Left);
         sf::Vector2f dir = targetPos - enemy->getPosition();
-        float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-        if (dist > 10.f) {
-            dir /= dist;
-            enemy->setPosition(enemy->getPosition() + dir * 500.f * dt);
+        if (dir.x < -10.f) {
+            enemy->setPosition(
+                enemy->getPosition() + sf::Vector2f(-500.f * dt, 0.f)
+            );
         } else {
             phase = TurnPhase::Attacking;
             turnTimer = 0.0f;
@@ -202,10 +201,10 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
             sf::Vector2f rollTarget = player->getPosition();
             rollTarget.x += 85.f; // Stop right in front
             sf::Vector2f dir = rollTarget - enemy->getPosition();
-            float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-            if (dist > 5.f) {
-                dir /= dist;
-                enemy->setPosition(enemy->getPosition() + dir * 800.f * dt);
+            if (dir.x < -5.f) {
+                enemy->setPosition(
+                    enemy->getPosition() + sf::Vector2f(-800.f * dt, 0.f)
+                );
             }
             if (turnTimer < 0.2f) {
                 pState = State::Idle;
@@ -224,10 +223,10 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
         enemy->setFacing(Direction::Right);
         eState = State::Running;
         sf::Vector2f dir = startPos - enemy->getPosition();
-        float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-        if (dist > 10.f) {
-            dir /= dist;
-            enemy->setPosition(enemy->getPosition() + dir * 500.f * dt);
+        if (dir.x > 10.f) {
+            enemy->setPosition(
+                enemy->getPosition() + sf::Vector2f(500.f * dt, 0.f)
+            );
         } else {
             enemy->setPosition(startPos);
             enemy->setFacing(Direction::Left);
@@ -278,11 +277,14 @@ void CombatSystem::handleInput(sf::Event& event) {
             targetPos = enemy->getPosition();
             if (keyEvent->code == sf::Keyboard::Key::A) {
                 currentAttack = { "Attack", 10, State::Attack };
-                targetPos.x -= 120.f; // Close range
+                targetPos.x -= 120.f; // close range attack, but still a bit
+                                      // away from the enemy
                 phase = TurnPhase::Approaching;
             } else if (keyEvent->code == sf::Keyboard::Key::D) {
                 currentAttack = { "Roll", 15, State::Roll };
-                targetPos.x -= 340.f; // Start roll from further away
+                targetPos.x -=
+                    340.f; // Start roll from further away, therefore our
+                           // targetPos is a bit away from the enemy
                 phase = TurnPhase::Approaching;
             }
         }
