@@ -10,7 +10,7 @@ class Enemy: public Entity {
   public:
     Enemy(const sf::Vector2f& startPos, const std::string& idlePath);
 
-    void update(float dt);
+    void update(float dt, State state);
     void draw(sf::RenderTarget& target) const;
 
     void takeDamage(int amount);
@@ -18,8 +18,6 @@ class Enemy: public Entity {
     int getHealth() const {
         return health;
     }
-
-    const Attack& chooseAttack();
 
   private:
     void switchState(State newState);

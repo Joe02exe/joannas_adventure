@@ -28,18 +28,6 @@ void Entity::setFrame(const sf::IntRect& textureRect) {
     sprite->setTextureRect(textureRect);
 }
 
-void Entity::flipFace(const Direction direction) {
-    this->direction = direction;
-    float width = sprite->getLocalBounds().size.x;
-    if (direction == Direction::Right) {
-        sprite->setScale({ -currentScale.x, currentScale.y });
-        sprite->setOrigin({ width, 0.f });
-    } else {
-        sprite->setScale({ currentScale.x, currentScale.y });
-        sprite->setOrigin({ 0.f, 0.f });
-    }
-}
-
 std::optional<sf::FloatRect> Entity::getCollisionBox() const {
     return collisionBox;
 }
@@ -77,7 +65,14 @@ sf::FloatRect Entity::getBoundingBox() const {
 
 void Entity::setFacing(Direction newDirection) {
     this->direction = newDirection;
-    flipFace(newDirection);
+    float width = sprite->getLocalBounds().size.x;
+    if (newDirection == Direction::Left) {
+        sprite->setScale({ -currentScale.x, currentScale.y });
+        sprite->setOrigin({ width, 0.f });
+    } else {
+        sprite->setScale({ currentScale.x, currentScale.y });
+        sprite->setOrigin({ 0.f, 0.f });
+    }
 }
 
 Direction Entity::getFacing() const {
@@ -87,7 +82,7 @@ Direction Entity::getFacing() const {
 void Entity::setScale(const sf::Vector2f& scale) {
     currentScale = scale;
     // Re-apply facing to update scale and origin
-    flipFace(getFacing());
+    setFacing(getFacing());
 }
 
 sf::Vector2f Entity::getScale() const {

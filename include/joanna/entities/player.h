@@ -22,6 +22,12 @@ class Player: public Entity {
     update(float dt, State state, bool movingRight, AudioManager& pManager);
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
+    std::vector<Attack> attacks;
+    void takeDamage(int amount);
+
+    int getHealth() const {
+        return health;
+    }
 
   private:
     std::unordered_map<State, Animation> animations;
@@ -30,15 +36,9 @@ class Player: public Entity {
 
     float frameTimer = 0.f;
     int currentFrame = 0;
+    int health;
+    int maxHealth;
 
     void switchState(State newState);
     void applyFrame();
-
-  public:
-    std::vector<Attack> attacks;
-    void takeDamage(int amount);
-
-    int getHealth() const {
-        return 100;
-    }
 };

@@ -4,7 +4,9 @@
 
 Animation::Animation() = default;
 
-Animation::Animation(const std::string& path, const sf::Vector2i& frameSize)
+Animation::Animation(
+    const std::string& path, const sf::Vector2i& frameSize, int frameCount
+)
     : texture(ResourceManager<sf::Texture>::getInstance()->get(path)) {
     frames.reserve(frameCount);
     for (int i = 0; i < frameCount; ++i)

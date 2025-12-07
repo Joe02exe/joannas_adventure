@@ -25,8 +25,6 @@ class Entity {
 
     void setFrame(const sf::IntRect& textureRect);
 
-    void flipFace(const Direction direction);
-
     std::optional<sf::FloatRect> getCollisionBox() const;
 
     std::optional<sf::Vector2f> getCollisionBoxCenter() const;
