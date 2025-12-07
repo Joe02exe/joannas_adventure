@@ -46,6 +46,9 @@ class CombatSystem {
     sf::Vector2f targetPos;
     Attack currentAttack;
 
+    State pState = State::Idle;
+    State eState = State::Idle;
+
     void updatePlayerTurn(float dt, State& pState, State& eState);
     void updateEnemyTurn(float dt, State& pState, State& eState);
 };

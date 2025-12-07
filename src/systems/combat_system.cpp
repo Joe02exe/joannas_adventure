@@ -15,8 +15,6 @@ CombatSystem::CombatSystem()
 void CombatSystem::startCombat(Player& p, Enemy& e) {
     player = &p;
     enemy = &e;
-    currentState = CombatState::PlayerTurn;
-    turnTimer = 0.0f;
     std::cout << "Combat Started!\n";
 
     // Save state
@@ -57,25 +55,15 @@ void CombatSystem::endCombat() {
 }
 
 void CombatSystem::update(float dt) {
-    if (player == nullptr || enemy == nullptr)
-        return;
+
     dt -= 0.007f; // just for visual purpose
     static AudioManager dummyAudio;
-
-    State pState = State::Idle;
-    State eState = State::Idle;
 
     if (currentState == CombatState::PlayerTurn) {
         updatePlayerTurn(dt, pState, eState);
     } else if (currentState == CombatState::EnemyTurn) {
         updateEnemyTurn(dt, pState, eState);
     }
-
-    // Handle Hurt/Dead states overrides
-    if (player->getHealth() <= 0)
-        pState = State::Dead;
-    if (enemy->getHealth() <= 0)
-        eState = State::Dead;
 
     // Determine facing for player
     // Player faces Right (towards enemy) unless returning
@@ -105,18 +93,44 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
         pState = currentAttack.animationState;
 
         // Hurt animation logic: delay 0.2s, play once (approx 0.64s)
-        if (turnTimer >= 0.2f && turnTimer < 0.84f) {
-            eState = State::Hurt;
+        if (currentAttack.name == "Attack") {
+            if (turnTimer < 0.3f) {
+                eState = State::Idle;
+            } else if (turnTimer < 0.8f) {
+                eState = State::Hurt;
+            } else {
+                eState = State::Idle;
+                phase = TurnPhase::Returning;
+                turnTimer = 0.0f;
+                enemy->takeDamage(currentAttack.damage);
+            }
         } else {
-            eState = State::Idle;
+        }
+
+        // Move player during Roll
+        if (currentAttack.name == "Roll") {
+            sf::Vector2f rollTarget = enemy->getPosition();
+            rollTarget.x -= 90.f; // Stop right in front
+            sf::Vector2f dir = rollTarget - player->getPosition();
+            float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+            if (dist > 5.f) {
+                dir /= dist;
+                player->setPosition(player->getPosition() + dir * 800.f * dt);
+            }
+            if (turnTimer < 0.2f) {
+                eState = State::Idle;
+            } else if (turnTimer < 0.85f) {
+                eState = State::Hurt;
+            } else {
+                eState = State::Idle;
+                phase = TurnPhase::Returning;
+                turnTimer = 0.0f;
+                enemy->takeDamage(currentAttack.damage);
+            }
         }
 
         turnTimer += dt;
-        if (turnTimer >= 0.9f) {
-            enemy->takeDamage(currentAttack.damage);
-            phase = TurnPhase::Returning;
-            turnTimer = 0.0f;
-        }
+
     } else if (phase == TurnPhase::Returning) {
         pState = State::Running;
         sf::Vector2f dir = startPos - player->getPosition();
@@ -127,9 +141,11 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
         } else {
             player->setPosition(startPos);
             phase = TurnPhase::EndTurn;
+            pState = State::Idle;
         }
     } else if (phase == TurnPhase::EndTurn) {
-        if (eState == State::Dead) {
+        if (enemy->getHealth() <= 0) {
+            eState = State::Dead;
             currentState = CombatState::Victory;
             std::cout << "Victory!\n";
         } else {
@@ -144,12 +160,13 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
     if (phase == TurnPhase::Input) {
         startPos = enemy->getPosition();
         targetPos = player->getPosition();
-        targetPos.x += 100.f;
 
         if (rand() % 2 == 0) {
             currentAttack = { "Mining", 5, State::Mining };
+            targetPos.x += 130.f;
         } else {
             currentAttack = { "Roll", 8, State::Roll };
+            targetPos.x += 280.f;
         }
         phase = TurnPhase::Approaching;
     } else if (phase == TurnPhase::Approaching) {
@@ -167,24 +184,45 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
     } else if (phase == TurnPhase::Attacking) {
         eState = currentAttack.animationState;
 
-        // Hurt animation logic: delay 0.2s, play only once
-        if (turnTimer >= 0.2f && turnTimer < 0.84f) {
-            pState = State::Hurt;
-        } else {
-            pState = State::Idle;
+        if (currentAttack.name == "Mining") {
+            if (turnTimer < 0.4f) {
+                pState = State::Idle;
+            } else if (turnTimer < 0.9f) {
+                pState = State::Hurt;
+            } else {
+                pState = State::Idle;
+                phase = TurnPhase::Returning;
+                turnTimer = 0.0f;
+                player->takeDamage(currentAttack.damage);
+            }
         }
 
-        enemy->setFacing(Direction::Left);
+        // Move enemy during Roll
+        if (currentAttack.name == "Roll") {
+            sf::Vector2f rollTarget = player->getPosition();
+            rollTarget.x += 85.f; // Stop right in front
+            sf::Vector2f dir = rollTarget - enemy->getPosition();
+            float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+            if (dist > 5.f) {
+                dir /= dist;
+                enemy->setPosition(enemy->getPosition() + dir * 800.f * dt);
+            }
+            if (turnTimer < 0.2f) {
+                pState = State::Idle;
+            } else if (turnTimer < 0.8f) {
+                pState = State::Hurt;
+            } else {
+                pState = State::Idle;
+                phase = TurnPhase::Returning;
+                turnTimer = 0.0f;
+                enemy->takeDamage(currentAttack.damage);
+            }
+        }
 
         turnTimer += dt;
-        if (turnTimer >= 0.9f) {
-            player->takeDamage(currentAttack.damage);
-            phase = TurnPhase::Returning;
-            turnTimer = 0.0f;
-        }
     } else if (phase == TurnPhase::Returning) {
-        eState = State::Running;
         enemy->setFacing(Direction::Right);
+        eState = State::Running;
         sf::Vector2f dir = startPos - enemy->getPosition();
         float dist = std::sqrt(dir.x * dir.x + dir.y * dir.y);
         if (dist > 10.f) {
@@ -194,9 +232,11 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
             enemy->setPosition(startPos);
             enemy->setFacing(Direction::Left);
             phase = TurnPhase::EndTurn;
+            eState = State::Idle;
         }
     } else if (phase == TurnPhase::EndTurn) {
-        if (pState == State::Dead) {
+        if (player->getHealth() <= 0) {
+            pState = State::Dead;
             currentState = CombatState::Defeat;
             std::cout << "Defeat!\n";
         } else {
@@ -236,12 +276,13 @@ void CombatSystem::handleInput(sf::Event& event) {
         if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
             startPos = player->getPosition();
             targetPos = enemy->getPosition();
-            targetPos.x -= 120.f;
             if (keyEvent->code == sf::Keyboard::Key::A) {
                 currentAttack = { "Attack", 10, State::Attack };
+                targetPos.x -= 120.f; // Close range
                 phase = TurnPhase::Approaching;
             } else if (keyEvent->code == sf::Keyboard::Key::D) {
                 currentAttack = { "Roll", 15, State::Roll };
+                targetPos.x -= 340.f; // Start roll from further away
                 phase = TurnPhase::Approaching;
             }
         }

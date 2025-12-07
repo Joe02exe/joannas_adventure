@@ -51,9 +51,15 @@ void Enemy::update(float dt, State state) {
 
     if (frameTimer >= Animation::frameTime) {
         frameTimer -= Animation::frameTime;
-        currentFrame++;
-        if (currentFrame >= anim.frames.size()) {
-            currentFrame = 0;
+
+        if (currentState == State::Dead &&
+            currentFrame == anim.frames.size() - 1) {
+            // Do not loop dead animation
+        } else {
+            currentFrame++;
+            if (currentFrame >= anim.frames.size()) {
+                currentFrame = 0;
+            }
         }
         applyFrame();
     }

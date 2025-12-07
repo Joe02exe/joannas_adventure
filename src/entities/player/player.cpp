@@ -58,7 +58,14 @@ void Player::update(
         }
 
         frameTimer -= anim.frameTime; // keep leftover time
-        currentFrame = (currentFrame + 1) % anim.frames.size();
+
+        if (currentState == State::Dead &&
+            currentFrame == anim.frames.size() - 1) {
+            // Do not loop dead animation
+        } else {
+            currentFrame = (currentFrame + 1) % anim.frames.size();
+        }
+
         applyFrame();
     }
 }
