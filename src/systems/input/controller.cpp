@@ -119,10 +119,11 @@ bool Controller::getInput(
             }
         }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) &&
+        !sharedDialogueBox->isActive()) {
         for (auto& entity : interactables) {
             if (entity->canPlayerInteract(player.getPosition())) {
-                entity->interact();
+                entity->interact(player);
             }
         }
     }

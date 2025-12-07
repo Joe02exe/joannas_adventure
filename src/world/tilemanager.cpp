@@ -11,7 +11,7 @@
 
 TileManager::TileManager()
     : tsonParser(), m_currentMap(nullptr), m_textures(), m_tiles() {
-    if (!loadMap("./assets/environment/map/map_village4.json")) {
+    if (!loadMap("./assets/environment/map/newmap.json")) {
         Logger::error("Failed to load map!");
     }
     Logger::info("Map loaded successfully");
@@ -102,7 +102,6 @@ void TileManager::processLayer(const std::string& layerName) {
     if (!m_currentMap) {
         return;
     }
-    Logger::info("Layer {}", layerName);
 
     tson::Layer* layer = m_currentMap->getLayer(layerName);
     if (layer->getType() == tson::LayerType::ObjectGroup) {

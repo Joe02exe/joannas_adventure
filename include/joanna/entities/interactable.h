@@ -1,6 +1,7 @@
 #pragma once
 
 #include "joanna/entities/entity.h"
+#include "joanna/entities/player.h"
 #include "joanna/entities/entityutils.h"
 #include "joanna/entities/interactionbutton.h"
 #include "joanna/utils/logger.h"
@@ -19,7 +20,7 @@ class Interactable: public Entity {
 
     virtual ~Interactable() = default;
 
-    virtual void interact() = 0;
+    virtual void interact(Player& player) = 0;
 
     void renderButton(sf::RenderTarget& target);
 

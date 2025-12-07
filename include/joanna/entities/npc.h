@@ -4,16 +4,21 @@
 #include "joanna/entities/interactable.h"
 #include "joanna/entities/player.h"
 #include "joanna/utils/dialogue_box.h"
+#include "nlohmann/json.hpp"
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
 
+using json = nlohmann::json;
+
 class NPC: public Interactable {
   public:
+    static json jsonData;
     NPC(const sf::Vector2f& startPos, const std::string& npcTexturePath,
         const std::string& buttonTexturePath,
-        std::shared_ptr<DialogueBox> dialogueBox);
+        std::shared_ptr<DialogueBox> dialogueBox,
+        std::string dialogId);
 
-    void interact() override;
+    void interact(Player& player) override;
 
     void update(
         float dt, State state, bool facingLeft, const sf::Vector2f& playerPos
@@ -33,4 +38,5 @@ class NPC: public Interactable {
     int currentFrame = 0;
     std::unordered_map<State, Animation> animations;
     std::shared_ptr<DialogueBox> dialogueBox;
+    std::string dialogId;
 };
