@@ -221,10 +221,6 @@ void Inventory::drawItemSprite(
     icon.setScale({ scale, scale });
     icon.setPosition({ slotPos.x + (slotSize - (16.f * scale)) / 2.f,
                        slotPos.y + (slotSize - (16.f * scale)) / 2.f + 8.f });
-    Logger::info(
-        "Draw icon at position ({}, {})", icon.getPosition().x,
-        icon.getPosition().y
-    );
     target.draw(icon);
 }
 
@@ -255,8 +251,9 @@ void Inventory::displayInventory(
     // Convert unordered_map to vector for display order
     std::vector<StoredItem> vec;
     vec.reserve(items_.size());
-    for (const auto& p : items_)
+    for (const auto& p : items_) {
         vec.push_back(p.second);
+    }
 
     const std::size_t columns = 8;
     const float slotSize = 64.f;

@@ -8,9 +8,17 @@ class Logger {
     static void info(const std::string& message);
     static void warning(const std::string& message);
     static void error(const std::string& message);
+    static void debug(const std::string& message);
 
     template <typename... Args>
     static void info(fmt::format_string<Args...> fmt, Args&&... args) {
+        if constexpr (LOGGING_ENABLED) {
+            spdlog::info(fmt, std::forward<Args>(args)...);
+        }
+    }
+
+    template <typename... Args>
+    static void debug(fmt::format_string<Args...> fmt, Args&&... args) {
         if constexpr (LOGGING_ENABLED) {
             spdlog::info(fmt, std::forward<Args>(args)...);
         }

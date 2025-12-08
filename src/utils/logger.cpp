@@ -14,6 +14,12 @@ void Logger::info(const std::string& message) {
     }
 }
 
+void Logger::debug(const std::string& message) {
+    if constexpr (LOGGING_ENABLED) {
+        spdlog::debug(message);
+    }
+}
+
 void Logger::warning(const std::string& message) {
     if constexpr (LOGGING_ENABLED) {
         spdlog::warn(message);
