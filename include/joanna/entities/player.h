@@ -3,7 +3,9 @@
 #include "./entity.h"
 #include "./entityutils.h"
 #include "./inventory.h"
+#include "joanna/core/combattypes.h"
 #include "joanna/systems/audiomanager.h"
+#include "joanna/world/tilemanager.h"
 
 #include <SFML/Graphics.hpp>
 #include <memory>
@@ -21,6 +23,16 @@ class Player: public Entity {
     update(float dt, State state, bool movingRight, AudioManager& pManager);
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
+    std::vector<Attack> attacks;
+    void takeDamage(int amount);
+
+    int getHealth() const {
+        return health;
+    }
+
+    Inventory& getInventory() {
+        return inventory;
+    }
 
   private:
     std::unordered_map<State, Animation> animations;
@@ -29,6 +41,8 @@ class Player: public Entity {
 
     float frameTimer = 0.f;
     int currentFrame = 0;
+    int health;
+    int maxHealth;
 
     void switchState(State newState);
     void applyFrame();

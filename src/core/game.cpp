@@ -12,10 +12,15 @@
 #include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Texture.hpp"
 #include "joanna/core/savegamemanager.h"
 #include "joanna/systems/audiomanager.h"
+#include "joanna/utils/resourcemanager.h"
+
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
+#include <fstream>
 #include <imgui-SFML.h>
 #include <imgui.h>
 
@@ -31,18 +36,31 @@ void Game::run() {
     sf::RenderWindow& window = windowManager.getWindow();
     Controller controller(windowManager, audioManager);
 
-    std::list<std::unique_ptr<Interactable>> interactables;
+    std::list<std::unique_ptr<Entity>> entities;
 
     FontRenderer fontRenderer("assets/font/Pixellari.ttf");
 
+    std::ifstream file("assets/dialog/dialog.json");
+    NPC::jsonData = json::parse(file);
     auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
-    interactables.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 100.f }, "assets/player/npc/joe.png",
-        "assets/buttons/talk_T.png", sharedDialogueBox
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
     ));
+    std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
+        sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png"
+    );
+    auto* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
+    entities.push_back(std::move(enemy));
+
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
+    ));
+
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
-    for (auto& entity : interactables) {
+    for (auto& entity : entities) {
         if (auto box = entity->getCollisionBox()) {
             collisions.push_back(*box);
         }
@@ -54,7 +72,9 @@ void Game::run() {
     sf::Clock clock;
 
     Menu menu(windowManager, controller);
-    menu.show();
+    menu.show(
+        renderEngine, tileManager, entities, sharedDialogueBox, audioManager
+    );
 
     SaveGameManager manager;
     GameState state = manager.loadGame();
@@ -74,79 +94,92 @@ void Game::run() {
     Logger::info("Player X {}", controller.getPlayer().getPosition().x);
     Logger::info("Player Y {}", controller.getPlayer().getPosition().y);
 
-    clock.reset();
+    clock.restart();
+
+    CombatSystem combatSystem;
+    GameStatus gameStatus = GameStatus::Overworld;
 
     while (window.isOpen()) {
 
         // handle resizing events
-        windowManager.pollEvents();
+        while (auto event = window.pollEvent()) {
+            windowManager.getDebugUI().processEvent(window, *event);
+            if (const auto* closed = event->getIf<sf::Event::Closed>()) {
+                window.close();
+            }
+            if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+                windowManager.handleResizeEvent({ resized->size.x,
+                                                  resized->size.y });
+            }
+            if (gameStatus == GameStatus::Combat) {
+                combatSystem.handleInput(*event);
+            }
+        }
 
         float dt = clock.restart().asSeconds();
+        if (dt <= 0.0f)
+            dt = 0.0001f;
 
-        bool resetClock = controller.updateStep(
-            dt, window, collisions, interactables, sharedDialogueBox
-        );
-        if (resetClock) {
-            clock.restart();
+        if (gameStatus == GameStatus::Overworld) {
+            bool resetClock = controller.updateStep(
+                dt, window, collisions, entities, sharedDialogueBox,
+                tileManager, renderEngine
+            );
+            if (resetClock) {
+                clock.restart();
+            }
+        } else if (gameStatus == GameStatus::Combat) {
+            combatSystem.update(dt);
         }
 
         windowManager.clear();
-        controller.getPlayerView().setViewport(
-            windowManager.getMainView().getViewport()
+
+        if (gameStatus == GameStatus::Overworld) {
+            controller.getPlayerView().setViewport(
+                windowManager.getMainView().getViewport()
+            );
+
+            postProc.drawScene(
+                [&](sf::RenderTarget& target, const sf::View& view) {
+                    // world view
+                    target.setView(controller.getPlayerView());
+                    renderEngine.render(
+                        target, controller.getPlayer(), tileManager, entities,
+                        sharedDialogueBox
+                    );
+
+                    // minimap
+                    target.setView(windowManager.getMiniMapView());
+                    renderEngine.render(
+                        target, controller.getPlayer(), tileManager, entities,
+                        sharedDialogueBox
+                    );
+
+                    // ui
+                    target.setView(windowManager.getDefaultView());
+                },
+                nullptr
+            );
+            postProc.apply(window, clock.getElapsedTime().asSeconds());
+
+            window.setView(windowManager.getDefaultView());
+
+            if (controller.renderInventory()) {
+                controller.getPlayer().getInventory().displayInventory(
+                    window, tileManager
+                );
+            }
+        } else if (gameStatus == GameStatus::Combat) {
+            sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
+            combatView.setViewport(windowManager.getMainView().getViewport());
+            window.setView(combatView);
+            combatSystem.render(window);
+        }
+
+        windowManager.getDebugUI().update(
+            dt, window, controller.getPlayer(), gameStatus, combatSystem,
+            *enemyPtr
         );
-
-        postProc.drawScene(
-            [&](sf::RenderTarget& target, const sf::View& view) {
-                // world view
-                target.setView(controller.getPlayerView());
-                renderEngine.render(
-                    target, controller.getPlayer(), tileManager, interactables,
-                    sharedDialogueBox
-                );
-                // also draw a blue dot for the player position
-
-                // keep for debugging player hitbox
-                // const sf::FloatRect playerHitBox(
-                //     { controller.getPlayer().getPosition().x + 48.f,
-                //       controller.getPlayer().getPosition().y + 32.f },
-                //     { 10.f, 8.f }
-                // );
-                // // render hitbox as red rectangle for debugging
-                // sf::RectangleShape hitboxRect;
-                // hitboxRect.setSize({ playerHitBox.size.x, playerHitBox.size.y
-                // }
-                // );
-                // hitboxRect.setPosition({ playerHitBox.position.x,
-                //                          playerHitBox.position.y });
-                // hitboxRect.setFillColor(sf::Color(255, 0, 0, 50));
-                // target.draw(hitboxRect);
-
-                // minimap
-                target.setView(windowManager.getMiniMapView());
-                renderEngine.render(
-                    target, controller.getPlayer(), tileManager, interactables,
-                    sharedDialogueBox
-                );
-
-                // ui
-                target.setView(windowManager.getDefaultView());
-
-                fontRenderer.drawTextUI(
-                    target, "Inventory UI []",
-                    { std::floor(target.getView().getCenter().x - 100.f),
-                      std::floor(
-                          target.getView().getCenter().y +
-                          (static_cast<float>(target.getSize().y) / 2.f) - 50.f
-                      ) },
-                    24
-                );
-            },
-            nullptr
-        );
-
-        postProc.apply(window, clock.getElapsedTime().asSeconds());
-
-        windowManager.getDebugUI().update(dt, window, controller.getPlayer());
 
         windowManager.render();
 

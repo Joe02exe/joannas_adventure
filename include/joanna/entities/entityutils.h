@@ -6,14 +6,16 @@
 
 enum class Direction { Left, Right };
 
-enum class State { Idle, Walking, Running };
+enum class State { Idle, Walking, Running, Attack, Roll, Hurt, Dead, Mining };
 
 struct Animation {
     sf::Texture texture;
     std::vector<sf::IntRect> frames;
     static constexpr float frameTime = 0.08f;
-    static constexpr int frameCount = 8;
+    // Removed static frameCount
 
     Animation();
-    explicit Animation(const std::string& path, const sf::Vector2i& frameSize);
+    explicit Animation(
+        const std::string& path, const sf::Vector2i& frameSize, int frameCount
+    );
 };

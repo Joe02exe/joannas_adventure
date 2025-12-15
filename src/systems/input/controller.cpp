@@ -16,10 +16,13 @@ Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
     : windowManager(windowManager), audioManager(audioManager),
       player(
           "assets/player/main/idle.png", "assets/player/main/walk.png",
-          "assets/player/main/run.png", sf::Vector2f{ 150.f, 165.f }
+          "assets/player/main/run.png", sf::Vector2f{ 150.f, 400.f }
       ),
       playerView(windowManager.getMainView()),
-      miniMapView(windowManager.getMiniMapView()) {}
+      miniMapView(windowManager.getMiniMapView()) {
+    playerView.setCenter(player.getPosition());
+    miniMapView.setCenter(player.getPosition());
+}
 
 // clang-format off
 bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
@@ -61,8 +64,9 @@ sf::Vector2f moveWithCollisions(
 bool Controller::getInput(
     float dt, sf::RenderWindow& window,
     const std::vector<sf::FloatRect>& collisions,
-    std::list<std::unique_ptr<Interactable>>& interactables,
-    const std::shared_ptr<DialogueBox>& sharedDialogueBox
+    std::list<std::unique_ptr<Entity>>& entities,
+    const std::shared_ptr<DialogueBox>& sharedDialogueBox,
+    TileManager& tileManager, RenderEngine& renderEngine
 
 ) {
     float factor = 30.0f;
@@ -92,38 +96,62 @@ bool Controller::getInput(
         dir *= 1.5f;
         state = State::Running;
     }
+    bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
+    if (eDown && !keyPressed) {
+        Logger::info("Inventory opened");
+        displayInventory = !displayInventory;
+    }
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
-        player.addItemToInventory(Item("test", "test"));
+        for (const auto& item : tileManager.getRenderObjects()) {
+            auto playerPos = player.getPosition();
+            auto itemPos = item.position;
+            auto item_gid = item.gid;
+            float dx = playerPos.x - static_cast<float>(itemPos.x);
+            float dy = playerPos.y - static_cast<float>(itemPos.y);
+            if (dx * dx + dy * dy <= 16.f * 16.f) {
+                if (tileManager.removeObjectById(static_cast<int>(item.id))) {
+                    auto map = player.getInventory().mapGidToName();
+                    player.addItemToInventory(Item(
+                        std::to_string(item_gid),
+                        map[static_cast<int>(item_gid)]
+                    ));
+                    break;
+                }
+            }
+        }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
-        for (auto& entity : interactables) {
-            if (entity->canPlayerInteract(player.getPosition())) {
-                entity->interact();
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) &&
+        !sharedDialogueBox->isActive()) {
+        for (auto& entity : entities) {
+            if (auto* interactable =
+                    dynamic_cast<Interactable*>(entity.get())) {
+                if (interactable->canPlayerInteract(player.getPosition())) {
+                    interactable->interact(player);
+                }
             }
         }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
         Menu menu(windowManager, *this);
-        menu.show();
+        menu.show(
+            renderEngine, tileManager, entities, sharedDialogueBox, audioManager
+        );
         return true;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
-            sharedDialogueBox->nextLine(
-            ); // Advances to next line or closes dialogue
+            sharedDialogueBox->nextLine();
         }
     }
 
-    bool anyInteractionPoissible = std::any_of(
-        interactables.begin(), interactables.end(),
-        [this](const auto& obj) {
+    bool anyInteractionPoissible =
+        std::any_of(entities.begin(), entities.end(), [this](const auto& obj) {
             if (auto* npc = dynamic_cast<NPC*>(obj.get())) {
                 return npc->canPlayerInteract(player.getPosition());
             }
             return false;
-        }
-    );
+        });
 
     if (sharedDialogueBox->isActive() && !anyInteractionPoissible) {
         sharedDialogueBox->hide();
@@ -140,30 +168,38 @@ bool Controller::getInput(
     playerView.move(nextMove);
     windowManager.getMiniMapView().move(nextMove);
 
-    Logger::info(
-        "Player view: ({}, {})", playerView.getCenter().x,
-        playerView.getCenter().y
-    );
-    Logger::info(
-        "Player pos: ({}, {})", player.getPosition().x, player.getPosition().y
-    );
+    // Logger::info(
+    //     "Player view: ({}, {})", playerView.getCenter().x,
+    //     playerView.getCenter().y
+    // );
+    // Logger::info(
+    //     "Player pos: ({}, {})", player.getPosition().x,
+    //     player.getPosition().y
+    // );
     player.setPosition(player.getPosition() + nextMove);
 
     player.update(dt, state, facingLeft, audioManager);
-    keyPressed = spaceDown;
+    keyPressed = spaceDown || eDown;
     return false;
 }
 
 bool Controller::updateStep(
     float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
-    std::list<std::unique_ptr<Interactable>>& interactables,
-    const std::shared_ptr<DialogueBox>& sharedDialogueBox
+    std::list<std::unique_ptr<Entity>>& entities,
+    const std::shared_ptr<DialogueBox>& sharedDialogueBox,
+    TileManager& tileManager, RenderEngine& renderEngine
 ) {
     // This function can be used for fixed time step updates if needed in future
-    for (auto& entity : interactables) {
+    for (auto& entity : entities) {
         if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
-            npc->update(dt, State::Idle, false, player.getPosition());
+            npc->update(dt, State::Idle, player.getPosition());
+        }
+        if (auto* enemy = dynamic_cast<Enemy*>(entity.get())) {
+            enemy->update(dt, State::Idle);
         }
     }
-    return getInput(dt, window, collisions, interactables, sharedDialogueBox);
+    return getInput(
+        dt, window, collisions, entities, sharedDialogueBox, tileManager,
+        renderEngine
+    );
 }
