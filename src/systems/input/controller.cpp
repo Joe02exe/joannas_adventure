@@ -103,26 +103,29 @@ bool Controller::getInput(
     }
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
-        for (auto& item : tileManager.getRenderObjects()) {
+        for (const auto& item : tileManager.getRenderObjects()) {
             auto playerPos = player.getPosition();
             auto itemPos = item.position;
+            auto item_gid = item.gid;
             float dx = playerPos.x - static_cast<float>(itemPos.x);
             float dy = playerPos.y - static_cast<float>(itemPos.y);
             if (dx * dx + dy * dy <= 16.f * 16.f) {
                 if (tileManager.removeObjectById(static_cast<int>(item.id))) {
                     auto map = player.getInventory().mapGidToName();
                     player.addItemToInventory(Item(
-                        std::to_string(item.gid),
-                        map[static_cast<int>(item.gid)]
+                        std::to_string(item_gid),
+                        map[static_cast<int>(item_gid)]
                     ));
                     break;
                 }
             }
         }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) && !sharedDialogueBox->isActive()) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) &&
+        !sharedDialogueBox->isActive()) {
         for (auto& entity : entities) {
-            if (Interactable* interactable = dynamic_cast<Interactable*>(entity.get())) {
+            if (auto* interactable =
+                    dynamic_cast<Interactable*>(entity.get())) {
                 if (interactable->canPlayerInteract(player.getPosition())) {
                     interactable->interact(player);
                 }
@@ -132,8 +135,7 @@ bool Controller::getInput(
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
         Menu menu(windowManager, *this);
         menu.show(
-            renderEngine, tileManager, entities, sharedDialogueBox,
-            audioManager
+            renderEngine, tileManager, entities, sharedDialogueBox, audioManager
         );
         return true;
     }
@@ -143,15 +145,13 @@ bool Controller::getInput(
         }
     }
 
-    bool anyInteractionPoissible = std::any_of(
-        entities.begin(), entities.end(),
-        [this](const auto& obj) {
+    bool anyInteractionPoissible =
+        std::any_of(entities.begin(), entities.end(), [this](const auto& obj) {
             if (auto* npc = dynamic_cast<NPC*>(obj.get())) {
                 return npc->canPlayerInteract(player.getPosition());
             }
             return false;
-        }
-    );
+        });
 
     if (sharedDialogueBox->isActive() && !anyInteractionPoissible) {
         sharedDialogueBox->hide();
@@ -194,7 +194,7 @@ bool Controller::updateStep(
         if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
             npc->update(dt, State::Idle, player.getPosition());
         }
-        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+        if (auto* enemy = dynamic_cast<Enemy*>(entity.get())) {
             enemy->update(dt, State::Idle);
         }
     }
