@@ -117,8 +117,9 @@ void Game::run() {
         }
 
         float dt = clock.restart().asSeconds();
-        if (dt <= 0.0f)
+        if (dt <= 0.0f) {
             dt = 0.0001f;
+        }
 
         if (gameStatus == GameStatus::Overworld) {
             bool resetClock = controller.updateStep(
@@ -156,19 +157,20 @@ void Game::run() {
                     );
 
                     // ui
-                    target.setView(windowManager.getDefaultView());
+                    target.setView(windowManager.getUiView());
+                    if (controller.renderInventory()) {
+                        controller.getPlayer().getInventory().displayInventory(
+                            target, tileManager
+                        );
+                    }
+                    controller.getPlayer().displayHealthBar(
+                        target, tileManager
+                    );
                 },
                 nullptr
             );
             postProc.apply(window, clock.getElapsedTime().asSeconds());
 
-            window.setView(windowManager.getDefaultView());
-
-            if (controller.renderInventory()) {
-                controller.getPlayer().getInventory().displayInventory(
-                    window, tileManager
-                );
-            }
         } else if (gameStatus == GameStatus::Combat) {
             sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
             combatView.setViewport(windowManager.getMainView().getViewport());
