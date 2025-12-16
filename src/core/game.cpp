@@ -47,8 +47,10 @@ void Game::run() {
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
         "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
     ));
-    std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png");
-    Enemy* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
+    std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
+        sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png"
+    );
+    auto* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
     entities.push_back(std::move(enemy));
 
     entities.push_back(std::make_unique<NPC>(
@@ -71,8 +73,7 @@ void Game::run() {
 
     Menu menu(windowManager, controller);
     menu.show(
-        renderEngine, tileManager, entities, sharedDialogueBox,
-        audioManager
+        renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );
 
     SaveGameManager manager;
@@ -107,7 +108,8 @@ void Game::run() {
                 window.close();
             }
             if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-                windowManager.handleResizeEvent({resized->size.x, resized->size.y});
+                windowManager.handleResizeEvent({ resized->size.x,
+                                                  resized->size.y });
             }
             if (gameStatus == GameStatus::Combat) {
                 combatSystem.handleInput(*event);
@@ -115,12 +117,13 @@ void Game::run() {
         }
 
         float dt = clock.restart().asSeconds();
-        if (dt <= 0.0f) dt = 0.0001f;
+        if (dt <= 0.0f)
+            dt = 0.0001f;
 
         if (gameStatus == GameStatus::Overworld) {
             bool resetClock = controller.updateStep(
                 dt, window, collisions, entities, sharedDialogueBox,
-            tileManager, renderEngine
+                tileManager, renderEngine
             );
             if (resetClock) {
                 clock.restart();
@@ -141,33 +144,29 @@ void Game::run() {
                     // world view
                     target.setView(controller.getPlayerView());
                     renderEngine.render(
-                        target, controller.getPlayer(), tileManager,
-                        entities, sharedDialogueBox
+                        target, controller.getPlayer(), tileManager, entities,
+                        sharedDialogueBox
                     );
 
                     // minimap
                     target.setView(windowManager.getMiniMapView());
                     renderEngine.render(
-                        target, controller.getPlayer(), tileManager,
-                        entities, sharedDialogueBox
+                        target, controller.getPlayer(), tileManager, entities,
+                        sharedDialogueBox
                     );
 
                     // ui
-                    target.setView(windowManager.getDefaultView());
-
-                    
+                    target.setView(windowManager.getUiView());
+                    if (controller.renderInventory()) {
+                        controller.getPlayer().getInventory().displayInventory(
+                            target, tileManager
+                        );
+                    }
                 },
                 nullptr
             );
             postProc.apply(window, clock.getElapsedTime().asSeconds());
 
-            window.setView(windowManager.getDefaultView());
-
-            if (controller.renderInventory()) {
-                        controller.getPlayer().getInventory().displayInventory(
-                            window, tileManager
-                        );
-                    }
         } else if (gameStatus == GameStatus::Combat) {
             sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
             combatView.setViewport(windowManager.getMainView().getViewport());
@@ -176,9 +175,9 @@ void Game::run() {
         }
 
         windowManager.getDebugUI().update(
-            dt, window, controller.getPlayer(), gameStatus, combatSystem, *enemyPtr
+            dt, window, controller.getPlayer(), gameStatus, combatSystem,
+            *enemyPtr
         );
-
 
         windowManager.render();
 

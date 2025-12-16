@@ -26,6 +26,9 @@ WindowManager::WindowManager(
         sf::FloatRect({ 0.75f, 0.f }, { MINI_MAP_SIZE, MINI_MAP_SIZE })
     );
 
+    uiView.setCenter({ 0, 0 });
+    uiView.setSize({ static_cast<float>(width), static_cast<float>(height) });
+
     window.setMouseCursorVisible(false);
 
     // ImGUI
@@ -52,6 +55,7 @@ void WindowManager::handleResizeEvent(sf::Vector2u newSize) {
 
     mainView.setViewport(mainViewport);
     miniMapView.setViewport(miniViewport);
+    uiView.setViewport(mainViewport);
 }
 
 void WindowManager::pollEvents() {

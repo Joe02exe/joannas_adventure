@@ -266,10 +266,8 @@ void Inventory::displayInventory(
     float totalHeight = static_cast<float>(rows) * slotSize +
                         padding * (static_cast<float>(rows) - 1) + 2 * padding;
 
-    const sf::Vector2f startPos(
-        (target.getDefaultView().getSize().x - totalWidth) / 2,
-        target.getDefaultView().getSize().y - totalHeight
-    );
+    const auto center = target.getView().getCenter();
+    const sf::Vector2f startPos(center.x - totalWidth / 2.f, 360.f);
 
     sf::RectangleShape bg({ totalWidth, totalHeight });
     bg.setPosition(startPos - sf::Vector2f(padding, padding));
