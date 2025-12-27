@@ -243,6 +243,14 @@ void Menu::handleSelection() {
             GameState state;
             state.player.x = playerPos.x;
             state.player.y = playerPos.y;
+            state.player.health = controller->getPlayer().getHealth();
+            const auto& inventory = controller->getPlayer().getInventory();
+            for (const auto& item : inventory.listItems()) {
+                ItemState itemState;
+                itemState.id = item.item.id;
+                itemState.quantity = item.quantity;
+                state.inventory.items.push_back(itemState);
+            }
             saveManager.saveGame(state);
             Logger::info("Save selected");
             isItemClicked = false;
@@ -277,7 +285,7 @@ void Menu::handleSelection() {
 void Menu::render(
     RenderEngine& render_engine, TileManager& tileManager,
     std::list<std::unique_ptr<Entity>>& entities,
-    std::shared_ptr<DialogueBox> dialogueBox
+    const std::shared_ptr<DialogueBox>& dialogueBox
 ) const {
     windowManager->setView(windowManager->getMainView());
 
@@ -287,7 +295,7 @@ void Menu::render(
 
     render_engine.render(
         windowManager->getWindow(), controller->getPlayer(), tileManager,
-        entities, std::move(dialogueBox)
+        entities, dialogueBox, 0.f
     );
 
     for (std::size_t i = 0; i < texts.size(); ++i) {
