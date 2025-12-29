@@ -101,9 +101,9 @@ std::vector<StoredItem> Inventory::listItems() const {
 
 void Inventory::loadState(InventoryState& state) {
     items_.clear();
-    for (auto& [id, quantity] : state.items) {
-        Item item(id, idToString[std::stoi(id)]);
-        items_.emplace(item.id, StoredItem(item, quantity));
+    for (auto& itemState : state.items) {
+        Item item(itemState.id, idToString[std::stoi(itemState.id)]);
+        items_.emplace(item.id, StoredItem(item, itemState.quantity));
     }
 }
 
