@@ -32,7 +32,7 @@ WindowManager::WindowManager(
     window.setMouseCursorVisible(false);
 
     // ImGUI
-    DebugUI::init(window);
+    //DebugUI::init(window);
 
     setCenter(initialPos);
     window.setFramerateLimit(60);
@@ -61,7 +61,9 @@ void WindowManager::handleResizeEvent(sf::Vector2u newSize) {
 void WindowManager::pollEvents() {
 
     while (const std::optional<sf::Event> event = window.pollEvent()) {
-        debug_ui.processEvent(window, *event);
+        if constexpr (IMGUI_ENABLED) {
+            debug_ui.processEvent(window, *event);
+        }
         if (event->is<sf::Event::Closed>()) {
             window.close();
         }
