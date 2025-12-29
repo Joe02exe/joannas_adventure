@@ -78,9 +78,7 @@ void Game::run() {
 
     SaveGameManager manager;
     GameState state = manager.loadGame();
-    Logger::info("Load game");
-    Logger::info("Player x: {}", state.player.x);
-    Logger::info("Player y: {}", state.player.y);
+
     controller.getPlayer().setPosition(
         sf::Vector2f(state.player.x, state.player.y)
     );
@@ -90,9 +88,7 @@ void Game::run() {
     controller.getMiniMapView().setCenter(
         sf::Vector2f(state.player.x, state.player.y)
     );
-
-    Logger::info("Player X {}", controller.getPlayer().getPosition().x);
-    Logger::info("Player Y {}", controller.getPlayer().getPosition().y);
+    controller.getPlayer().getInventory().loadState(state.inventory);
 
     clock.restart();
 
@@ -117,8 +113,9 @@ void Game::run() {
         }
 
         float dt = clock.restart().asSeconds();
-        if (dt <= 0.0f)
+        if (dt <= 0.0f) {
             dt = 0.0001f;
+        }
 
         if (gameStatus == GameStatus::Overworld) {
             bool resetClock = controller.updateStep(
@@ -145,14 +142,14 @@ void Game::run() {
                     target.setView(controller.getPlayerView());
                     renderEngine.render(
                         target, controller.getPlayer(), tileManager, entities,
-                        sharedDialogueBox
+                        sharedDialogueBox, dt
                     );
 
                     // minimap
                     target.setView(windowManager.getMiniMapView());
                     renderEngine.render(
                         target, controller.getPlayer(), tileManager, entities,
-                        sharedDialogueBox
+                        sharedDialogueBox, dt
                     );
 
                     // ui
@@ -162,6 +159,9 @@ void Game::run() {
                             target, tileManager
                         );
                     }
+                    controller.getPlayer().displayHealthBar(
+                        target, tileManager
+                    );
                 },
                 nullptr
             );

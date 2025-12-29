@@ -7,6 +7,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "joanna/core/savegamemanager.h"
+
 class TileManager;
 
 struct Item {
@@ -36,6 +38,9 @@ class Inventory {
     std::uint32_t getQuantity(const std::string& id) const;
     std::size_t slotsUsed() const;
     std::vector<StoredItem> listItems() const;
+
+    void loadState(InventoryState& state);
+
     void clear();
 
     void setCapacity(std::size_t cap);

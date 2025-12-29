@@ -47,7 +47,7 @@ class Menu {
     void render(
         RenderEngine& render_engine, TileManager& tileManager,
         std::list<std::unique_ptr<Entity>>& entities,
-        std::shared_ptr<DialogueBox> dialogueBox
+        const std::shared_ptr<DialogueBox>& dialogueBox
     ) const;
 
   public:

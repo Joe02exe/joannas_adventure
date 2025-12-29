@@ -42,10 +42,16 @@ bool SaveGameManager::saveExists() const {
 
 void SaveGameManager::saveGame(const GameState& state) const {
     json j;
-    // j["player"]["health"] = state.player.health;
+
     j["player"]["x"] = state.player.x;
     j["player"]["y"] = state.player.y;
-    j["score"] = state.score;
+    j["player"]["health"] = state.player.health;
+
+    j["player"]["inventory"] = json::array(); // Initialize as array
+    for (const auto& item : state.inventory.items) {
+        j["player"]["inventory"].push_back({ { "id", item.id },
+                                             { "quantity", item.quantity } });
+    }
 
     std::ofstream file(getSaveFilePath());
     if (file) {
@@ -54,18 +60,40 @@ void SaveGameManager::saveGame(const GameState& state) const {
 }
 
 GameState SaveGameManager::loadGame() const {
-    GameState state;
+    // 1. Open the file
     std::ifstream file(getSaveFilePath());
-    if (file) {
-        json j;
-        file >> j;
 
-        if (j.contains("player")) {
-            state.player.x = j["player"].value("x", 0.0f);
-            state.player.y = j["player"].value("y", 0.0f);
+    // Handle the case where the file doesn't exist yet
+    if (!file.is_open()) {
+        // Return a default/empty state or throw an exception
+        return {};
+    }
+
+    // 2. Parse the JSON
+    json j;
+    try {
+        file >> j;
+    } catch (const json::parse_error& e) {
+        // Handle corrupted save file
+        return {};
+    }
+
+    GameState state;
+
+    // 3. Load Player Data
+    // using .value() allows you to provide a default fallback if the key is
+    // missing
+    state.player.x = j["player"].value("x", 0.0f);
+    state.player.y = j["player"].value("y", 0.0f);
+    state.player.health = j["player"].value("health", 100);
+
+    if (j["player"].contains("inventory")) {
+        for (const auto& itemJson : j["player"]["inventory"]) {
+            ItemState newItem;
+            newItem.id = itemJson["id"];
+            newItem.quantity = itemJson["quantity"];
+            state.inventory.items.push_back(newItem);
         }
     }
-    Logger::info("Player x: {}", state.player.x);
-    Logger::info("Player y: {}", state.player.y);
     return state;
 }

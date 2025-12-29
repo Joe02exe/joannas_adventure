@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 
 struct PlayerState {
     int health = 100;
@@ -9,9 +10,18 @@ struct PlayerState {
     float y = 0.0f;
 };
 
+struct ItemState {
+    std::string id;
+    std::uint32_t quantity;
+};
+
+struct InventoryState {
+    std::vector<ItemState> items;
+};
+
 struct GameState {
     PlayerState player;
-    int score = 0;
+    InventoryState inventory;
 };
 
 class SaveGameManager {

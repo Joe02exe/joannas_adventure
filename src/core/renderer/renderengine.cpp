@@ -6,7 +6,7 @@ RenderEngine::RenderEngine() = default;
 void RenderEngine::render(
     sf::RenderTarget& target, Player& player, TileManager& tileManager,
     std::list<std::unique_ptr<Entity>>& entities,
-    std::shared_ptr<DialogueBox> dialogueBox
+    const std::shared_ptr<DialogueBox>& dialogueBox, float dt
 ) {
     const auto& m_textures = tileManager.getGroundTextures();
     const auto& m_tiles = tileManager.getTiles();
@@ -71,7 +71,7 @@ void RenderEngine::render(
     }
 
     for (auto& entity : entities) {
-        if(Interactable* interactable = dynamic_cast<Interactable*>(entity.get())  ){
+        if (auto* interactable = dynamic_cast<Interactable*>(entity.get())) {
             if (interactable->canPlayerInteract(player.getPosition())) {
                 interactable->renderButton(target);
             }
@@ -87,6 +87,8 @@ void RenderEngine::render(
         dialogueBox->render(target);
     }
 
+    // draw objects with floating effect
+    frameTimer += dt;
     for (const auto& item : m_objects) {
         sf::Sprite i = tileManager.getTextureById(static_cast<int>(item.gid));
         i.setPosition(sf::Vector2f({ static_cast<float>(item.position.x),
@@ -98,7 +100,10 @@ void RenderEngine::render(
         if (offset < 0.f) {
             dir = 1.f;
         }
-        offset += dir * 0.05f;
+        if (frameTimer > 0.08f) {
+            frameTimer = 0.f;
+            offset += dir * 0.5f;
+        }
         target.draw(i);
 
         auto playerPos = player.getPosition();
