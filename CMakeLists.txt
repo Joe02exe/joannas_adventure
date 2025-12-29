@@ -30,6 +30,8 @@ add_executable(test_all test/test.cpp)
 # define macros
 target_compile_definitions(main PRIVATE
     LOGGING_ENABLED=1
+    # for windows systems we have to disable the IMGUI window, statical / dynamic linking issues
+    IMGUI_ENABLED=1
     GOD_MODE_ENABLED=1
     INFINITE_RESOURCES_ENABLED=1
 )
