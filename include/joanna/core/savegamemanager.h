@@ -16,7 +16,7 @@ struct ItemState {
 };
 
 struct InventoryState {
-    std::pmr::vector<ItemState> items;
+    std::vector<ItemState> items;
 };
 
 struct GameState {
