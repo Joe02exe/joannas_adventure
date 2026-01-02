@@ -38,24 +38,20 @@ void Game::run() {
     std::ifstream file("assets/dialog/dialog.json");
     NPC::jsonData = json::parse(file);
     auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
-    entities.push_back(
-        std::make_unique<NPC>(
-            sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
-            "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
-        )
-    );
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
+    ));
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
         sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png"
     );
     auto* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
     entities.push_back(std::move(enemy));
 
-    entities.push_back(
-        std::make_unique<NPC>(
-            sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
-            "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
-        )
-    );
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
+    ));
 
     TileManager tileManager;
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
@@ -74,20 +70,6 @@ void Game::run() {
         renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );
 
-    SaveGameManager manager;
-    GameState state = manager.loadGame();
-
-    controller.getPlayer().setPosition(
-        sf::Vector2f(state.player.x, state.player.y)
-    );
-    controller.getPlayerView().setCenter(
-        sf::Vector2f(state.player.x, state.player.y)
-    );
-    controller.getMiniMapView().setCenter(
-        sf::Vector2f(state.player.x, state.player.y)
-    );
-    controller.getPlayer().getInventory().loadState(state.inventory);
-
     clock.restart();
 
     CombatSystem combatSystem;
@@ -105,9 +87,8 @@ void Game::run() {
                 window.close();
             }
             if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-                windowManager.handleResizeEvent(
-                    { resized->size.x, resized->size.y }
-                );
+                windowManager.handleResizeEvent({ resized->size.x,
+                                                  resized->size.y });
             }
             if (gameStatus == GameStatus::Combat) {
                 combatSystem.handleInput(*event);

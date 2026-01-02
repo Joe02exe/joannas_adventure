@@ -28,13 +28,14 @@ class SaveGameManager {
   public:
     SaveGameManager();
 
-    void saveGame(const GameState& state, std::string index) const;
-    [[nodiscard]] GameState loadGame() const;
-    [[nodiscard]] bool saveExists(std::string index) const;
+    void saveGame(const GameState& state, const std::string& index) const;
+    [[nodiscard]] GameState loadGame(const std::string& index) const;
+    [[nodiscard]] bool saveExists(const std::string& index) const;
 
   private:
     [[nodiscard]] std::filesystem::path getSaveDirectory() const;
-    [[nodiscard]] std::filesystem::path getSaveFilePath(std::string index) const;
+    [[nodiscard]] std::filesystem::path getSaveFilePath(const std::string& index
+    ) const;
 
     std::string m_gameName;
 };

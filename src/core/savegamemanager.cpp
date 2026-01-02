@@ -5,6 +5,7 @@
 #include "nlohmann/json.hpp"
 #include <cstdlib>
 #include <fstream>
+#include <utility>
 
 using json = nlohmann::json;
 
@@ -32,15 +33,17 @@ std::filesystem::path SaveGameManager::getSaveDirectory() const {
     return std::filesystem::current_path() / m_gameName; // fallback
 }
 
-std::filesystem::path SaveGameManager::getSaveFilePath(std::string index) const {
+std::filesystem::path SaveGameManager::getSaveFilePath(const std::string& index
+) const {
     return getSaveDirectory() / ("savegame_" + index + ".json");
 }
 
-bool SaveGameManager::saveExists(std::string index) const {
+bool SaveGameManager::saveExists(const std::string& index) const {
     return std::filesystem::exists(getSaveFilePath(index));
 }
 
-void SaveGameManager::saveGame(const GameState& state, std::string index) const {
+void SaveGameManager::saveGame(const GameState& state, const std::string& index)
+    const {
     json j;
 
     j["player"]["x"] = state.player.x;
@@ -59,10 +62,10 @@ void SaveGameManager::saveGame(const GameState& state, std::string index) const 
     }
 }
 
-GameState SaveGameManager::loadGame() const {
+GameState SaveGameManager::loadGame(const std::string& index) const {
     // 1. Open the file
     // TODO
-    std::ifstream file(getSaveFilePath("1"));
+    std::ifstream file(getSaveFilePath(index));
 
     // Handle the case where the file doesn't exist yet
     if (!file.is_open()) {
