@@ -9,6 +9,7 @@
 class Menu {
     WindowManager* windowManager;
     Controller* controller;
+    TileManager* tileManager;
 
     sf::Font font;
     sf::Sprite mouseSprite;
@@ -42,7 +43,10 @@ class Menu {
     void resetToDefaultMenu();
 
   public:
-    Menu(WindowManager& windowManager, Controller& controller);
+    Menu(
+        WindowManager& windowManager, Controller& controller,
+        TileManager& tileManager
+    );
     void show(
         RenderEngine& render_engine, TileManager& tileManager,
         std::list<std::unique_ptr<Entity>>& entities,

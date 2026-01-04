@@ -64,7 +64,7 @@ void Game::run() {
 
     sf::Clock clock;
 
-    Menu menu(windowManager, controller);
+    Menu menu(windowManager, controller, tileManager);
     menu.show(
         renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );

@@ -74,6 +74,8 @@ class TileManager {
 
     bool removeObjectById(int id);
 
+    void loadObjectsFromSaveGame(const std::vector<ObjectState>& objects);
+
   private:
     void processLayer(const std::string& layerName);
     void loadTexture(const std::string& imagePath);

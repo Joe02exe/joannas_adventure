@@ -19,9 +19,21 @@ struct InventoryState {
     std::vector<ItemState> items;
 };
 
+struct ObjectState {
+    std::uint32_t id;
+    std::uint32_t gid;
+    int x;
+    int y;
+};
+
+struct MapState {
+    std::vector<ObjectState> items;
+};
+
 struct GameState {
     PlayerState player;
     InventoryState inventory;
+    MapState map;
 };
 
 class SaveGameManager {

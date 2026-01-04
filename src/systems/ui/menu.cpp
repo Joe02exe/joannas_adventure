@@ -20,8 +20,12 @@ const unsigned int FONT_SIZE_TITLE = 18;
 const unsigned int FONT_SIZE_ITEM = 14;
 } // namespace
 
-Menu::Menu(WindowManager& windowManager, Controller& controller)
+Menu::Menu(
+    WindowManager& windowManager, Controller& controller,
+    TileManager& tileManager
+)
     : windowManager(&windowManager), controller(&controller),
+      tileManager(&tileManager),
       mouseSprite(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/cursor.png"
       )) {
@@ -158,6 +162,8 @@ void Menu::handleInput(sf::Window& window) {
             } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
                        sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter)) {
                 executeSelection();
+            } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+                isMenuOpen = false;
             }
         } else if (event->is<sf::Event::MouseButtonPressed>()) {
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
@@ -213,6 +219,11 @@ void Menu::executeSelection() {
         for (const auto& item : player.getInventory().listItems()) {
             state.inventory.items.push_back({ item.item.id, item.quantity });
         }
+
+        for (const auto& object : tileManager->getRenderObjects()) {
+            state.map.items.push_back({ object.id, object.gid,
+                                        object.position.x, object.position.y });
+        }
         stateToSave = state;
 
         // Update menu to show slots (Example of sub-menu logic)
@@ -255,6 +266,7 @@ void Menu::executeSelection() {
                 sf::Vector2f(state.player.x, state.player.y)
             );
             controller->getPlayer().getInventory().loadState(state.inventory);
+            tileManager->loadObjectsFromSaveGame(state.map.items);
             isMenuOpen = false;
         } else {
             saveManager.saveGame(stateToSave, slotNumberStr);
