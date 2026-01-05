@@ -133,7 +133,7 @@ bool Controller::getInput(
         }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-        Menu menu(windowManager, *this);
+        Menu menu(windowManager, *this, tileManager);
         menu.show(
             renderEngine, tileManager, entities, sharedDialogueBox, audioManager
         );

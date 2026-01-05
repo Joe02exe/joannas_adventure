@@ -224,3 +224,16 @@ bool TileManager::removeObjectById(int id) {
 
     return m_objects.size() < before; // true = something was removed
 }
+
+void TileManager::loadObjectsFromSaveGame(
+    const std::vector<ObjectState>& objects
+) {
+    m_objects.clear();
+    for (const auto& objState : objects) {
+        RenderObject object(
+            objState.id, objState.gid, { objState.x, objState.y },
+            getTextureById(static_cast<int>(objState.gid))
+        );
+        m_objects.push_back(object);
+    }
+}

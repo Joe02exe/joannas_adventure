@@ -32,8 +32,9 @@ WindowManager::WindowManager(
     window.setMouseCursorVisible(false);
 
     // ImGUI
-    //DebugUI::init(window);
-
+    if constexpr (IMGUI_ENABLED) {
+        DebugUI::init(window);
+    }
     setCenter(initialPos);
     window.setFramerateLimit(60);
 }
