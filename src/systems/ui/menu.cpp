@@ -230,6 +230,8 @@ void Menu::executeSelection() {
         setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
     } else if (choice == "New game") {
         isMenuOpen = false; // Start new game
+        tileManager->reloadObjectsFromTileson();
+        controller->getPlayer().getInventory().clear();
     } else if (choice == "Load game") {
         loadingInteraction = true;
         setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
@@ -237,10 +239,13 @@ void Menu::executeSelection() {
         // Placeholder
     } else if (choice == "About") {
         aboutTextContent = "Joanna's Farm\n\n"
-                           "A small farming game prototype.\n\n"
+                           "A small RPG game.\n\n"
                            "Controls:\n"
-                           "- W/S: navigate menu\n"
-                           "- Space/Enter: select\n\n"
+                           "WASD : navigate\n"
+                           "Shift : sprint\n"
+                           "T : Talk to opponent\n"
+                           "E : Display inventory\n"
+                           "Space : pickup item\n\n"
                            "Press Escape or Click to close.";
         showAbout = true;
     } else if (choice == "Quit") {
@@ -341,7 +346,7 @@ void Menu::renderAboutOverlay(sf::RenderTarget& target) {
     textObj.setLineSpacing(1.2f);
 
     sf::FloatRect textBounds = textObj.getLocalBounds();
-    constexpr float padding = 16.f;
+    constexpr float padding = 6.f;
     sf::Vector2f boxSize(
         (textBounds.size.x + padding) * 2.f, (textBounds.size.y + padding) * 2.f
     );
@@ -349,8 +354,14 @@ void Menu::renderAboutOverlay(sf::RenderTarget& target) {
     // Center the text logic
     // Note: The origin math in your original code was a bit specific to the
     // font/bounds. Standard centering:
-    textObj.setOrigin({ textBounds.size.y / 2.f, textBounds.size.x / 2.f });
-    textObj.setPosition(center);
+    // textObj.setOrigin({ textBounds.size.y / 2.f, textBounds.size.x / 2.f });
+    // textObj.setOrigin({ 0,0 });
+    // textObj.setPosition(center);
+
+    const sf::View& view = windowManager->getMainView();
+    float startY = view.getCenter().y - (boxSize.x / 2.f) + 75.f;
+    textObj.setOrigin({ textBounds.size.x / 2.f, 0.f });
+    textObj.setPosition({ view.getCenter().x, startY });
 
     sf::RectangleShape box;
     box.setSize(boxSize);
