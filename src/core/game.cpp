@@ -52,7 +52,7 @@ void Game::run() {
         "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
     ));
 
-    TileManager tileManager;
+    TileManager tileManager(window);
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
     for (auto& entity : entities) {
         if (auto box = entity->getCollisionBox()) {

@@ -7,10 +7,13 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <algorithm>
+#include <random>
 #include <string>
 
-TileManager::TileManager()
-    : tsonParser(), m_currentMap(nullptr), m_textures(), m_tiles() {
+TileManager::TileManager(sf::RenderWindow& renderWindow)
+    : window(&renderWindow), tsonParser(), m_currentMap(nullptr), m_textures(),
+      m_tiles() {
     if (!loadMap("./assets/environment/map/newmap.json")) {
         Logger::error("Failed to load map!");
     }
@@ -98,6 +101,28 @@ sf::FloatRect calculatePixelRect(
                static_cast<float>(bottom - top + 1) } };
 }
 
+void TileManager::randomlySelectItems(
+    std::vector<tson::Object*> items, int count
+) {
+    static std::random_device rd;
+    static std::mt19937 g(rd());
+
+    std::shuffle(items.begin(), items.end(), g);
+
+    int countToSpawn = std::min((int)items.size(), count);
+
+    for (int i = 0; i < countToSpawn; ++i) {
+        tson::Object* obj = items[i]; // Get the pointer back
+
+        RenderObject object(
+            obj->getId(), obj->getGid(),
+            { obj->getPosition().x, obj->getPosition().y },
+            getTextureById(static_cast<int>(obj->getGid()))
+        );
+        m_objects.push_back(object);
+    }
+}
+
 void TileManager::processLayer(const std::string& layerName) {
     if (!m_currentMap) {
         return;
@@ -105,14 +130,24 @@ void TileManager::processLayer(const std::string& layerName) {
 
     tson::Layer* layer = m_currentMap->getLayer(layerName);
     if (layer->getType() == tson::LayerType::ObjectGroup) {
+
+        // TODO : refactor this if more items are needed
+        std::vector<tson::Object*> carrots;
+        std::vector<tson::Object*> swords;
+
         for (auto& obj : layer->getObjects()) {
-            RenderObject object(
-                obj.getId(), obj.getGid(),
-                { obj.getPosition().x, obj.getPosition().y },
-                getTextureById(static_cast<int>(obj.getGid()))
-            );
-            m_objects.push_back(object);
+            int currentGid = static_cast<int>(obj.getGid());
+
+            if (currentGid == 691) {
+                carrots.push_back(&obj);
+            }
+            if (currentGid == 3050) {
+                swords.push_back(&obj);
+            }
         }
+
+        randomlySelectItems(carrots, 7);
+        randomlySelectItems(swords, 1);
     }
 
     if (!layer || layer->getType() != tson::LayerType::TileLayer) {
@@ -146,6 +181,12 @@ void TileManager::processLayer(const std::string& layerName) {
             if (pixelRect.size.x > 0.f && pixelRect.size.y > 0.f &&
                 isCollidable) {
                 m_collisionRects.push_back(pixelRect);
+                while (const std::optional<sf::Event> event =
+                           window->pollEvent()) {
+                    if (event->is<sf::Event::Closed>()) {
+                        window->close();
+                    }
+                }
                 Logger::info(
                     "Added collision rect at ({}, {})", pixelRect.position.x,
                     pixelRect.position.y
@@ -236,4 +277,9 @@ void TileManager::loadObjectsFromSaveGame(
         );
         m_objects.push_back(object);
     }
+}
+
+void TileManager::reloadObjectsFromTileson() {
+    m_objects.clear();
+    processLayer("items");
 }
