@@ -32,11 +32,22 @@ bool TileManager::loadMap(const std::string& path) {
     m_currentMap = std::move(map);
 
     // Process all tile layers and prepare rendering data
+    renderProgressBar("Start initializing...");
     processLayer("background");
+    progress = 0.2f;
+    renderProgressBar("Loading map...");
     processLayer("ground");
+    progress = 0.4f;
+    renderProgressBar("Loading map...");
     processLayer("decorations");
+    progress = 0.6f;
+    renderProgressBar("Loading assets...");
     processLayer("decoration_overlay");
+    progress = 0.8f;
+    renderProgressBar("Loading collision items...");
     processLayer("overlay");
+    progress = 0.9f;
+    renderProgressBar("Loading items...");
     processLayer("items");
 
     // Sort all collidable tiles by bottom y + offset
@@ -48,6 +59,62 @@ bool TileManager::loadMap(const std::string& path) {
     );
 
     return true;
+}
+
+void TileManager::renderProgressBar(std::string message) const {
+    auto center = window->getView().getCenter();
+
+    sf::Vector2f barSize(400.f, 40.f);
+    sf::Vector2f barPos(center.x - 200, center.y - 20);
+
+    sf::RectangleShape barBackground(barSize);
+    barBackground.setPosition(barPos);
+    barBackground.setFillColor(sf::Color(50, 50, 50)); // Dark Grey
+    barBackground.setOutlineThickness(2.f);
+    barBackground.setOutlineColor(sf::Color::White);
+
+    sf::RectangleShape barProgress(barSize);
+    barProgress.setPosition(barPos);
+    barProgress.setFillColor(sf::Color::Green);
+
+    float percent = progress / 1.0f;
+    float currentWidth = barSize.x * percent;
+
+    // Update the size of the progress bar
+    barProgress.setSize(sf::Vector2f(currentWidth, barSize.y));
+
+    sf::Font font = ResourceManager<sf::Font>::getInstance()->get(
+        "assets/font/minecraft.ttf"
+    );
+    sf::Text text(font);
+    sf::Text title(font);
+    text.setString(message.empty() ? "Loading..." : message);
+    title.setString("Joanna's Farm");
+    text.setCharacterSize(18);
+    title.setCharacterSize(24);
+    text.setFillColor(sf::Color::White);
+    title.setFillColor(sf::Color::White);
+    title.setStyle(sf::Text::Bold);
+    sf::FloatRect textBounds = text.getLocalBounds();
+    sf::FloatRect titleBounds = title.getLocalBounds();
+    text.setOrigin({textBounds.size.x / 2.f, textBounds.size.y / 2.f});
+    text.setPosition(
+        {center.x, center.y + 40.f}
+    );
+
+    title.setOrigin({titleBounds.size.x / 2.f, titleBounds.size.y / 2.f});
+    title.setPosition(
+        {center.x, center.y - 75.f}
+    );
+
+    window->clear(sf::Color::Black);
+
+    window->draw(barBackground);
+    window->draw(barProgress);
+    window->draw(text);
+    window->draw(title);
+
+    window->display();
 }
 
 // rendering renderEngine

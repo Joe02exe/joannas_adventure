@@ -84,6 +84,9 @@ class TileManager {
     void processLayer(const std::string& layerName);
     void loadTexture(const std::string& imagePath);
 
+    void renderProgressBar(std::string message) const;
+
+    float progress = 0.0f;
     sf::RenderWindow* window;
     tson::Tileson tsonParser;
     std::vector<sf::FloatRect> m_collisionRects;
