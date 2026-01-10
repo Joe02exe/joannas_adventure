@@ -10,6 +10,7 @@ class Menu {
     WindowManager* windowManager;
     Controller* controller;
     TileManager* tileManager;
+    AudioManager* audioManager;
 
     sf::Font font;
     sf::Sprite mouseSprite;
@@ -45,7 +46,7 @@ class Menu {
   public:
     Menu(
         WindowManager& windowManager, Controller& controller,
-        TileManager& tileManager
+        TileManager& tileManager, AudioManager& audioManager
     );
     void show(
         RenderEngine& render_engine, TileManager& tileManager,

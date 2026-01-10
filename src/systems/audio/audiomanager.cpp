@@ -1,24 +1,23 @@
 #include "joanna/systems/audiomanager.h"
-#include "joanna/utils/resourcemanager.h"
 #include "joanna/utils/logger.h"
+#include "joanna/utils/resourcemanager.h"
 #include <SFML/Audio.hpp>
 
-AudioManager::AudioManager()
-    : sfx_volume_(100.0f)
-      , music_volume_(75.0f) {
-    
+AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(50.0f) {
+
     auto* buffer_manager = ResourceManager<sf::SoundBuffer>::getInstance();
-    
-    const std::array<SfxId, 6> all_sfx = {
-        SfxId::Hit, SfxId::Footstep, SfxId::Dead,
-        SfxId::Surprise, SfxId::Collect, SfxId::Damage
-    };
+
+    constexpr std::array<SfxId, 7> all_sfx = { SfxId::Hit,     SfxId::Footstep,
+                                               SfxId::Dead,    SfxId::Surprise,
+                                               SfxId::Collect, SfxId::Damage,
+                                               SfxId::Click };
 
     for (size_t i = 0; i < all_sfx.size(); ++i) {
         try {
-            sf::SoundBuffer& buffer = buffer_manager->get(get_sfx_path(all_sfx[i]));
-            sounds_[i] = std::make_unique<sf::Sound>(buffer);
-            sounds_[i]->setVolume(sfx_volume_);
+            sf::SoundBuffer& buffer =
+                buffer_manager->get(get_sfx_path(all_sfx.at(i)));
+            sounds_.at(i) = std::make_unique<sf::Sound>(buffer);
+            sounds_.at(i)->setVolume(sfx_volume_);
         } catch (const std::exception& e) {
             Logger::error("Failed to load sound effect: {}", e.what());
         }
@@ -27,29 +26,42 @@ AudioManager::AudioManager()
 
 std::string AudioManager::get_sfx_path(SfxId sfx_id) const {
     switch (sfx_id) {
-        case SfxId::Hit:      return "assets/sfx/hit.wav";
-        case SfxId::Footstep: return "assets/sfx/footstep.wav";
-        case SfxId::Dead:     return "assets/sfx/dead.wav";
-        case SfxId::Surprise: return "assets/sfx/surprise.wav";
-        case SfxId::Collect:     return "assets/sfx/collect.wav";
-        case SfxId::Damage:      return "assets/sfx/damage.wav";
-        default:              throw std::invalid_argument("Invalid SfxId");
+        case SfxId::Hit:
+            return "assets/sfx/hit.wav";
+        case SfxId::Click:
+            return "assets/sfx/click.wav";
+        case SfxId::Footstep:
+            return "assets/sfx/footstep.wav";
+        case SfxId::Dead:
+            return "assets/sfx/dead.wav";
+        case SfxId::Surprise:
+            return "assets/sfx/surprise.wav";
+        case SfxId::Collect:
+            return "assets/sfx/collect.wav";
+        case SfxId::Damage:
+            return "assets/sfx/damage.wav";
+        default:
+            throw std::invalid_argument("Invalid SfxId");
     }
 }
 
 std::string AudioManager::get_music_path(MusicId music_id) const {
     switch (music_id) {
-        case MusicId::Overworld: return "assets/music/overworld.ogg";
-        case MusicId::Underworld: return "assets/music/underworld.ogg";
-        case MusicId::Beach:     return "assets/music/beach.ogg";
-        default:                 throw std::invalid_argument("Invalid MusicId");
+        case MusicId::Overworld:
+            return "assets/music/overworld.ogg";
+        case MusicId::Underworld:
+            return "assets/music/underworld.ogg";
+        case MusicId::Beach:
+            return "assets/music/beach.ogg";
+        default:
+            throw std::invalid_argument("Invalid MusicId");
     }
 }
 
 void AudioManager::play_sfx(SfxId sfx_id) {
-    size_t index = static_cast<size_t>(sfx_id);
-    if (index < 6 && sounds_[index]) {
-        sounds_[index]->play();
+    auto index = static_cast<size_t>(sfx_id);
+    if (index < 7 && sounds_.at(index)) {
+        sounds_.at(index)->play();
     } else {
         Logger::error("Sound effect not loaded: {}", static_cast<int>(sfx_id));
     }

@@ -22,10 +22,10 @@ const unsigned int FONT_SIZE_ITEM = 14;
 
 Menu::Menu(
     WindowManager& windowManager, Controller& controller,
-    TileManager& tileManager
+    TileManager& tileManager, AudioManager& audioManager
 )
     : windowManager(&windowManager), controller(&controller),
-      tileManager(&tileManager),
+      audioManager(&audioManager), tileManager(&tileManager),
       mouseSprite(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/cursor.png"
       )) {
@@ -173,6 +173,7 @@ void Menu::handleInput(sf::Window& window) {
                     if (menuTexts[selectedIndex].getGlobalBounds().contains(
                             getMouseWorldPos()
                         )) {
+                        audioManager->play_sfx(SfxId::Click);
                         executeSelection();
                     }
                 }

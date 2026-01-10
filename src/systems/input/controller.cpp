@@ -112,6 +112,7 @@ bool Controller::getInput(
             if (dx * dx + dy * dy <= 16.f * 16.f) {
                 if (tileManager.removeObjectById(static_cast<int>(item.id))) {
                     auto map = player.getInventory().mapGidToName();
+                    audioManager.play_sfx(SfxId::Collect);
                     player.addItemToInventory(Item(
                         std::to_string(item_gid),
                         map[static_cast<int>(item_gid)]
@@ -133,7 +134,7 @@ bool Controller::getInput(
         }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-        Menu menu(windowManager, *this, tileManager);
+        Menu menu(windowManager, *this, tileManager, audioManager);
         menu.show(
             renderEngine, tileManager, entities, sharedDialogueBox, audioManager
         );

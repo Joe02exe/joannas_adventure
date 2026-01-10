@@ -4,21 +4,18 @@
 #include <memory>
 #include <string>
 
-enum class SfxId {
+enum class SfxId : std::uint8_t {
     Hit,
     Footstep,
     Dead,
     Surprise,
     Collect,
-    Damage
+    Damage,
+    Click
     // These are not all SFX. More in assets/sfx folder.
 };
 
-enum class MusicId {
-    Overworld,
-    Underworld,
-    Beach
-};
+enum class MusicId : std::uint8_t { Overworld, Underworld, Beach };
 
 class AudioManager {
   public:
@@ -39,15 +36,15 @@ class AudioManager {
     void resume_music();
     void stop_music();
 
-    bool is_music_playing() const;
+    [[nodiscard]] bool is_music_playing() const;
 
   private:
-    std::string get_sfx_path(SfxId sfx_id) const;
-    std::string get_music_path(MusicId music_id) const;
+    [[nodiscard]] std::string get_sfx_path(SfxId sfx_id) const;
+    [[nodiscard]] std::string get_music_path(MusicId music_id) const;
 
-    std::unique_ptr<sf::Sound> sounds_[6];
+    std::array<std::unique_ptr<sf::Sound>, 7> sounds_;
     sf::Music current_music_;
-    
+
     float sfx_volume_;
     float music_volume_;
 };
