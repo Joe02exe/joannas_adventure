@@ -120,7 +120,7 @@ void Game::run() {
         if constexpr (IMGUI_ENABLED) {
             windowManager.getDebugUI().update(
                 dt, window, controller.getPlayer(), gameStatus, combatSystem,
-                *enemyPtr
+                *enemyPtr, controller
             );
         }
         windowManager.clear();

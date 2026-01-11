@@ -4,6 +4,7 @@
 #include "joanna/entities/enemy.h"
 #include "joanna/entities/player.h"
 #include "joanna/systems/combat_system.h"
+#include "joanna/systems/controller.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
@@ -13,7 +14,8 @@ class DebugUI {
     void processEvent(const sf::Window& window, const sf::Event& event) const;
     void update(
         float dt, sf::RenderWindow& window, Player& player,
-        GameStatus& gameStatus, CombatSystem& combatSystem, Enemy& testEnemy
+        GameStatus& gameStatus, CombatSystem& combatSystem, Enemy& testEnemy,
+        Controller& controller
     ) const;
     void render(sf::RenderWindow& window) const;
     static void shutdown();
