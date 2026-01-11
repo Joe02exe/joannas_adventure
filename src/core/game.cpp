@@ -42,7 +42,7 @@ void Game::run() {
         "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
     ));
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
-        sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png"
+        sf::Vector2f{ 710.f, 200.f }, "assets/player/enemies/goblin/idle.png"
     );
     auto* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
     entities.push_back(std::move(enemy));
@@ -110,13 +110,17 @@ void Game::run() {
             if (resetClock) {
                 clock.restart();
             }
+            if (enemyPtr->updateOverworld(dt, controller.getPlayer(), tileManager)) {
+                gameStatus = GameStatus::Combat;
+                combatSystem.startCombat(controller.getPlayer(), *enemyPtr);
+            }
         } else if (gameStatus == GameStatus::Combat) {
             combatSystem.update(dt);
         }
         if constexpr (IMGUI_ENABLED) {
             windowManager.getDebugUI().update(
                 dt, window, controller.getPlayer(), gameStatus, combatSystem,
-                *enemyPtr
+                *enemyPtr, controller
             );
         }
         windowManager.clear();
