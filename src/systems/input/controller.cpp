@@ -168,15 +168,6 @@ bool Controller::getInput(
     );
     playerView.move(nextMove);
     windowManager.getMiniMapView().move(nextMove);
-
-    // Logger::info(
-    //     "Player view: ({}, {})", playerView.getCenter().x,
-    //     playerView.getCenter().y
-    // );
-    // Logger::info(
-    //     "Player pos: ({}, {})", player.getPosition().x,
-    //     player.getPosition().y
-    // );
     player.setPosition(player.getPosition() + nextMove);
 
     player.update(dt, state, facingLeft, audioManager);
@@ -192,7 +183,7 @@ bool Controller::updateStep(
 ) {
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : entities) {
-        if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
+        if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
             npc->update(dt, State::Idle, player.getPosition());
         }
         if (auto* enemy = dynamic_cast<Enemy*>(entity.get())) {
