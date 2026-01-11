@@ -24,40 +24,7 @@ Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
     miniMapView.setCenter(player.getPosition());
 }
 
-// clang-format off
-bool isColliding(const sf::FloatRect& nextPlayerBox, const sf::FloatRect& box) {
-    const bool AIsRightToB = nextPlayerBox.position.x - nextPlayerBox.size.x / 2.f >= box.position.x + box.size.x;
-    const bool AIsLeftToB  = nextPlayerBox.position.x + nextPlayerBox.size.x / 2.f <= box.position.x;
-     
-    // create small illusion of depth (therefore we only user use box.size.y / 2.f once)
-    const bool AIsBelowB = nextPlayerBox.position.y >= box.position.y + box.size.y;
-    const bool AIsAboveB = nextPlayerBox.position.y + nextPlayerBox.size.y / 2.f <= box.position.y;
-    return !(AIsRightToB || AIsLeftToB || AIsBelowB || AIsAboveB);
-}
 
-
-sf::Vector2f moveWithCollisions(
-    const sf::Vector2f& dir, const sf::FloatRect& playerBox,
-    const std::vector<sf::FloatRect>& collisions
-) {
-
-    sf::Vector2f result = dir;
-
-    sf::FloatRect nextX = playerBox;
-    nextX.position.x += dir.x;
-
-    sf::FloatRect nextY = playerBox;
-    nextY.position.y += dir.y;
-    for (const auto& box : collisions) {
-        if (isColliding(nextX, box)) {
-            result.x = 0.f;
-        }
-        if (isColliding(nextY, box)) {
-            result.y = 0.f;
-        }
-    }
-    return result;
-}
 
 // clang-format on
 
@@ -186,9 +153,7 @@ bool Controller::updateStep(
         if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
             npc->update(dt, State::Idle, player.getPosition());
         }
-        if (auto* enemy = dynamic_cast<Enemy*>(entity.get())) {
-            enemy->update(dt, State::Idle);
-        }
+
     }
     return getInput(
         dt, window, collisions, entities, sharedDialogueBox, tileManager,
