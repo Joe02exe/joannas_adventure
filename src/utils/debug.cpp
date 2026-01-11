@@ -75,6 +75,8 @@ void DebugUI::update(
         if (ImGui::Button("End Combat")) {
             gameStatus = GameStatus::Overworld;
             combatSystem.endCombat();
+            player.setPosition({ 150.f, 400.f });
+            player.setScale({ 1.f, 1.f });
         }
     }
     ImGui::End();
