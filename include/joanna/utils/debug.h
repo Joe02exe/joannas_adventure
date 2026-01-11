@@ -4,10 +4,9 @@
 #include "joanna/entities/enemy.h"
 #include "joanna/entities/player.h"
 #include "joanna/systems/combat_system.h"
-#include "joanna/systems/controller.h"
-
 #include <SFML/Graphics/RenderWindow.hpp>
 
+class Controller;
 class DebugUI {
   public:
     static void init(sf::RenderWindow& window);
