@@ -41,6 +41,7 @@ class TileManager {
     TileManager(sf::RenderWindow& window);
 
     bool loadMap(const std::string& path);
+    bool checkLineOfSight(sf::Vector2f start, sf::Vector2f end, float stepSize = 10.f) const;
     // void render(sf::RenderTarget& target, Player& player);
     void clear();
 

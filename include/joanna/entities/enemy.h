@@ -2,6 +2,8 @@
 
 #include "joanna/core/combattypes.h"
 #include "joanna/entities/entity.h"
+#include "joanna/entities/player.h"
+#include "joanna/world/tilemanager.h"
 #include "joanna/entities/entityutils.h"
 #include <unordered_map>
 #include <vector>
@@ -19,6 +21,9 @@ class Enemy: public Entity {
         return health;
     }
 
+    enum class OverworldState { Idle, Pursuing };
+    bool updateOverworld(float dt, Player& player, TileManager& tileManager);
+
   private:
     void switchState(State newState);
     void applyFrame();
@@ -31,4 +36,12 @@ class Enemy: public Entity {
     std::vector<Attack> attacks;
     int health = 100;
     int maxHealth = 100;
+
+    // AI movement variables
+    OverworldState aiState = OverworldState::Idle;
+    sf::Vector2f homePoint;
+    sf::Vector2f patrolTarget;
+    float patrolTimer = 0.f;
+    float reactionTimer = 0.f;
+    float speed = 38.f;
 };
