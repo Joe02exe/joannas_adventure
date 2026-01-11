@@ -26,11 +26,15 @@ WindowManager::WindowManager(
         sf::FloatRect({ 0.75f, 0.f }, { MINI_MAP_SIZE, MINI_MAP_SIZE })
     );
 
+    uiView.setCenter({ 0, 0 });
+    uiView.setSize({ static_cast<float>(width), static_cast<float>(height) });
+
     window.setMouseCursorVisible(false);
 
     // ImGUI
-    DebugUI::init(window);
-
+    if constexpr (IMGUI_ENABLED) {
+        DebugUI::init(window);
+    }
     setCenter(initialPos);
     window.setFramerateLimit(60);
 }
@@ -52,12 +56,15 @@ void WindowManager::handleResizeEvent(sf::Vector2u newSize) {
 
     mainView.setViewport(mainViewport);
     miniMapView.setViewport(miniViewport);
+    uiView.setViewport(mainViewport);
 }
 
 void WindowManager::pollEvents() {
 
     while (const std::optional<sf::Event> event = window.pollEvent()) {
-        debug_ui.processEvent(window, *event);
+        if constexpr (IMGUI_ENABLED) {
+            debug_ui.processEvent(window, *event);
+        }
         if (event->is<sf::Event::Closed>()) {
             window.close();
         }

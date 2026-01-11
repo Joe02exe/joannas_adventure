@@ -8,21 +8,15 @@
 #include "joanna/systems/font_renderer.h"
 #include "joanna/systems/menu.h"
 #include "joanna/utils/dialogue_box.h"
-#include "joanna/utils/logger.h"
 #include "joanna/world/tilemanager.h"
 
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "joanna/core/savegamemanager.h"
 #include "joanna/systems/audiomanager.h"
 #include "joanna/utils/resourcemanager.h"
 
 #include <SFML/System/Vector2.hpp>
-#include <cmath>
 #include <fstream>
 #include <imgui-SFML.h>
-#include <imgui.h>
 
 Game::Game() = default;
 
@@ -47,8 +41,10 @@ void Game::run() {
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
         "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
     ));
-    std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png");
-    Enemy* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
+    std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
+        sf::Vector2f(720.f, 325.f), "assets/player/enemies/goblin/idle.png"
+    );
+    auto* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
     entities.push_back(std::move(enemy));
 
     entities.push_back(std::make_unique<NPC>(
@@ -56,7 +52,7 @@ void Game::run() {
         "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
     ));
 
-    TileManager tileManager;
+    TileManager tileManager(window);
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
     for (auto& entity : entities) {
         if (auto box = entity->getCollisionBox()) {
@@ -65,49 +61,33 @@ void Game::run() {
     }
 
     RenderEngine renderEngine;
-    PostProcessing postProc(900, 900);
 
     sf::Clock clock;
 
-    Menu menu(windowManager, controller);
+    Menu menu(windowManager, controller, tileManager, audioManager);
     menu.show(
-        renderEngine, tileManager, entities, sharedDialogueBox,
-        audioManager
+        renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );
-
-    SaveGameManager manager;
-    GameState state = manager.loadGame();
-    Logger::info("Load game");
-    Logger::info("Player x: {}", state.player.x);
-    Logger::info("Player y: {}", state.player.y);
-    controller.getPlayer().setPosition(
-        sf::Vector2f(state.player.x, state.player.y)
-    );
-    controller.getPlayerView().setCenter(
-        sf::Vector2f(state.player.x, state.player.y)
-    );
-    controller.getMiniMapView().setCenter(
-        sf::Vector2f(state.player.x, state.player.y)
-    );
-
-    Logger::info("Player X {}", controller.getPlayer().getPosition().x);
-    Logger::info("Player Y {}", controller.getPlayer().getPosition().y);
 
     clock.restart();
 
     CombatSystem combatSystem;
     GameStatus gameStatus = GameStatus::Overworld;
 
+    PostProcessing postProc(900, 900);
     while (window.isOpen()) {
 
         // handle resizing events
         while (auto event = window.pollEvent()) {
-            windowManager.getDebugUI().processEvent(window, *event);
+            if constexpr (IMGUI_ENABLED) {
+                windowManager.getDebugUI().processEvent(window, *event);
+            }
             if (const auto* closed = event->getIf<sf::Event::Closed>()) {
                 window.close();
             }
             if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-                windowManager.handleResizeEvent({resized->size.x, resized->size.y});
+                windowManager.handleResizeEvent({ resized->size.x,
+                                                  resized->size.y });
             }
             if (gameStatus == GameStatus::Combat) {
                 combatSystem.handleInput(*event);
@@ -115,12 +95,17 @@ void Game::run() {
         }
 
         float dt = clock.restart().asSeconds();
-        if (dt <= 0.0f) dt = 0.0001f;
+        if (dt <= 0.0f) {
+            dt = 0.0001f;
+        }
 
+        if constexpr (IMGUI_ENABLED) {
+            ImGui::SFML::Update(window, sf::seconds(dt));
+        }
         if (gameStatus == GameStatus::Overworld) {
             bool resetClock = controller.updateStep(
                 dt, window, collisions, entities, sharedDialogueBox,
-            tileManager, renderEngine
+                tileManager, renderEngine
             );
             if (resetClock) {
                 clock.restart();
@@ -128,7 +113,12 @@ void Game::run() {
         } else if (gameStatus == GameStatus::Combat) {
             combatSystem.update(dt);
         }
-
+        if constexpr (IMGUI_ENABLED) {
+            windowManager.getDebugUI().update(
+                dt, window, controller.getPlayer(), gameStatus, combatSystem,
+                *enemyPtr
+            );
+        }
         windowManager.clear();
 
         if (gameStatus == GameStatus::Overworld) {
@@ -141,33 +131,32 @@ void Game::run() {
                     // world view
                     target.setView(controller.getPlayerView());
                     renderEngine.render(
-                        target, controller.getPlayer(), tileManager,
-                        entities, sharedDialogueBox
+                        target, controller.getPlayer(), tileManager, entities,
+                        sharedDialogueBox, dt
                     );
 
                     // minimap
                     target.setView(windowManager.getMiniMapView());
                     renderEngine.render(
-                        target, controller.getPlayer(), tileManager,
-                        entities, sharedDialogueBox
+                        target, controller.getPlayer(), tileManager, entities,
+                        sharedDialogueBox, dt
                     );
 
                     // ui
-                    target.setView(windowManager.getDefaultView());
-
-                    
+                    target.setView(windowManager.getUiView());
+                    if (controller.renderInventory()) {
+                        controller.getPlayer().getInventory().displayInventory(
+                            target, tileManager
+                        );
+                    }
+                    controller.getPlayer().displayHealthBar(
+                        target, tileManager
+                    );
                 },
                 nullptr
             );
             postProc.apply(window, clock.getElapsedTime().asSeconds());
 
-            window.setView(windowManager.getDefaultView());
-
-            if (controller.renderInventory()) {
-                        controller.getPlayer().getInventory().displayInventory(
-                            window, tileManager
-                        );
-                    }
         } else if (gameStatus == GameStatus::Combat) {
             sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
             combatView.setViewport(windowManager.getMainView().getViewport());
@@ -175,15 +164,16 @@ void Game::run() {
             combatSystem.render(window);
         }
 
-        windowManager.getDebugUI().update(
-            dt, window, controller.getPlayer(), gameStatus, combatSystem, *enemyPtr
-        );
-
-
-        windowManager.render();
-
+        if constexpr (IMGUI_ENABLED) {
+            windowManager.render();
+            windowManager.getDebugUI().render(window);
+        }
         window.display();
     }
-
-    ImGui::SFML::Shutdown();
+    if constexpr (IMGUI_ENABLED) {
+        ImGui::SFML::Shutdown();
+    }
+    ResourceManager<sf::Font>::getInstance()->clear();
+    ResourceManager<sf::Texture>::getInstance()->clear();
+    ResourceManager<sf::SoundBuffer>::getInstance()->clear();
 }

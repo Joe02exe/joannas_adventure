@@ -23,8 +23,9 @@ class Player: public Entity {
     update(float dt, State state, bool movingRight, AudioManager& pManager);
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
-    std::vector<Attack> attacks;
     void takeDamage(int amount);
+    void
+    displayHealthBar(sf::RenderTarget& target, TileManager& tileManager) const;
 
     int getHealth() const {
         return health;
@@ -38,6 +39,7 @@ class Player: public Entity {
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
     Inventory inventory = Inventory(20);
+    std::vector<Attack> attacks;
 
     float frameTimer = 0.f;
     int currentFrame = 0;

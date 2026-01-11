@@ -6,6 +6,7 @@
 #include <imgui.h>
 
 void DebugUI::init(sf::RenderWindow& window) {
+    ImGui::CreateContext();
     bool res = ImGui::SFML::Init(window);
     if (!res) {
         throw std::runtime_error("Failed to initialize ImGui-SFML");
@@ -15,7 +16,7 @@ void DebugUI::init(sf::RenderWindow& window) {
 
 void DebugUI::processEvent(const sf::Window& window, const sf::Event& event)
     const {
-    if (enabled) {
+    if constexpr (IMGUI_ENABLED) {
         ImGui::SFML::ProcessEvent(window, event);
     }
 }
@@ -24,11 +25,9 @@ void DebugUI::update(
     const float dt, sf::RenderWindow& window, Player& player,
     GameStatus& gameStatus, CombatSystem& combatSystem, Enemy& testEnemy
 ) const {
-    if (!enabled) {
+    if constexpr (!IMGUI_ENABLED) {
         return;
     }
-    ImGui::SFML::Update(window, sf::seconds(dt));
-
     ImGui::Begin("Debug Window");
     ImGui::PushItemWidth(200.0f);
     std::string text = fmt::format(
@@ -38,11 +37,11 @@ void DebugUI::update(
 
     ImGui::TextUnformatted(text.c_str());
 
-    // persistent UI state so user edits aren't lost each frame
     static float input_x = 0.f;
     static float input_y = 0.f;
     static int item_id = 0;
-    // sync initial values (only if not interacting)
+
+    // Only sync values if the user isn't currently typing in an input box
     if (!ImGui::IsAnyItemActive()) {
         input_x = player.getPosition().x;
         input_y = player.getPosition().y;
@@ -55,15 +54,14 @@ void DebugUI::update(
         player.setPosition({ player.getPosition().x, input_y });
     }
 
-    if (ImGui::InputInt("Item id", &item_id)) {
-    }
+    ImGui::InputInt("Item id", &item_id);
+
     if (ImGui::Button("Add item to inventory")) {
         player.getInventory().addItem(Item(std::to_string(item_id), "item"));
     }
     if (ImGui::Button("Add carrot to inventory")) {
         player.getInventory().addItem(Item("691", "carrot"));
     }
-
     if (ImGui::Button("Add sword to inventory")) {
         player.getInventory().addItem(Item("3050", "sword"));
     }
@@ -83,11 +81,9 @@ void DebugUI::update(
 }
 
 void DebugUI::render(sf::RenderWindow& window) const {
-    if (!enabled) {
-        return;
+    if constexpr (IMGUI_ENABLED) {
+        window.setView(window.getDefaultView());
     }
-
-    window.setView(window.getDefaultView()); // IMPORTANT
     ImGui::SFML::Render(window);
 }
 

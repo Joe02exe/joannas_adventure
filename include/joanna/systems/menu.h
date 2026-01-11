@@ -7,55 +7,52 @@
 #include <SFML/Graphics.hpp>
 
 class Menu {
-    int pos;
-    bool pressed, isItemClicked;
-
     WindowManager* windowManager;
     Controller* controller;
-    sf::Font font;
-    sf::Texture image;
+    TileManager* tileManager;
+    AudioManager* audioManager;
 
+    sf::Font font;
     sf::Sprite mouseSprite;
 
     std::vector<std::string> options;
-    std::vector<sf::Vector2f> coords;
-    std::vector<sf::Text> texts;
-    std::vector<sf::RectangleShape> backgrounds;
-    std::vector<std::size_t> sizes;
+    std::vector<sf::Text> menuTexts;
+    std::vector<sf::RectangleShape> menuBackgrounds;
+    GameState stateToSave;
 
+    int selectedIndex = 1; // Start at 1 to skip title
+    bool isMenuOpen = true;
+    bool loadingInteraction = true;
+
+    // About Screen State
     bool showAbout = false;
-    std::string aboutText;
+    std::string aboutTextContent;
 
-  protected:
-    void set_values();
-
-    sf::Vector2f getMouseCoordinatesFromWindow(const sf::RenderWindow& window
-    ) const;
-
-    void highlightHoveredOption(sf::Vector2f mouse_pos);
-
-    bool handleAboutEvents(const std::optional<sf::Event>& event);
-
-    void mouseButtonClicked(
-        sf::Vector2f mouse_pos, const std::optional<sf::Event>& event
-    );
-
-    void handleMenuEvents(AudioManager& audioManager);
-    void updateSelection(std::size_t newPos);
-    void handleSelection();
-    void renderMouseCursor(sf::RenderTarget& window) const;
+    void handleInput(sf::Window& window);
+    void updateSelection(int direction); // -1 for up, 1 for down
+    void executeSelection();
     void render(
         RenderEngine& render_engine, TileManager& tileManager,
         std::list<std::unique_ptr<Entity>>& entities,
-        std::shared_ptr<DialogueBox> dialogueBox
-    ) const;
+        const std::shared_ptr<DialogueBox>& dialogueBox
+    );
+    void renderMenuOptions(sf::RenderTarget& target);
+    void renderAboutOverlay(sf::RenderTarget& target);
+    void rebuildUI();
+    sf::Vector2f getMouseWorldPos() const;
+    void handleHover(const sf::Vector2f& mousePos);
+    void resetToDefaultMenu();
 
   public:
-    Menu(WindowManager& windowManager, Controller& controller);
+    Menu(
+        WindowManager& windowManager, Controller& controller,
+        TileManager& tileManager, AudioManager& audioManager
+    );
     void show(
         RenderEngine& render_engine, TileManager& tileManager,
         std::list<std::unique_ptr<Entity>>& entities,
         const std::shared_ptr<DialogueBox>& dialogueBox,
         AudioManager& audioManager
     );
+    void setOptions(const std::vector<std::string>& newOptions);
 };

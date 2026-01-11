@@ -38,7 +38,7 @@ struct RenderObject {
 
 class TileManager {
   public:
-    TileManager();
+    TileManager(sf::RenderWindow& window);
 
     bool loadMap(const std::string& path);
     // void render(sf::RenderTarget& target, Player& player);
@@ -74,10 +74,20 @@ class TileManager {
 
     bool removeObjectById(int id);
 
+    void loadObjectsFromSaveGame(const std::vector<ObjectState>& objects);
+
+    void reloadObjectsFromTileson();
+
   private:
+    void randomlySelectItems(std::vector<tson::Object*> carrots, int count);
+
     void processLayer(const std::string& layerName);
     void loadTexture(const std::string& imagePath);
 
+    void renderProgressBar(std::string message) const;
+
+    float progress = 0.0f;
+    sf::RenderWindow* window;
     tson::Tileson tsonParser;
     std::vector<sf::FloatRect> m_collisionRects;
     std::unique_ptr<tson::Map> m_currentMap = nullptr;
