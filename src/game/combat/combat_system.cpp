@@ -65,84 +65,88 @@ void CombatSystem::update(float dt) {
         updateEnemyTurn(dt, pState, eState);
     }
 
-    // Determine facing for player
-    // player faces right (towards enemy) unless returning
-    bool facingLeft = false;
-    if (currentState == CombatState::PlayerTurn &&
-        phase == TurnPhase::Returning) {
-        facingLeft = true;
-    }
-
-    player->update(dt, pState, facingLeft, dummyAudio);
+    player->update(dt, pState, player->getFacing() == Direction::Left, dummyAudio);
     enemy->update(dt, eState);
 }
 
+void CombatSystem::processApproach(float dt, Entity* actor, sf::Vector2f target, float speed, float threshold, State& actorState) {
+    actorState = State::Running;
+    sf::Vector2f dir = target - actor->getPosition();
+    
+    // Move if distance is greater than threshold (considering direction)
+    bool shouldMove = (speed > 0 && dir.x > threshold) || (speed < 0 && dir.x < -threshold);
+    
+    if (shouldMove) {
+        actor->setPosition(actor->getPosition() + sf::Vector2f(speed * dt, 0.f));
+    } else {
+        phase = TurnPhase::Attacking;
+        turnTimer = 0.0f;
+    }
+}
+
+void CombatSystem::processReturn(float dt, Entity* actor, sf::Vector2f startPos, float speed, float threshold, State& actorState, Direction moveFacing, Direction endFacing) {
+    actor->setFacing(moveFacing);
+    actorState = State::Running;
+    sf::Vector2f dir = startPos - actor->getPosition();
+    
+    bool shouldMove = (speed > 0 && dir.x > threshold) || (speed < 0 && dir.x < -threshold);
+    
+    if (shouldMove) {
+        actor->setPosition(actor->getPosition() + sf::Vector2f(speed * dt, 0.f));
+    } else {
+        actor->setPosition(startPos);
+        actor->setFacing(endFacing);
+        phase = TurnPhase::EndTurn;
+        actorState = State::Idle;
+    }
+}
+
+template <typename Defender>
+void CombatSystem::processAttack(float dt, Entity* attacker, Defender* defender, State& attackerState, State& defenderState, const Attack& attack, float& timer, TurnPhase& nextPhase, float impactTime, float endTime, float moveSpeed, float targetOffset, float moveThreshold) {
+    attackerState = attack.animationState;
+
+    if (moveSpeed != 0.f) {
+        sf::Vector2f target = defender->getPosition();
+        target.x += targetOffset;
+        sf::Vector2f dir = target - attacker->getPosition();
+        
+        bool shouldMove = (moveSpeed > 0 && dir.x > moveThreshold) || (moveSpeed < 0 && dir.x < -moveThreshold);
+        
+        if (shouldMove) {
+            attacker->setPosition(attacker->getPosition() + sf::Vector2f(moveSpeed * dt, 0.f));
+        }
+    }
+
+    if (timer < impactTime) {
+        defenderState = State::Idle;
+    } else if (timer < endTime) {
+        defenderState = State::Hurt;
+    } else {
+        defenderState = State::Idle;
+        nextPhase = TurnPhase::Returning;
+        timer = 0.0f;
+        defender->takeDamage(attack.damage);
+    }
+    timer += dt;
+}
+
+// Explicit instantiations
+template void CombatSystem::processAttack<Player>(float, Entity*, Player*, State&, State&, const Attack&, float&, TurnPhase&, float, float, float, float, float);
+template void CombatSystem::processAttack<Enemy>(float, Entity*, Enemy*, State&, State&, const Attack&, float&, TurnPhase&, float, float, float, float, float);
+
 void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
     if (phase == TurnPhase::Approaching) {
-        pState = State::Running;
-        sf::Vector2f dir = targetPos - player->getPosition();
-        if (dir.x > 10.f) {
-            player->setPosition(
-                player->getPosition() + sf::Vector2f(500.f * dt, 0.f)
-            );
-        } else {
-            phase = TurnPhase::Attacking;
-            turnTimer = 0.0f;
-        }
+        processApproach(dt, player, targetPos, 500.f, 10.f, pState);
     } else if (phase == TurnPhase::Attacking) {
-        pState = currentAttack.animationState;
-
         if (currentAttack.name == "Attack") {
-            if (turnTimer < 0.3f) {
-                eState = State::Idle;
-            } else if (turnTimer < 0.8f) {
-                eState = State::Hurt;
-            } else {
-                eState = State::Idle;
-                phase = TurnPhase::Returning;
-                turnTimer = 0.0f;
-                enemy->takeDamage(currentAttack.damage);
-            }
-        } else {
+             processAttack(dt, player, enemy, pState, eState, currentAttack, turnTimer, phase, 0.3f, 0.8f);
+        } else if (currentAttack.name == "Roll") {
+             processAttack(dt, player, enemy, pState, eState, currentAttack, turnTimer, phase, 0.2f, 0.85f, 800.f, -90.f, 5.f);
         }
-
-        // move player during roll
-        if (currentAttack.name == "Roll") {
-            sf::Vector2f rollTarget = enemy->getPosition();
-            rollTarget.x -= 90.f; // stop right in front
-            sf::Vector2f dir = rollTarget - player->getPosition();
-            if (dir.x > 5.f) {
-                player->setPosition(
-                    player->getPosition() + sf::Vector2f(800.f * dt, 0.f)
-                );
-            }
-            if (turnTimer < 0.2f) {
-                eState = State::Idle;
-            } else if (turnTimer < 0.85f) {
-                eState = State::Hurt;
-            } else {
-                eState = State::Idle;
-                phase = TurnPhase::Returning;
-                turnTimer = 0.0f;
-                enemy->takeDamage(currentAttack.damage);
-            }
-        }
-
-        turnTimer += dt;
-
     } else if (phase == TurnPhase::Returning) {
-        pState = State::Running;
-        sf::Vector2f dir = startPos - player->getPosition();
-        if (dir.x < -10.f) {
-            player->setPosition(
-                player->getPosition() + sf::Vector2f(-500.f * dt, 0.f)
-            );
-        } else {
-            player->setPosition(startPos);
-            phase = TurnPhase::EndTurn;
-            pState = State::Idle;
-        }
+        processReturn(dt, player, startPos, -500.f, -10.f, pState, Direction::Left, Direction::Right);
     } else if (phase == TurnPhase::EndTurn) {
+        //TODO checkEndTurn
         if (enemy->getHealth() <= 0) {
             eState = State::Dead;
             currentState = CombatState::Victory;
@@ -155,9 +159,8 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
     }
 }
 
-void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
-    if (phase == TurnPhase::Input) {
-        startPos = enemy->getPosition();
+void CombatSystem::e_chooseAttack(){
+    startPos = enemy->getPosition();
         targetPos = player->getPosition();
 
         if (rand() % 2 == 0) {
@@ -168,72 +171,24 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
             targetPos.x += 280.f;
         }
         phase = TurnPhase::Approaching;
+}
+
+
+void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
+    if (phase == TurnPhase::Input) {
+        e_chooseAttack();
     } else if (phase == TurnPhase::Approaching) {
-        eState = State::Running;
-        enemy->setFacing(Direction::Left);
-        sf::Vector2f dir = targetPos - enemy->getPosition();
-        if (dir.x < -10.f) {
-            enemy->setPosition(
-                enemy->getPosition() + sf::Vector2f(-500.f * dt, 0.f)
-            );
-        } else {
-            phase = TurnPhase::Attacking;
-            turnTimer = 0.0f;
-        }
+        processApproach(dt, enemy, targetPos, -500.f, -10.f, eState);
     } else if (phase == TurnPhase::Attacking) {
-        eState = currentAttack.animationState;
-
         if (currentAttack.name == "Mining") {
-            if (turnTimer < 0.4f) {
-                pState = State::Idle;
-            } else if (turnTimer < 0.9f) {
-                pState = State::Hurt;
-            } else {
-                pState = State::Idle;
-                phase = TurnPhase::Returning;
-                turnTimer = 0.0f;
-                player->takeDamage(currentAttack.damage);
-            }
+             processAttack(dt, enemy, player, eState, pState, currentAttack, turnTimer, phase, 0.4f, 0.9f);
+        } else if (currentAttack.name == "Roll") {
+             processAttack(dt, enemy, player, eState, pState, currentAttack, turnTimer, phase, 0.2f, 0.8f, -800.f, 85.f, -5.f);
         }
-
-        // Move enemy during Roll
-        if (currentAttack.name == "Roll") {
-            sf::Vector2f rollTarget = player->getPosition();
-            rollTarget.x += 85.f; // Stop right in front
-            sf::Vector2f dir = rollTarget - enemy->getPosition();
-            if (dir.x < -5.f) {
-                enemy->setPosition(
-                    enemy->getPosition() + sf::Vector2f(-800.f * dt, 0.f)
-                );
-            }
-            if (turnTimer < 0.2f) {
-                pState = State::Idle;
-            } else if (turnTimer < 0.8f) {
-                pState = State::Hurt;
-            } else {
-                pState = State::Idle;
-                phase = TurnPhase::Returning;
-                turnTimer = 0.0f;
-                player->takeDamage(currentAttack.damage);
-            }
-        }
-
-        turnTimer += dt;
     } else if (phase == TurnPhase::Returning) {
-        enemy->setFacing(Direction::Right);
-        eState = State::Running;
-        sf::Vector2f dir = startPos - enemy->getPosition();
-        if (dir.x > 10.f) {
-            enemy->setPosition(
-                enemy->getPosition() + sf::Vector2f(500.f * dt, 0.f)
-            );
-        } else {
-            enemy->setPosition(startPos);
-            enemy->setFacing(Direction::Left);
-            phase = TurnPhase::EndTurn;
-            eState = State::Idle;
-        }
+        processReturn(dt, enemy, startPos, 500.f, 10.f, eState, Direction::Right, Direction::Left);
     } else if (phase == TurnPhase::EndTurn) {
+        //TODO this can be generalized into one function
         if (player->getHealth() <= 0) {
             pState = State::Dead;
             currentState = CombatState::Defeat;
@@ -247,7 +202,7 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
 
 void CombatSystem::render(sf::RenderTarget& target) {
 
-    // currently set statically... because  viewport is set to 900x900
+    // currently set statically... because viewport is set to 900x900
     sf::Sprite backgroundSprite(backgroundTexture);
     backgroundSprite.setScale({ 900.f / 1400.f, 900.f / 1400.f });
     backgroundSprite.setPosition({ 0.f, 0.f });

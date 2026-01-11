@@ -103,7 +103,7 @@ bool Controller::getInput(
     }
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
-        for (auto& item : tileManager.getRenderObjects()) {
+        for (const auto& item : tileManager.getRenderObjects()) {
             auto playerPos = player.getPosition();
             auto itemPos = item.position;
             float dx = playerPos.x - static_cast<float>(itemPos.x);
@@ -122,7 +122,7 @@ bool Controller::getInput(
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) && !sharedDialogueBox->isActive()) {
         for (auto& entity : entities) {
-            if (Interactable* interactable = dynamic_cast<Interactable*>(entity.get())) {
+            if (auto* interactable = dynamic_cast<Interactable*>(entity.get())) {
                 if (interactable->canPlayerInteract(player.getPosition())) {
                     interactable->interact(player);
                 }
@@ -167,15 +167,6 @@ bool Controller::getInput(
     );
     playerView.move(nextMove);
     windowManager.getMiniMapView().move(nextMove);
-
-    // Logger::info(
-    //     "Player view: ({}, {})", playerView.getCenter().x,
-    //     playerView.getCenter().y
-    // );
-    // Logger::info(
-    //     "Player pos: ({}, {})", player.getPosition().x,
-    //     player.getPosition().y
-    // );
     player.setPosition(player.getPosition() + nextMove);
 
     player.update(dt, state, facingLeft, audioManager);
@@ -191,10 +182,10 @@ bool Controller::updateStep(
 ) {
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : entities) {
-        if (NPC* npc = dynamic_cast<NPC*>(entity.get())) {
+        if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
             npc->update(dt, State::Idle, player.getPosition());
         }
-        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+        if (auto* enemy = dynamic_cast<Enemy*>(entity.get())) {
             enemy->update(dt, State::Idle);
         }
     }
