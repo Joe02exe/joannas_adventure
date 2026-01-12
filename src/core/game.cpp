@@ -52,6 +52,16 @@ void Game::run() {
         "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
     ));
 
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png",
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Guard"
+    ));
+
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png",
+        "assets/buttons/talk_T.png", sharedDialogueBox, "Guard"
+    ));
+
     TileManager tileManager(window);
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
     for (auto& entity : entities) {

@@ -31,5 +31,13 @@
                 "Arrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
             ]
         }
+    ],
+    "Guard": [
+        {
+            "priority": 1,
+            "text": [
+                "KEY!!!"
+            ]
+        }
     ]
 }
