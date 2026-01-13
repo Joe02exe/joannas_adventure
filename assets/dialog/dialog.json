@@ -18,7 +18,12 @@
             "req": {
                 "type": "ITEM",
                 "id": "691",
-                "amount": 5
+                "amount": 1
+            },
+            "reward": {
+                "id": "627",
+                "name": "key",
+                "amount": 1
             }
         }
     ],
