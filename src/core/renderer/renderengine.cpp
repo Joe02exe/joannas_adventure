@@ -30,13 +30,15 @@ void RenderEngine::render(
     }
 
     // draw collidable/decorative tiles with player sorting
-    float playerBottom = player.getCollisionBox().value().position.y;
+    float playerBottom = player.getCollisionBox().value().position.y +
+                         player.getCollisionBox().value().size.y;
     bool playerDrawn = false;
 
     // draw iteractables below player
     for (auto& entity : entities) {
         if (entity->getCollisionBox().has_value()) {
-            float middleEntity = entity->getCollisionBox().value().position.y;
+            float middleEntity = entity->getCollisionBox().value().position.y +
+                                 entity->getCollisionBox().value().size.y;
             if (middleEntity < playerBottom) {
                 entity->render(target);
             }
@@ -47,7 +49,8 @@ void RenderEngine::render(
 
     // draw collidables
     for (const auto& tile : m_collidables) {
-        float middleTile = tile.collisionBox.value().position.y;
+        float middleTile = tile.collisionBox.value().position.y +
+                           tile.collisionBox.value().size.y;
         if (!playerDrawn && middleTile >= playerBottom) {
             player.draw(target);
             playerDrawn = true;
@@ -58,7 +61,8 @@ void RenderEngine::render(
     // draw entities above player
     for (auto& entity : entities) {
         if (entity->getCollisionBox().has_value()) {
-            float middleEntity = entity->getCollisionBox().value().position.y;
+            float middleEntity = entity->getCollisionBox().value().position.y +
+                                 entity->getCollisionBox().value().size.y;
             if (middleEntity >= playerBottom) {
                 entity->render(target);
             }
