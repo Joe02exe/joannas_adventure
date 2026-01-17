@@ -13,6 +13,12 @@ CombatSystem::CombatSystem()
       )),
       counterButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/attack_punch.png"
+      )),
+      counterButtonGoodTexture(ResourceManager<sf::Texture>::getInstance()->get(
+          "assets/buttons/attack_punch_good.png"
+      )),
+      counterButtonBadTexture(ResourceManager<sf::Texture>::getInstance()->get(
+          "assets/buttons/attack_punch_bad.png"
       )) {}
 
 // Explicit instantiations
@@ -179,11 +185,11 @@ void CombatSystem::e_chooseAttack(){
         targetPos = player->getPosition();
 
         if (rand() % 2 == 0) {
-            currentAttack = { "Mining", 2, State::Mining, 0.4f, 0.9f, 0.f, 0.f, 5.f, true, 0.15f, 0.43f };
+            currentAttack = { "Mining", 2, State::Mining, 0.4f, 0.9f, 0.f, 0.f, 5.f, true, 0.1f, 0.43f };
             targetPos.x += 130.f;
             Logger::info("Mining selected");
         } else {
-            currentAttack = { "Roll", 1, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.17f, 0.22f }; // TODO: fix
+            currentAttack = { "Roll", 1, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.16f, 0.23f }; // TODO: fix
             targetPos.x += 280.f;
             Logger::info("Roll selected");    
         }
@@ -222,11 +228,16 @@ void CombatSystem::processCounter(float dt) {
         damageDealt = true;
     }
 
-    if (turnTimer > currentAttack.counterWindowEnd) { // Animation end
-        // pState is handled by Player::update (switches to Idle)
-        eState = State::Idle;
-        phase = TurnPhase::Returning;
-        currentState = CombatState::EnemyTurn;
+    if (turnTimer > currentAttack.counterWindowEnd) {
+        if (enemy->getHealth() <= 0) {
+            eState = State::Dead;
+            currentState = CombatState::Victory;
+            std::cout << "Victory!\n";
+        } else {
+            eState = State::Idle;
+            phase = TurnPhase::Returning;
+            currentState = CombatState::EnemyTurn;
+        }
     }
 }
 
@@ -256,8 +267,17 @@ void CombatSystem::render(sf::RenderTarget& target) {
 
     if (currentAttack.counterable && currentState == CombatState::EnemyTurn && (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching)) {
         sf::Sprite counterButtonSprite(counterButtonTexture);
+        
+        if (phase == TurnPhase::Attacking && turnTimer >= currentAttack.counterWindowStart && turnTimer <= currentAttack.counterWindowEnd) {
+             counterButtonSprite.setTexture(counterButtonGoodTexture);
+        } else if (phase == TurnPhase::Attacking && turnTimer > currentAttack.counterWindowEnd) {
+             counterButtonSprite.setTexture(counterButtonBadTexture);
+        } else {
+             counterButtonSprite.setTexture(counterButtonTexture);
+        }
+
         counterButtonSprite.setScale({ 3, 3 });
-        counterButtonSprite.setPosition({ 95.f, 400.f }); // Position below attack button
+        counterButtonSprite.setPosition({ 95.f, 300.f });
         target.draw(counterButtonSprite);
     }
 }

@@ -64,6 +64,8 @@ class CombatSystem {
     void e_chooseAttack();
 
     sf::Texture counterButtonTexture;
+    sf::Texture counterButtonGoodTexture;
+    sf::Texture counterButtonBadTexture;
     bool canCounter = false;
     bool counterSuccess = false;
     bool damageDealt = false;
