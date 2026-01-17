@@ -48,7 +48,7 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void Menu::resetToDefaultMenu() {
-    setOptions({ "Joanna's Farm", "New game", "Load game", "Save", "Options",
+    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "Options",
                  "About", "Quit" });
 }
 
@@ -239,7 +239,7 @@ void Menu::executeSelection() {
     } else if (choice == "Options") {
         // Placeholder
     } else if (choice == "About") {
-        aboutTextContent = "Joanna's Farm\n\n"
+        aboutTextContent = "Joanna's Adventure\n\n"
                            "A small RPG game.\n\n"
                            "Controls:\n"
                            "WASD : navigate\n"

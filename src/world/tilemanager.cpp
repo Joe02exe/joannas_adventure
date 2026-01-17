@@ -111,7 +111,7 @@ void TileManager::renderProgressBar(std::string message) const {
     sf::Text text(font);
     sf::Text title(font);
     text.setString(message.empty() ? "Loading..." : message);
-    title.setString("Joanna's Farm");
+    title.setString("Joanna's Adventure");
     text.setCharacterSize(18);
     title.setCharacterSize(24);
     text.setFillColor(sf::Color::White);
