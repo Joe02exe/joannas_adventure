@@ -21,6 +21,10 @@ class Enemy: public Entity {
         return health;
     }
 
+    void resetHealth() {
+        health = maxHealth;
+    }
+
     enum class OverworldState { Idle, Pursuing };
     bool updateOverworld(float dt, Player& player, TileManager& tileManager);
 
@@ -34,8 +38,8 @@ class Enemy: public Entity {
     int currentFrame = 0;
 
     std::vector<Attack> attacks;
-    int health = 100;
-    int maxHealth = 100;
+    int health = 10;
+    int maxHealth = 10;
 
     // AI movement variables
     OverworldState aiState = OverworldState::Idle;

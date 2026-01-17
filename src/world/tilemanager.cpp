@@ -276,10 +276,10 @@ void TileManager::processLayer(const std::string& layerName) {
                         window->close();
                     }
                 }
-                Logger::info(
-                    "Added collision rect at ({}, {})", pixelRect.position.x,
-                    pixelRect.position.y
-                );
+                // Logger::info(
+                //     "Added collision rect at ({}, {})", pixelRect.position.x,
+                //     pixelRect.position.y
+                // );
             }
             info.collisionBox = pixelRect;
             m_collidables.push_back(info);

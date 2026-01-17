@@ -10,6 +10,9 @@ CombatSystem::CombatSystem()
       )),
       attackButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/attack.png"
+      )),
+      counterButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
+          "assets/buttons/attack_punch.png"
       )) {}
 
 // Explicit instantiations
@@ -58,7 +61,7 @@ void CombatSystem::endCombat() {
     enemy->setPosition(enemyState.position);
     enemy->setScale(enemyState.scale);
     enemy->setFacing(enemyState.facing);
-    enemy->takeDamage(-100);
+    enemy->resetHealth();
 }
 
 void CombatSystem::update(float dt) {
@@ -126,7 +129,7 @@ void CombatSystem::updateAttackMovement(float dt, Entity* attacker, const sf::Ve
 template <typename Defender>
 void CombatSystem::updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack) {
     if (turnTimer < attack.impactTime) {
-        defenderState = State::Idle;
+        if (defenderState != State::Counter) defenderState = State::Idle;
     } else if (turnTimer < attack.endTime) {
         defenderState = State::Hurt;
     } else {
@@ -148,6 +151,10 @@ void CombatSystem::processAttack(float dt, Entity* attacker, Defender* defender,
 }
 
 void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
+    if (phase == TurnPhase::Countering) {
+        processCounter(dt);
+        return;
+    }
     if (phase == TurnPhase::Approaching) {
         processApproach(dt, player, targetPos, 500.f, 10.f, pState);
     } else if (phase == TurnPhase::Attacking) {
@@ -172,11 +179,13 @@ void CombatSystem::e_chooseAttack(){
         targetPos = player->getPosition();
 
         if (rand() % 2 == 0) {
-            currentAttack = { "Mining", 5, State::Mining, 0.4f, 0.9f };
+            currentAttack = { "Mining", 2, State::Mining, 0.4f, 0.9f, 0.f, 0.f, 5.f, true, 0.15f, 0.43f };
             targetPos.x += 130.f;
+            Logger::info("Mining selected");
         } else {
-            currentAttack = { "Roll", 8, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f };
+            currentAttack = { "Roll", 1, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.17f, 0.22f }; // TODO: fix
             targetPos.x += 280.f;
+            Logger::info("Roll selected");    
         }
         phase = TurnPhase::Approaching;
 }
@@ -185,6 +194,7 @@ void CombatSystem::e_chooseAttack(){
 void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
     if (phase == TurnPhase::Input) {
         e_chooseAttack();
+        damageDealt = false;
     } else if (phase == TurnPhase::Approaching) {
         processApproach(dt, enemy, targetPos, -500.f, -10.f, eState);
     } else if (phase == TurnPhase::Attacking) {
@@ -200,6 +210,23 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
             currentState = CombatState::PlayerTurn;
             phase = TurnPhase::Input;
         }
+    }
+}
+
+void CombatSystem::processCounter(float dt) {
+    eState = State::Hurt;    
+    turnTimer += dt;
+
+    if (counterSuccess && !damageDealt) { // Damage point
+        enemy->takeDamage(1);
+        damageDealt = true;
+    }
+
+    if (turnTimer > currentAttack.counterWindowEnd) { // Animation end
+        // pState is handled by Player::update (switches to Idle)
+        eState = State::Idle;
+        phase = TurnPhase::Returning;
+        currentState = CombatState::EnemyTurn;
     }
 }
 
@@ -226,6 +253,13 @@ void CombatSystem::render(sf::RenderTarget& target) {
         attackButtonSprite.setPosition({ 95.f, 300.f });
         target.draw(attackButtonSprite);
     }
+
+    if (currentAttack.counterable && currentState == CombatState::EnemyTurn && (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching)) {
+        sf::Sprite counterButtonSprite(counterButtonTexture);
+        counterButtonSprite.setScale({ 3, 3 });
+        counterButtonSprite.setPosition({ 95.f, 400.f }); // Position below attack button
+        target.draw(counterButtonSprite);
+    }
 }
 
 void CombatSystem::handleInput(sf::Event& event) {
@@ -234,16 +268,41 @@ void CombatSystem::handleInput(sf::Event& event) {
             startPos = player->getPosition();
             targetPos = enemy->getPosition();
             if (keyEvent->code == sf::Keyboard::Key::A) {
-                currentAttack = { "Attack", 10, State::Attack, 0.3f, 0.8f };
+                currentAttack = { "Attack", 2, State::Attack, 0.3f, 0.8f };
                 targetPos.x -= 120.f; // close range attack, but still a bit
                                       // away from the enemy
                 phase = TurnPhase::Approaching;
             } else if (keyEvent->code == sf::Keyboard::Key::D) {
-                currentAttack = { "Roll", 15, State::Roll, 0.2f, 0.85f, 800.f, -90.f, 5.f };
+                currentAttack = { "Roll", 1, State::Roll, 0.2f, 0.85f, 800.f, -90.f, 5.f };
                 targetPos.x -=
                     340.f; // Start roll from further away, therefore our
                            // targetPos is a bit away from the enemy
                 phase = TurnPhase::Approaching;
+            }
+        }
+    }
+    else if (currentState == CombatState::EnemyTurn && (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) && currentAttack.counterable){
+        if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
+            if (keyEvent->code == sf::Keyboard::Key::D) {
+                if (pState == State::Counter) return; // Prevent spamming
+
+                // Determine success based on window
+                if (phase == TurnPhase::Attacking && turnTimer >= currentAttack.counterWindowStart && turnTimer <= currentAttack.counterWindowEnd) {
+                    Logger::info("Counter successful for turntimer: " + std::to_string(turnTimer));
+                    counterSuccess = true;
+                    damageDealt = false;
+                    // Switch to PlayerTurn to control the counter sequence
+                    currentState = CombatState::PlayerTurn;
+                    phase = TurnPhase::Countering; // Use dedicated phase
+                    turnTimer = 0.0f;
+                    pState = State::Counter;
+                } else {
+                    Logger::info("Counter failed for turntimer: " + std::to_string(turnTimer));
+                    counterSuccess = false;
+                    // Just play animation, don't interrupt enemy
+                    pState = State::Counter;
+                    // Player::update will switch back to Idle automatically
+                }
             }
         }
     }
