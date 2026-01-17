@@ -29,6 +29,8 @@ Player::Player(
         Animation("assets/player/main/hurt.png", { 96, 64 }, 8);
     animations[State::Dead] =
         Animation("assets/player/main/dead.png", { 96, 64 }, 13);
+    animations[State::Counter] =
+        Animation("assets/player/main/punch.png", { 96, 64 }, 3);
 
     // Initialize attacks
     attacks.push_back({ "Attack", 10, State::Attack });
@@ -36,7 +38,7 @@ Player::Player(
 }
 
 void Player::update(
-    float dt, State state, bool facingLeft, AudioManager& pManager
+    float dt, State& state, bool facingLeft, AudioManager& pManager
 ) {
     setFacing(facingLeft ? Direction::Left : Direction::Right);
     switchState(state);
@@ -51,9 +53,14 @@ void Player::update(
 
         frameTimer -= anim.frameTime; // keep leftover time
 
-        if (currentState == State::Dead &&
+        if ((currentState == State::Dead || currentState == State::Counter) &&
             currentFrame == anim.frames.size() - 1) {
-            // Do not loop dead animation
+            // Do not loop dead or counter animation
+            if (currentState == State::Counter) {
+                switchState(State::Idle);
+                state = State::Idle; // Update external state
+                std::cout << "Player finished counter animation, switching to Idle.\n";
+            }
         } else {
             currentFrame =
                 (currentFrame + 1) % static_cast<int>(anim.frames.size());

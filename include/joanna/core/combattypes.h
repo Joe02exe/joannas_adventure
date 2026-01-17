@@ -18,4 +18,9 @@ struct Attack {
     float moveSpeed = 0.f;
     float targetOffset = 0.f;
     float moveThreshold = 5.f;
+
+    // Counter
+    bool counterable = false;
+    float counterWindowStart = 0.f;
+    float counterWindowEnd = 0.f;
 };

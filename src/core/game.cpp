@@ -22,7 +22,7 @@ Game::Game() = default;
 
 void Game::run() {
 
-    WindowManager windowManager(900, 900, "Joanna's Farm");
+    WindowManager windowManager(900, 900, "Joanna's Adventure");
 
     AudioManager audioManager;
     audioManager.set_current_music(MusicId::Overworld);

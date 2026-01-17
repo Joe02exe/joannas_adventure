@@ -29,7 +29,7 @@ class CombatSystem {
     Player* player = nullptr;
     Enemy* enemy = nullptr;
 
-    enum class TurnPhase { Input, Approaching, Attacking, Returning, EndTurn };
+    enum class TurnPhase { Input, Approaching, Attacking, Returning, EndTurn, Countering };
 
     EntityState playerState;
     EntityState enemyState;
@@ -62,4 +62,12 @@ class CombatSystem {
     void updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack);
     
     void e_chooseAttack();
+
+    sf::Texture counterButtonTexture;
+    sf::Texture counterButtonGoodTexture;
+    sf::Texture counterButtonBadTexture;
+    bool canCounter = false;
+    bool counterSuccess = false;
+    bool damageDealt = false;
+    void processCounter(float dt);
 };

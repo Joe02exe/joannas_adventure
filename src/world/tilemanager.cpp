@@ -115,7 +115,7 @@ void TileManager::renderProgressBar(const std::string& message) const {
     sf::Text text(font);
     sf::Text title(font);
     text.setString(message.empty() ? "Loading..." : message);
-    title.setString("Joanna's Farm");
+    title.setString("Joanna's Adventure");
     text.setCharacterSize(18);
     title.setCharacterSize(24);
     text.setFillColor(sf::Color::White);
@@ -276,10 +276,10 @@ void TileManager::processLayer(const std::string& layerName) {
                         window->close();
                     }
                 }
-                Logger::info(
-                    "Added collision rect at ({}, {})", pixelRect.position.x,
-                    pixelRect.position.y
-                );
+                // Logger::info(
+                //     "Added collision rect at ({}, {})", pixelRect.position.x,
+                //     pixelRect.position.y
+                // );
             }
             info.collisionBox = pixelRect;
             m_collidables.push_back(info);

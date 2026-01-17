@@ -6,7 +6,7 @@
 
 enum class Direction { Left, Right };
 
-enum class State { Idle, Walking, Running, Attack, Roll, Hurt, Dead, Mining };
+enum class State { Idle, Walking, Running, Attack, Roll, Hurt, Dead, Mining, Counter };
 
 struct Animation {
     sf::Texture texture;
