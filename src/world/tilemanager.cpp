@@ -61,6 +61,32 @@ bool TileManager::loadMap(const std::string& path) {
     return true;
 }
 
+bool TileManager::checkLineOfSight(
+    sf::Vector2f start, sf::Vector2f end, float stepSize
+) const {
+    const sf::Vector2f direction = end - start;
+    const float distance =
+        std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+    if (distance <= stepSize)
+        return true; // too close to have obstacles
+
+    const sf::Vector2f step = (direction / distance) * stepSize;
+    const int steps = static_cast<int>(distance / stepSize);
+
+    sf::Vector2f current = start;
+    for (int i = 0; i < steps; ++i) {
+        current += step;
+        for (const auto& rect : m_collisionRects) {
+            if (rect.contains(current)) {
+                return false; // Obstacle found
+            }
+        }
+    }
+
+    return true; // No obstacles found
+}
+
 void TileManager::renderProgressBar(const std::string& message) const {
     auto center = window->getView().getCenter();
 

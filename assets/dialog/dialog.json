@@ -18,7 +18,12 @@
             "req": {
                 "type": "ITEM",
                 "id": "691",
-                "amount": 5
+                "amount": 1
+            },
+            "reward": {
+                "id": "627",
+                "name": "key",
+                "amount": 1
             }
         }
     ],
@@ -29,6 +34,14 @@
                 "The skeletons have stolen my treasure!",
                 "Bring it back to me...",
                 "Arrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+            ]
+        }
+    ],
+    "Guard": [
+        {
+            "priority": 1,
+            "text": [
+                "KEY!!!"
             ]
         }
     ]

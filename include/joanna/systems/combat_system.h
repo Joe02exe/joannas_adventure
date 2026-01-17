@@ -51,4 +51,15 @@ class CombatSystem {
 
     void updatePlayerTurn(float dt, State& pState, State& eState);
     void updateEnemyTurn(float dt, State& pState, State& eState);
+    void processApproach(float dt, Entity* actor, sf::Vector2f target, float speed, float threshold, State& actorState);
+    void processReturn(float dt, Entity* actor, sf::Vector2f startPos, float speed, float threshold, State& actorState, Direction moveFacing, Direction endFacing);
+    void updateAttackMovement(float dt, Entity* attacker, const sf::Vector2f& targetPos, const Attack& attack);
+
+    template <typename Defender>
+    void processAttack(float dt, Entity* attacker, Defender* defender, State& attackerState, State& defenderState, const Attack& attack);
+
+    template <typename Defender>
+    void updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack);
+    
+    void e_chooseAttack();
 };

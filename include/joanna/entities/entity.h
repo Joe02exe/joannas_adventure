@@ -51,4 +51,5 @@ class Entity {
     std::optional<sf::FloatRect> collisionBox;
     std::optional<Direction> direction;
     sf::Vector2f currentScale = { 1.f, 1.f };
+    sf::IntRect currentTextureRect;
 };
