@@ -89,5 +89,6 @@ class Inventory {
     std::unordered_map<std::string, StoredItem> items_;
     std::size_t capacity_;
     std::unordered_map<int, std::string> idToString = { { 691, "carrot" },
-                                                        { 3050, "sword" } };
+                                                        { 3050, "sword" },
+                                                        { 627, "key" } };
 };
