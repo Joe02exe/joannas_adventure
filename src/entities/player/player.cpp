@@ -12,7 +12,8 @@ Player::Player(
     : Entity(
           sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
           ResourceManager<sf::Texture>::getInstance()->get(idlePath),
-          sf::FloatRect({ startPos.x - 5.f, startPos.y - 2.f }, { 10.f, 9.f }), Direction::Right
+          sf::FloatRect({ startPos.x - 5.f, startPos.y - 2.f }, { 10.f, 9.f }),
+          Direction::Right
       ),
       health(20), maxHealth(20), inventory(20) {
     animations[State::Idle] = Animation(idlePath, { 96, 64 }, 9);
@@ -101,7 +102,10 @@ void Player::displayHealthBar(
     const auto size = target.getView().getSize();
     // const auto center = target.getView().getCenter();
     // const sf::Vector2f startPos(-300.f, 280.f);
-    const sf::Vector2f startPos(-size.x / 2, -size.y / 2);
+    const sf::Vector2f startPos(
+        -size.x / 2 + heartIcon.getLocalBounds().size.x,
+        -size.y / 2 + heartIcon.getLocalBounds().size.y
+    );
     for (int i = 0; i < health / 2; ++i) {
         heartIcon.setPosition({ startPos.x + static_cast<float>(i) * 32.f,
                                 startPos.y });

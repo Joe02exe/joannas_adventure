@@ -61,15 +61,19 @@ bool TileManager::loadMap(const std::string& path) {
     return true;
 }
 
-bool TileManager::checkLineOfSight(sf::Vector2f start, sf::Vector2f end, float stepSize) const {
+bool TileManager::checkLineOfSight(
+    sf::Vector2f start, sf::Vector2f end, float stepSize
+) const {
     const sf::Vector2f direction = end - start;
-    const float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-    
-    if (distance <= stepSize) return true; // too close to have obstacles
-    
+    const float distance =
+        std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+    if (distance <= stepSize)
+        return true; // too close to have obstacles
+
     const sf::Vector2f step = (direction / distance) * stepSize;
     const int steps = static_cast<int>(distance / stepSize);
-    
+
     sf::Vector2f current = start;
     for (int i = 0; i < steps; ++i) {
         current += step;
@@ -79,11 +83,11 @@ bool TileManager::checkLineOfSight(sf::Vector2f start, sf::Vector2f end, float s
             }
         }
     }
-    
+
     return true; // No obstacles found
 }
 
-void TileManager::renderProgressBar(std::string message) const {
+void TileManager::renderProgressBar(const std::string& message) const {
     auto center = window->getView().getCenter();
 
     sf::Vector2f barSize(400.f, 40.f);
@@ -119,15 +123,11 @@ void TileManager::renderProgressBar(std::string message) const {
     title.setStyle(sf::Text::Bold);
     sf::FloatRect textBounds = text.getLocalBounds();
     sf::FloatRect titleBounds = title.getLocalBounds();
-    text.setOrigin({textBounds.size.x / 2.f, textBounds.size.y / 2.f});
-    text.setPosition(
-        {center.x, center.y + 40.f}
-    );
+    text.setOrigin({ textBounds.size.x / 2.f, textBounds.size.y / 2.f });
+    text.setPosition({ center.x, center.y + 40.f });
 
-    title.setOrigin({titleBounds.size.x / 2.f, titleBounds.size.y / 2.f});
-    title.setPosition(
-        {center.x, center.y - 75.f}
-    );
+    title.setOrigin({ titleBounds.size.x / 2.f, titleBounds.size.y / 2.f });
+    title.setPosition({ center.x, center.y - 75.f });
 
     window->clear(sf::Color::Black);
 
@@ -338,6 +338,8 @@ sf::Sprite TileManager::getTextureById(const int id) {
     // sprite from tileset
     sf::Sprite icon(texture);
     icon.setTextureRect(sf::IntRect({ tx, ty }, { TILE_W, TILE_H }));
+    sf::Vector2f size = icon.getLocalBounds().size;
+    icon.setOrigin({ size.x / 2, size.y / 2 });
     return icon;
 }
 

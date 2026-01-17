@@ -41,7 +41,9 @@ class TileManager {
     TileManager(sf::RenderWindow& window);
 
     bool loadMap(const std::string& path);
-    bool checkLineOfSight(sf::Vector2f start, sf::Vector2f end, float stepSize = 10.f) const;
+    [[nodiscard]] bool checkLineOfSight(
+        sf::Vector2f start, sf::Vector2f end, float stepSize = 10.f
+    ) const;
     // void render(sf::RenderTarget& target, Player& player);
     void clear();
 
@@ -85,7 +87,7 @@ class TileManager {
     void processLayer(const std::string& layerName);
     void loadTexture(const std::string& imagePath);
 
-    void renderProgressBar(std::string message) const;
+    void renderProgressBar(const std::string& message) const;
 
     float progress = 0.0f;
     sf::RenderWindow* window;
