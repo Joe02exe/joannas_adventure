@@ -61,7 +61,7 @@ bool TileManager::loadMap(const std::string& path) {
     return true;
 }
 
-void TileManager::renderProgressBar(std::string message) const {
+void TileManager::renderProgressBar(const std::string& message) const {
     auto center = window->getView().getCenter();
 
     sf::Vector2f barSize(400.f, 40.f);
@@ -97,15 +97,11 @@ void TileManager::renderProgressBar(std::string message) const {
     title.setStyle(sf::Text::Bold);
     sf::FloatRect textBounds = text.getLocalBounds();
     sf::FloatRect titleBounds = title.getLocalBounds();
-    text.setOrigin({textBounds.size.x / 2.f, textBounds.size.y / 2.f});
-    text.setPosition(
-        {center.x, center.y + 40.f}
-    );
+    text.setOrigin({ textBounds.size.x / 2.f, textBounds.size.y / 2.f });
+    text.setPosition({ center.x, center.y + 40.f });
 
-    title.setOrigin({titleBounds.size.x / 2.f, titleBounds.size.y / 2.f});
-    title.setPosition(
-        {center.x, center.y - 75.f}
-    );
+    title.setOrigin({ titleBounds.size.x / 2.f, titleBounds.size.y / 2.f });
+    title.setPosition({ center.x, center.y - 75.f });
 
     window->clear(sf::Color::Black);
 
@@ -316,6 +312,8 @@ sf::Sprite TileManager::getTextureById(const int id) {
     // sprite from tileset
     sf::Sprite icon(texture);
     icon.setTextureRect(sf::IntRect({ tx, ty }, { TILE_W, TILE_H }));
+    sf::Vector2f size = icon.getLocalBounds().size;
+    icon.setOrigin({ size.x / 2, size.y / 2 });
     return icon;
 }
 

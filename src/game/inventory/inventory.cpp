@@ -229,8 +229,8 @@ void Inventory::drawItemSprite(
     float scale = targetSize / bounds.size.x; // assuming square icon
 
     icon.setScale({ scale, scale });
-    icon.setPosition({ slotPos.x + (slotSize - (16.f * scale)) / 2.f,
-                       slotPos.y + (slotSize - (16.f * scale)) / 2.f + 8.f });
+    icon.setPosition({ slotPos.x + (slotSize - (scale)) / 2.f,
+                       slotPos.y + (slotSize - (scale)) / 2.f + 8.f });
     target.draw(icon);
 }
 

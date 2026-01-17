@@ -101,7 +101,10 @@ void Player::displayHealthBar(
     const auto size = target.getView().getSize();
     // const auto center = target.getView().getCenter();
     // const sf::Vector2f startPos(-300.f, 280.f);
-    const sf::Vector2f startPos(-size.x / 2, -size.y / 2);
+    const sf::Vector2f startPos(
+        -size.x / 2 + heartIcon.getLocalBounds().size.x,
+        -size.y / 2 + heartIcon.getLocalBounds().size.y
+    );
     for (int i = 0; i < health / 2; ++i) {
         heartIcon.setPosition({ startPos.x + static_cast<float>(i) * 32.f,
                                 startPos.y });

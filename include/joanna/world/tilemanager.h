@@ -84,7 +84,7 @@ class TileManager {
     void processLayer(const std::string& layerName);
     void loadTexture(const std::string& imagePath);
 
-    void renderProgressBar(std::string message) const;
+    void renderProgressBar(const std::string& message) const;
 
     float progress = 0.0f;
     sf::RenderWindow* window;
