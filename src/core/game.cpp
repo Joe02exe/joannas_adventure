@@ -175,7 +175,7 @@ void Game::run() {
             sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
             combatView.setViewport(windowManager.getMainView().getViewport());
             window.setView(combatView);
-            combatSystem.render(window);
+            combatSystem.render(window, tileManager);
         }
 
         if constexpr (IMGUI_ENABLED) {

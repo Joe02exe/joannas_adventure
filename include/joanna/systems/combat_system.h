@@ -18,7 +18,7 @@ class CombatSystem {
     void startCombat(Player& player, Enemy& enemy);
     void endCombat();
     void update(float dt);
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderTarget& target, class TileManager& tileManager);
     void handleInput(sf::Event& event);
 
     CombatState getState() const {

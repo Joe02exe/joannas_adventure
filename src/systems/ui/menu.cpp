@@ -16,7 +16,7 @@ const sf::Color COLOR_TEXT_SELECTED =
     sf::Color(50, 200, 50); // Greenish highlight
 const sf::Color COLOR_BG_NORMAL = sf::Color(50, 50, 50, 200);
 const float MENU_SPACING = 7.5f;
-const unsigned int FONT_SIZE_TITLE = 18;
+const unsigned int FONT_SIZE_TITLE = 14;
 const unsigned int FONT_SIZE_ITEM = 14;
 } // namespace
 
