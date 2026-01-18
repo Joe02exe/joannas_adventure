@@ -23,4 +23,6 @@ struct Attack {
     bool counterable = false;
     float counterWindowStart = 0.f;
     float counterWindowEnd = 0.f;
+
+    float approachOffset = 0.f;
 };

@@ -36,6 +36,7 @@ class CombatSystem {
 
     const sf::Texture backgroundTexture;
     const sf::Texture attackButtonTexture;
+    const sf::Texture attackButtonRollTexture;
 
     CombatState currentState = CombatState::PlayerTurn;
     TurnPhase phase = TurnPhase::Input;

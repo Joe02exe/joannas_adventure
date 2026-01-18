@@ -40,8 +40,9 @@ Enemy::Enemy(const sf::Vector2f& startPos, const std::string& idlePath)
     applyFrame();
 
     // Initialize some dummy attacks
-    attacks.push_back({ "Scratch", 5 });
-    attacks.push_back({ "Bite", 10 });
+    // Initialize some dummy attacks
+    attacks.push_back({ "Mining", 2, State::Mining, 0.4f, 0.9f, 0.f, 130.f, 5.f, true, 0.1f, 0.43f, 130.f });
+    attacks.push_back({ "Roll", 1, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.16f, 0.23f, 280.f });
 }
 
 void Enemy::update(float dt, State state) {
@@ -53,7 +54,7 @@ void Enemy::update(float dt, State state) {
     const auto& anim = animations[currentState];
     // Use frameCount from animation if we had it exposed, or just size of
     // frames
-    float duration = anim.frames.size() * Animation::frameTime;
+    float duration = static_cast<float>(anim.frames.size()) * Animation::frameTime;
 
     if (frameTimer >= Animation::frameTime) {
         frameTimer -= Animation::frameTime;
@@ -99,8 +100,8 @@ void Enemy::takeDamage(int amount) {
 bool Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
     const sf::Vector2f playerPos = player.getPosition();
     const sf::Vector2f myPos = getPosition();
-    const float distToPlayer = std::sqrt(std::pow(playerPos.x - myPos.x, 2) + std::pow(playerPos.y - myPos.y, 2));
-    const float distToHome = std::sqrt(std::pow(myPos.x - homePoint.x, 2) + std::pow(myPos.y - homePoint.y, 2));
+    const auto distToPlayer = static_cast<float>(std::sqrt(std::pow(playerPos.x - myPos.x, 2) + std::pow(playerPos.y - myPos.y, 2)));
+    const auto distToHome = static_cast<float>(std::sqrt(std::pow(myPos.x - homePoint.x, 2) + std::pow(myPos.y - homePoint.y, 2)));
 
     // trigger combat if very close to player
     if (distToPlayer < 10.f) {
@@ -140,14 +141,14 @@ bool Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) 
         patrolTimer -= dt;
         if (patrolTimer <= 0.f) {
             const float radius = 30.f;
-            const float angle = (rand() % 360) * 3.14159f / 180.f;
-            const float dist = (rand() % 100) / 100.f * radius;
+            const float angle = static_cast<float>(rand() % 360) * 3.14159f / 180.f;
+            const float dist = static_cast<float>(rand() % 100) / 100.f * radius;
             sf::Vector2f potentialTarget = homePoint + sf::Vector2f(std::cos(angle) * dist, std::sin(angle) * dist);
             patrolTarget = potentialTarget;
             patrolTimer = 10.f;
         }
         sf::Vector2f dir = patrolTarget - myPos;
-        const float distToTarget = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+        const float distToTarget = std::sqrt((dir.x * dir.x) + (dir.y * dir.y));
         
         if (distToTarget > 5.f) {
             dir /= distToTarget;
@@ -167,7 +168,7 @@ bool Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) 
             dir /= distToPlayer;
             const sf::Vector2f move = dir * speed * dt;
             const sf::Vector2f nextPos = myPos + move;
-            const float distNextToHome = std::sqrt(std::pow(nextPos.x - homePoint.x, 2) + std::pow(nextPos.y - homePoint.y, 2));
+            const auto distNextToHome = static_cast<float>(std::sqrt(std::pow(nextPos.x - homePoint.x, 2) + std::pow(nextPos.y - homePoint.y, 2)));
 
             // move only if the NEW position is within the max pursuit radius -> this allows the enemy to move back towards home if it's currently stuck at the boundary
             if (distNextToHome <= 60.f) {

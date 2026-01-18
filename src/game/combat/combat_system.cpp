@@ -11,6 +11,9 @@ CombatSystem::CombatSystem()
       attackButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/attack.png"
       )),
+      attackButtonRollTexture(ResourceManager<sf::Texture>::getInstance()->get(
+          "assets/buttons/attack_roll.png"
+      )),
       counterButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/attack_punch.png"
       )),
@@ -135,7 +138,9 @@ void CombatSystem::updateAttackMovement(float dt, Entity* attacker, const sf::Ve
 template <typename Defender>
 void CombatSystem::updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack) {
     if (turnTimer < attack.impactTime) {
-        if (defenderState != State::Counter) defenderState = State::Idle;
+        if (defenderState != State::Counter){
+            defenderState = State::Idle;
+        }
     } else if (turnTimer < attack.endTime) {
         defenderState = State::Hurt;
     } else {
@@ -182,18 +187,23 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
 
 void CombatSystem::e_chooseAttack(){
     startPos = enemy->getPosition();
-        targetPos = player->getPosition();
+    targetPos = player->getPosition();
 
-        if (rand() % 2 == 0) {
-            currentAttack = { "Mining", 2, State::Mining, 0.4f, 0.9f, 0.f, 0.f, 5.f, true, 0.1f, 0.43f };
-            targetPos.x += 130.f;
-            Logger::info("Mining selected");
-        } else {
-            currentAttack = { "Roll", 1, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.16f, 0.23f }; // TODO: fix
-            targetPos.x += 280.f;
-            Logger::info("Roll selected");    
-        }
-        phase = TurnPhase::Approaching;
+    const auto& attacks = enemy->getAttacks();
+    if (attacks.empty()) {
+        Logger::error("Enemy has no attacks!");
+        phase = TurnPhase::EndTurn; // Skip turn if no attacks
+        return;
+    }
+
+    int attackIndex = static_cast<int>(rand() % attacks.size());
+    currentAttack = attacks[attackIndex];
+    
+    // Apply offset based on attack configuration
+    targetPos.x += currentAttack.approachOffset;
+    
+    Logger::info(currentAttack.name + " selected");
+    phase = TurnPhase::Approaching;
 }
 
 
@@ -259,10 +269,18 @@ void CombatSystem::render(sf::RenderTarget& target) {
     }
 
     if (currentState == CombatState::PlayerTurn && phase == TurnPhase::Input) {
-        sf::Sprite attackButtonSprite(attackButtonTexture);
-        attackButtonSprite.setScale({ 3, 3 });
-        attackButtonSprite.setPosition({ 95.f, 300.f });
-        target.draw(attackButtonSprite);
+        if (player->getInventory().hasItem("3050")) {
+            sf::Sprite attackButtonSprite(attackButtonTexture);
+            attackButtonSprite.setScale({ 3, 3 });
+            attackButtonSprite.setPosition({ 95.f, 300.f });
+            target.draw(attackButtonSprite);
+        }
+        else{
+            sf::Sprite attackButtonSprite(attackButtonRollTexture);
+            attackButtonSprite.setScale({ 3, 3 });
+            attackButtonSprite.setPosition({ 95.f, 300.f });
+            target.draw(attackButtonSprite);
+        }
     }
 
     if (currentAttack.counterable && currentState == CombatState::EnemyTurn && (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching)) {
@@ -288,10 +306,12 @@ void CombatSystem::handleInput(sf::Event& event) {
             startPos = player->getPosition();
             targetPos = enemy->getPosition();
             if (keyEvent->code == sf::Keyboard::Key::A) {
-                currentAttack = { "Attack", 2, State::Attack, 0.3f, 0.8f };
-                targetPos.x -= 120.f; // close range attack, but still a bit
-                                      // away from the enemy
-                phase = TurnPhase::Approaching;
+                if (player->getInventory().hasItem("3050")) {
+                    currentAttack = { "Attack", 2, State::Attack, 0.3f, 0.8f };
+                    targetPos.x -= 120.f; // close range attack, but still a bit
+                                          // away from the enemy
+                    phase = TurnPhase::Approaching;
+                }
             } else if (keyEvent->code == sf::Keyboard::Key::D) {
                 currentAttack = { "Roll", 1, State::Roll, 0.2f, 0.85f, 800.f, -90.f, 5.f };
                 targetPos.x -=

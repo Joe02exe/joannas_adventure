@@ -25,6 +25,10 @@ class Enemy: public Entity {
         health = maxHealth;
     }
 
+    const std::vector<Attack>& getAttacks() const {
+        return attacks;
+    }
+
     enum class OverworldState { Idle, Pursuing };
     bool updateOverworld(float dt, Player& player, TileManager& tileManager);
 
