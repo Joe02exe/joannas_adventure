@@ -24,8 +24,6 @@ Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
     miniMapView.setCenter(player.getPosition());
 }
 
-
-
 // clang-format on
 
 bool Controller::getInput(
@@ -63,6 +61,21 @@ bool Controller::getInput(
         dir *= 1.5f;
         state = State::Running;
     }
+
+    // Inventory toggle
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) {
+        player.getInventory().selectSlot(0);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2)) {
+        player.getInventory().selectSlot(1);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3)) {
+        player.getInventory().selectSlot(2);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4)) {
+        player.getInventory().selectSlot(3);
+    }
+
     bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
     if (eDown && !keyPressed) {
         Logger::info("Inventory opened");
@@ -153,7 +166,6 @@ bool Controller::updateStep(
         if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
             npc->update(dt, State::Idle, player.getPosition());
         }
-
     }
     return getInput(
         dt, window, collisions, entities, sharedDialogueBox, tileManager,

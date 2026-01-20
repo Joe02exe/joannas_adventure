@@ -162,7 +162,7 @@ void Inventory::draw(sf::RenderTarget& target) const {
 void Inventory::drawSlot(
     sf::RenderTarget& target, const float slotSize, const float padding,
     const sf::Vector2f startPos, std::size_t i, std::size_t col,
-    std::size_t row, sf::Vector2f& slotPos
+    std::size_t row, sf::Vector2f& slotPos, bool isSelected
 ) const {
     slotPos = { startPos.x + static_cast<float>(col) * (slotSize + padding),
                 startPos.y + static_cast<float>(row) * (slotSize + padding) };
@@ -170,9 +170,15 @@ void Inventory::drawSlot(
     // Slot rectangle
     sf::RectangleShape slot({ slotSize, slotSize });
     slot.setPosition(slotPos);
-    slot.setFillColor(sf::Color(40, 40, 40, 200));
-    slot.setOutlineThickness(1.f);
-    slot.setOutlineColor(sf::Color(120, 120, 120, 200));
+    if (isSelected) {
+        slot.setFillColor(sf::Color(70, 70, 70, 220));
+        slot.setOutlineThickness(2.f);
+        slot.setOutlineColor(sf::Color(200, 200, 50, 220));
+    } else {
+        slot.setFillColor(sf::Color(40, 40, 40, 200));
+        slot.setOutlineThickness(1.f);
+        slot.setOutlineColor(sf::Color(120, 120, 120, 200));
+    }
     target.draw(slot);
 }
 
@@ -246,8 +252,12 @@ void Inventory::drawItems(
 
         sf::Vector2f slotPos;
         StoredItem& st = vec[i];
+        bool isSelected = (i == this->selectedSlotIndex);
 
-        drawSlot(target, slotSize, padding, startPos, i, col, row, slotPos);
+        drawSlot(
+            target, slotSize, padding, startPos, i, col, row, slotPos,
+            isSelected
+        );
         drawItemName(target, slotSize, slotPos, st);
         drawItemQuantity(target, slotSize, slotPos, st);
         drawItemSprite(target, tileManager, slotSize, slotPos, st);
@@ -290,4 +300,36 @@ void Inventory::displayInventory(
         target, tileManager, vec, columns, slotSize, padding, itemCount,
         startPos
     );
+}
+
+void Inventory::selectNext() {
+    if (items_.empty())
+        return;
+    selectedSlotIndex++;
+    if (selectedSlotIndex >= items_.size()) {
+        selectedSlotIndex = 0; // Wrap to start
+    }
+}
+
+void Inventory::selectSlot(std::size_t index) {
+    if (items_.empty())
+        return;
+    selectedSlotIndex = index;
+    if (selectedSlotIndex >= items_.size()) {
+        selectedSlotIndex = 0; // Wrap to start
+    }
+}
+
+void Inventory::selectPrevious() {
+    if (items_.empty())
+        return;
+    if (selectedSlotIndex == 0) {
+        selectedSlotIndex = items_.size() - 1; // Wrap to end
+    } else {
+        selectedSlotIndex--;
+    }
+}
+
+int Inventory::getSelectedSlotIndex() const {
+    return static_cast<int>(selectedSlotIndex);
 }
