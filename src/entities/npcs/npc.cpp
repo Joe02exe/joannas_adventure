@@ -48,16 +48,15 @@ void NPC::interact(Player& player) {
                 }
                 else {
                     inventory.removeItem(itemId, amount);
-                    if(!entry["reward"].is_null()){
-                        json reward = entry["reward"];
-                        std::string rewardId = reward["id"];
-                        int rewardAmount = reward["amount"];
-                        std::string rewardName = reward["name"];
-                        inventory.addItem(Item(rewardId, rewardName));
-                    }
-                    
                 }
             }
+        }
+        
+        if(conditionMet && !entry["reward"].is_null()){
+            json reward = entry["reward"];
+            std::string rewardId = reward["id"];
+            std::string rewardName = reward["name"];
+            inventory.addItem(Item(rewardId, rewardName));
         }
         if(conditionMet) {
             dialogueBox->setDialogue(entry["text"]);

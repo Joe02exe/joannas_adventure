@@ -18,7 +18,7 @@ class CombatSystem {
     void startCombat(Player& player, Enemy& enemy);
     void endCombat();
     void update(float dt);
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderTarget& target, class TileManager& tileManager);
     void handleInput(sf::Event& event);
 
     CombatState getState() const {
@@ -36,6 +36,7 @@ class CombatSystem {
 
     const sf::Texture backgroundTexture;
     const sf::Texture attackButtonTexture;
+    const sf::Texture attackButtonRollTexture;
 
     CombatState currentState = CombatState::PlayerTurn;
     TurnPhase phase = TurnPhase::Input;

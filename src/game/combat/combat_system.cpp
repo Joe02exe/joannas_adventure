@@ -11,6 +11,9 @@ CombatSystem::CombatSystem()
       attackButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/attack.png"
       )),
+      attackButtonRollTexture(ResourceManager<sf::Texture>::getInstance()->get(
+          "assets/buttons/attack_roll.png"
+      )),
       counterButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/attack_punch.png"
       )),
@@ -22,11 +25,14 @@ CombatSystem::CombatSystem()
       )) {}
 
 // Explicit instantiations
-template void CombatSystem::processAttack<Player>(float, Entity*, Player*, State&, State&, const Attack&);
-template void CombatSystem::processAttack<Enemy>(float, Entity*, Enemy*, State&, State&, const Attack&);
-template void CombatSystem::updateAttackTimeline<Player>(float, Player*, State&, const Attack&);
-template void CombatSystem::updateAttackTimeline<Enemy>(float, Enemy*, State&, const Attack&);
-
+template void CombatSystem::processAttack<
+    Player>(float, Entity*, Player*, State&, State&, const Attack&);
+template void CombatSystem::processAttack<
+    Enemy>(float, Entity*, Enemy*, State&, State&, const Attack&);
+template void CombatSystem::updateAttackTimeline<
+    Player>(float, Player*, State&, const Attack&);
+template void
+CombatSystem::updateAttackTimeline<Enemy>(float, Enemy*, State&, const Attack&);
 
 void CombatSystem::startCombat(Player& p, Enemy& e) {
     player = &p;
@@ -42,6 +48,7 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     enemyState.scale = enemy->getScale();
     enemyState.facing = enemy->getFacing();
 
+    // Assuming screen size 900x900 and player on left, enemy on right
     // Assuming screen size 900x900 and player on left, enemy on right
     sf::Vector2f pPos(-100.f, 300);
     sf::Vector2f ePos(430.f, 300);
@@ -81,34 +88,49 @@ void CombatSystem::update(float dt) {
         updateEnemyTurn(dt, pState, eState);
     }
 
-    player->update(dt, pState, player->getFacing() == Direction::Left, dummyAudio);
+    player->update(
+        dt, pState, player->getFacing() == Direction::Left, dummyAudio
+    );
     enemy->update(dt, eState);
 }
 
-void CombatSystem::processApproach(float dt, Entity* actor, sf::Vector2f target, float speed, float threshold, State& actorState) {
+void CombatSystem::processApproach(
+    float dt, Entity* actor, sf::Vector2f target, float speed, float threshold,
+    State& actorState
+) {
     actorState = State::Running;
     sf::Vector2f dir = target - actor->getPosition();
-    
-    // Move if distance is greater than threshold (considering direction)
-    bool shouldMove = (speed > 0 && dir.x > threshold) || (speed < 0 && dir.x < -threshold);
-    
+
+    // move if distance is greater than threshold (considering direction)
+    bool shouldMove =
+        (speed > 0 && dir.x > threshold) || (speed < 0 && dir.x < -threshold);
+
     if (shouldMove) {
-        actor->setPosition(actor->getPosition() + sf::Vector2f(speed * dt, 0.f));
+        actor->setPosition(
+            actor->getPosition() + sf::Vector2f(speed * dt, 0.f)
+        );
     } else {
         phase = TurnPhase::Attacking;
         turnTimer = 0.0f;
     }
 }
 
-void CombatSystem::processReturn(float dt, Entity* actor, sf::Vector2f startPos, float speed, float threshold, State& actorState, Direction moveFacing, Direction endFacing) {
+void CombatSystem::processReturn(
+    float dt, Entity* actor, sf::Vector2f startPos, float speed,
+    float threshold, State& actorState, Direction moveFacing,
+    Direction endFacing
+) {
     actor->setFacing(moveFacing);
     actorState = State::Running;
     sf::Vector2f dir = startPos - actor->getPosition();
-    
-    bool shouldMove = (speed > 0 && dir.x > threshold) || (speed < 0 && dir.x < -threshold);
-    
+
+    bool shouldMove =
+        (speed > 0 && dir.x > threshold) || (speed < 0 && dir.x < -threshold);
+
     if (shouldMove) {
-        actor->setPosition(actor->getPosition() + sf::Vector2f(speed * dt, 0.f));
+        actor->setPosition(
+            actor->getPosition() + sf::Vector2f(speed * dt, 0.f)
+        );
     } else {
         actor->setPosition(startPos);
         actor->setFacing(endFacing);
@@ -117,25 +139,36 @@ void CombatSystem::processReturn(float dt, Entity* actor, sf::Vector2f startPos,
     }
 }
 
-void CombatSystem::updateAttackMovement(float dt, Entity* attacker, const sf::Vector2f& targetPos, const Attack& attack) {
+void CombatSystem::updateAttackMovement(
+    float dt, Entity* attacker, const sf::Vector2f& targetPos,
+    const Attack& attack
+) {
     if (attack.moveSpeed != 0.f) {
         sf::Vector2f target = targetPos;
         target.x += attack.targetOffset;
         sf::Vector2f dir = target - attacker->getPosition();
-        
-        bool shouldMove = (attack.moveSpeed > 0 && dir.x > attack.moveThreshold) || 
-                          (attack.moveSpeed < 0 && dir.x < -attack.moveThreshold);
-        
+
+        bool shouldMove =
+            (attack.moveSpeed > 0 && dir.x > attack.moveThreshold) ||
+            (attack.moveSpeed < 0 && dir.x < -attack.moveThreshold);
+
         if (shouldMove) {
-            attacker->setPosition(attacker->getPosition() + sf::Vector2f(attack.moveSpeed * dt, 0.f));
+            attacker->setPosition(
+                attacker->getPosition() +
+                sf::Vector2f(attack.moveSpeed * dt, 0.f)
+            );
         }
     }
 }
 
 template <typename Defender>
-void CombatSystem::updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack) {
+void CombatSystem::updateAttackTimeline(
+    float dt, Defender* defender, State& defenderState, const Attack& attack
+) {
     if (turnTimer < attack.impactTime) {
-        if (defenderState != State::Counter) defenderState = State::Idle;
+        if (defenderState != State::Counter) {
+            defenderState = State::Idle;
+        }
     } else if (turnTimer < attack.endTime) {
         defenderState = State::Hurt;
     } else {
@@ -147,12 +180,15 @@ void CombatSystem::updateAttackTimeline(float dt, Defender* defender, State& def
 }
 
 template <typename Defender>
-void CombatSystem::processAttack(float dt, Entity* attacker, Defender* defender, State& attackerState, State& defenderState, const Attack& attack) {
+void CombatSystem::processAttack(
+    float dt, Entity* attacker, Defender* defender, State& attackerState,
+    State& defenderState, const Attack& attack
+) {
     attackerState = attack.animationState;
-    
+
     updateAttackMovement(dt, attacker, defender->getPosition(), attack);
     updateAttackTimeline(dt, defender, defenderState, attack);
-    
+
     turnTimer += dt;
 }
 
@@ -166,7 +202,10 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
     } else if (phase == TurnPhase::Attacking) {
         processAttack(dt, player, enemy, pState, eState, currentAttack);
     } else if (phase == TurnPhase::Returning) {
-        processReturn(dt, player, startPos, -500.f, -10.f, pState, Direction::Left, Direction::Right);
+        processReturn(
+            dt, player, startPos, -500.f, -10.f, pState, Direction::Left,
+            Direction::Right
+        );
     } else if (phase == TurnPhase::EndTurn) {
         if (enemy->getHealth() <= 0) {
             eState = State::Dead;
@@ -180,22 +219,21 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
     }
 }
 
-void CombatSystem::e_chooseAttack(){
+void CombatSystem::e_chooseAttack() {
     startPos = enemy->getPosition();
-        targetPos = player->getPosition();
+    targetPos = player->getPosition();
 
-        if (rand() % 2 == 0) {
-            currentAttack = { "Mining", 2, State::Mining, 0.4f, 0.9f, 0.f, 0.f, 5.f, true, 0.1f, 0.43f };
-            targetPos.x += 130.f;
-            Logger::info("Mining selected");
-        } else {
-            currentAttack = { "Roll", 1, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.16f, 0.23f }; // TODO: fix
-            targetPos.x += 280.f;
-            Logger::info("Roll selected");    
-        }
-        phase = TurnPhase::Approaching;
+    const auto& attacks = enemy->getAttacks();
+
+    int attackIndex = static_cast<int>(rand() % attacks.size());
+    currentAttack = attacks[attackIndex];
+
+    // apply offset based on attack configuration
+    targetPos.x += currentAttack.approachOffset;
+
+    Logger::info(currentAttack.name + " selected");
+    phase = TurnPhase::Approaching;
 }
-
 
 void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
     if (phase == TurnPhase::Input) {
@@ -206,7 +244,10 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
     } else if (phase == TurnPhase::Attacking) {
         processAttack(dt, enemy, player, eState, pState, currentAttack);
     } else if (phase == TurnPhase::Returning) {
-        processReturn(dt, enemy, startPos, 500.f, 10.f, eState, Direction::Right, Direction::Left);
+        processReturn(
+            dt, enemy, startPos, 500.f, 10.f, eState, Direction::Right,
+            Direction::Left
+        );
     } else if (phase == TurnPhase::EndTurn) {
         if (player->getHealth() <= 0) {
             pState = State::Dead;
@@ -220,10 +261,10 @@ void CombatSystem::updateEnemyTurn(float dt, State& pState, State& eState) {
 }
 
 void CombatSystem::processCounter(float dt) {
-    eState = State::Hurt;    
+    eState = State::Hurt;
     turnTimer += dt;
 
-    if (counterSuccess && !damageDealt) { // Damage point
+    if (counterSuccess && !damageDealt) {
         enemy->takeDamage(1);
         damageDealt = true;
     }
@@ -241,7 +282,7 @@ void CombatSystem::processCounter(float dt) {
     }
 }
 
-void CombatSystem::render(sf::RenderTarget& target) {
+void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
 
     // currently set statically... because viewport is set to 900x900
     sf::Sprite backgroundSprite(backgroundTexture);
@@ -258,22 +299,35 @@ void CombatSystem::render(sf::RenderTarget& target) {
         player->draw(target);
     }
 
+    player->displayHealthBar(target, tileManager);
+
     if (currentState == CombatState::PlayerTurn && phase == TurnPhase::Input) {
-        sf::Sprite attackButtonSprite(attackButtonTexture);
-        attackButtonSprite.setScale({ 3, 3 });
-        attackButtonSprite.setPosition({ 95.f, 300.f });
-        target.draw(attackButtonSprite);
+        if (player->getInventory().hasItem("3050")) {
+            sf::Sprite attackButtonSprite(attackButtonTexture);
+            attackButtonSprite.setScale({ 3, 3 });
+            attackButtonSprite.setPosition({ 95.f, 300.f });
+            target.draw(attackButtonSprite);
+        } else {
+            sf::Sprite attackButtonSprite(attackButtonRollTexture);
+            attackButtonSprite.setScale({ 3, 3 });
+            attackButtonSprite.setPosition({ 95.f, 300.f });
+            target.draw(attackButtonSprite);
+        }
     }
 
-    if (currentAttack.counterable && currentState == CombatState::EnemyTurn && (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching)) {
+    if (currentAttack.counterable && currentState == CombatState::EnemyTurn &&
+        (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) && player->getInventory().hasItem("3055")) {
         sf::Sprite counterButtonSprite(counterButtonTexture);
-        
-        if (phase == TurnPhase::Attacking && turnTimer >= currentAttack.counterWindowStart && turnTimer <= currentAttack.counterWindowEnd) {
-             counterButtonSprite.setTexture(counterButtonGoodTexture);
-        } else if (phase == TurnPhase::Attacking && turnTimer > currentAttack.counterWindowEnd) {
-             counterButtonSprite.setTexture(counterButtonBadTexture);
+
+        if (phase == TurnPhase::Attacking &&
+            turnTimer >= currentAttack.counterWindowStart &&
+            turnTimer <= currentAttack.counterWindowEnd) {
+            counterButtonSprite.setTexture(counterButtonGoodTexture);
+        } else if (phase == TurnPhase::Attacking &&
+                   turnTimer > currentAttack.counterWindowEnd) {
+            counterButtonSprite.setTexture(counterButtonBadTexture);
         } else {
-             counterButtonSprite.setTexture(counterButtonTexture);
+            counterButtonSprite.setTexture(counterButtonTexture);
         }
 
         counterButtonSprite.setScale({ 3, 3 });
@@ -288,36 +342,54 @@ void CombatSystem::handleInput(sf::Event& event) {
             startPos = player->getPosition();
             targetPos = enemy->getPosition();
             if (keyEvent->code == sf::Keyboard::Key::A) {
-                currentAttack = { "Attack", 2, State::Attack, 0.3f, 0.8f };
-                targetPos.x -= 120.f; // close range attack, but still a bit
-                                      // away from the enemy
-                phase = TurnPhase::Approaching;
+                if (player->getInventory().hasItem("3050")) {
+                    currentAttack = { "Attack", 2, State::Attack, 0.3f, 0.8f };
+                    targetPos.x -= 120.f; // close range attack, but still a bit
+                                          // away from the enemy
+                    phase = TurnPhase::Approaching;
+                }
             } else if (keyEvent->code == sf::Keyboard::Key::D) {
-                currentAttack = { "Roll", 1, State::Roll, 0.2f, 0.85f, 800.f, -90.f, 5.f };
+                currentAttack = { "Roll", 1,     State::Roll, 0.2f,
+                                  0.85f,  800.f, -90.f,       5.f };
                 targetPos.x -=
-                    340.f; // Start roll from further away, therefore our
+                    340.f; // start roll from further away, therefore our
                            // targetPos is a bit away from the enemy
                 phase = TurnPhase::Approaching;
             }
         }
-    }
-    else if (currentState == CombatState::EnemyTurn && (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) && currentAttack.counterable){
+    } else if (currentState == CombatState::EnemyTurn &&
+               (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching
+               ) &&
+               currentAttack.counterable) {
         if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
             if (keyEvent->code == sf::Keyboard::Key::D) {
-                if (pState == State::Counter) return; // Prevent spamming
+                // Check if player has the Counter Attack ability
+                if (!player->getInventory().hasItem("3055")) {
+                    return;
+                }
 
-                // Determine success based on window
-                if (phase == TurnPhase::Attacking && turnTimer >= currentAttack.counterWindowStart && turnTimer <= currentAttack.counterWindowEnd) {
-                    Logger::info("Counter successful for turntimer: " + std::to_string(turnTimer));
+                if (pState == State::Counter)
+                    return; // prevents spamming (spamming is still possible but
+                            // a bit restricted still with this)
+
+                if (phase == TurnPhase::Attacking &&
+                    turnTimer >= currentAttack.counterWindowStart &&
+                    turnTimer <= currentAttack.counterWindowEnd) {
+                    Logger::info(
+                        "Counter successful for turntimer: " +
+                        std::to_string(turnTimer)
+                    );
                     counterSuccess = true;
                     damageDealt = false;
-                    // Switch to PlayerTurn to control the counter sequence
                     currentState = CombatState::PlayerTurn;
-                    phase = TurnPhase::Countering; // Use dedicated phase
+                    phase = TurnPhase::Countering; // use dedicated phase
                     turnTimer = 0.0f;
                     pState = State::Counter;
                 } else {
-                    Logger::info("Counter failed for turntimer: " + std::to_string(turnTimer));
+                    Logger::info(
+                        "Counter failed for turntimer: " +
+                        std::to_string(turnTimer)
+                    );
                     counterSuccess = false;
                     // Just play animation, don't interrupt enemy
                     pState = State::Counter;

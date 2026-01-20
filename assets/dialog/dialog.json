@@ -34,7 +34,12 @@
                 "The skeletons have stolen my treasure!",
                 "Bring it back to me...",
                 "Arrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
-            ]
+            ],
+            "reward": {
+                "id": "3056",
+                "name": "pirateToken",
+                "amount": 1
+            }
         }
     ],
     "Guard": [
