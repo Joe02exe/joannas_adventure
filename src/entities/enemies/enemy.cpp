@@ -7,42 +7,57 @@
 #include <cstdlib>  // for rand
 #include <iostream> // for std::cout
 
-Enemy::Enemy(const sf::Vector2f& startPos, const std::string& idlePath)
+Enemy::Enemy(const sf::Vector2f& startPos, EnemyType type)
     : Entity(
           sf::FloatRect(
               { startPos.x - 48.f, startPos.y - 32.f }, { 96.f, 64.f }
           ),
-          ResourceManager<sf::Texture>::getInstance()->get(idlePath),
+          ResourceManager<sf::Texture>::getInstance()->get(
+              type == EnemyType::Goblin
+                  ? "assets/player/enemies/goblin/idle.png"
+                  : "assets/player/enemies/skeleton/idle.png"
+          ),
           // no hitbox for now
           std::nullopt,
           Direction::Right
       ),
-      homePoint(startPos), patrolTarget(startPos) {
+      homePoint(startPos), patrolTarget(startPos), type(type) {
 
-    animations[State::Idle] = Animation(idlePath, { 96, 64 }, 8);
-    animations[State::Walking] =
-        Animation("assets/player/enemies/goblin/run.png", { 96, 64 }, 8);
-    animations[State::Running] =
-        Animation("assets/player/enemies/goblin/run.png", { 96, 64 }, 8);
+    std::string basePath = type == EnemyType::Goblin
+                               ? "assets/player/enemies/goblin/"
+                               : "assets/player/enemies/skeleton/";
 
-    animations[State::Attack] =
-        Animation("assets/player/enemies/goblin/attack.png", { 96, 64 }, 9);
-    animations[State::Roll] =
-        Animation("assets/player/enemies/goblin/roll.png", { 96, 64 }, 10);
-    animations[State::Hurt] =
-        Animation("assets/player/enemies/goblin/hurt.png", { 96, 64 }, 8);
-    animations[State::Dead] =
-        Animation("assets/player/enemies/goblin/dead.png", { 96, 64 }, 9);
-    animations[State::Mining] =
-        Animation("assets/player/enemies/goblin/mining.png", { 96, 64 }, 10);
+    if (type == EnemyType::Goblin) {
+        animations[State::Idle] = Animation(basePath + "idle.png", { 96, 64 }, 8);
+        animations[State::Walking] = Animation(basePath + "run.png", { 96, 64 }, 8);
+        animations[State::Running] = Animation(basePath + "run.png", { 96, 64 }, 8);
+        animations[State::Attack] = Animation(basePath + "attack.png", { 96, 64 }, 9);
+        animations[State::Hurt] = Animation(basePath + "hurt.png", { 96, 64 }, 8);
+        animations[State::Dead] = Animation(basePath + "dead.png", { 96, 64 }, 9);
+        
+        animations[State::Roll] = Animation(basePath + "roll.png", { 96, 64 }, 10);
+        animations[State::Mining] = Animation(basePath + "mining.png", { 96, 64 }, 10);
+    } else {
+        // Skeleton
+        animations[State::Idle] = Animation(basePath + "idle.png", { 96, 64 }, 6);
+        animations[State::Walking] = Animation(basePath + "walk.png", { 96, 64 }, 8);
+        animations[State::Running] = Animation(basePath + "walk.png", { 96, 64 }, 8);
+        animations[State::Attack] = Animation(basePath + "attack.png", { 96, 64 }, 7);
+        animations[State::Hurt] = Animation(basePath + "hurt.png", { 96, 64 }, 8);
+        animations[State::Dead] = Animation(basePath + "dead.png", { 96, 64 }, 10);
+    }
 
     // Set initial texture
     applyFrame();
 
-    // Initialize some dummy attacks
-    // Initialize some dummy attacks
-    attacks.push_back({ "Mining", 2, State::Mining, 0.4f, 0.9f, 0.f, 130.f, 5.f, true, 0.1f, 0.43f, 130.f });
-    attacks.push_back({ "Roll", 1, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.16f, 0.23f, 280.f });
+    // Initialize attacks
+    if (type == EnemyType::Goblin) {
+        attacks.push_back({ "Mining", 2, State::Mining, 0.4f, 0.9f, 0.f, 130.f, 5.f, true, 0.1f, 0.43f, 130.f });
+        attacks.push_back({ "Roll", 1, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.16f, 0.23f, 280.f });
+    } else {
+        // Skeleton attacks
+        attacks.push_back({ "Attack", 0, State::Attack, 0.35f, 0.7f, 0.f, 100.f, 5.f, true, 0.1f, 0.5f, 100.f });
+    }
 }
 
 void Enemy::update(float dt, State state) {

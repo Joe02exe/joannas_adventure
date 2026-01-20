@@ -10,7 +10,8 @@
 
 class Enemy: public Entity {
   public:
-    Enemy(const sf::Vector2f& startPos, const std::string& idlePath);
+    enum class EnemyType { Goblin, Skeleton };
+    Enemy(const sf::Vector2f& startPos, EnemyType type);
 
     void update(float dt, State state);
     void draw(sf::RenderTarget& target) const;
@@ -52,4 +53,5 @@ class Enemy: public Entity {
     float patrolTimer = 0.f;
     float reactionTimer = 0.f;
     float speed = 38.f;
+    EnemyType type;
 };
