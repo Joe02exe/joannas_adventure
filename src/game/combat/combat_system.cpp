@@ -49,6 +49,7 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     enemyState.facing = enemy->getFacing();
 
     // Assuming screen size 900x900 and player on left, enemy on right
+    // Assuming screen size 900x900 and player on left, enemy on right
     sf::Vector2f pPos(-100.f, 300);
     sf::Vector2f ePos(430.f, 300);
 
@@ -315,7 +316,7 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
     }
 
     if (currentAttack.counterable && currentState == CombatState::EnemyTurn &&
-        (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching)) {
+        (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) && player->getInventory().hasItem("3055")) {
         sf::Sprite counterButtonSprite(counterButtonTexture);
 
         if (phase == TurnPhase::Attacking &&
@@ -362,6 +363,11 @@ void CombatSystem::handleInput(sf::Event& event) {
                currentAttack.counterable) {
         if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
             if (keyEvent->code == sf::Keyboard::Key::D) {
+                // Check if player has the Counter Attack ability
+                if (!player->getInventory().hasItem("3055")) {
+                    return;
+                }
+
                 if (pState == State::Counter)
                     return; // prevents spamming (spamming is still possible but
                             // a bit restricted still with this)
