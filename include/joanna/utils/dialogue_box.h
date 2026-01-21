@@ -12,7 +12,7 @@ public:
     DialogueBox(FontRenderer& fontRenderer);
 
     // Dialogue management
-    void setDialogue(const std::vector<std::string>& messages);
+    void setDialogue(const std::vector<std::string>& messages, const void* owner = nullptr);
     void addDialogueLine(const std::string& message);
     void show();
     void hide();
@@ -23,6 +23,7 @@ public:
     bool isActive() const { return active; }
     bool isTyping() const { return visibleCharCount < currentDialogue.length(); }
     bool hasMoreLines() const { return !dialogueQueue.empty(); }
+    const void* getOwner() const { return owner; }
     
     void update(float dt, const sf::Vector2f& targetPosition);
     void render(sf::RenderTarget& target);
@@ -44,4 +45,5 @@ private:
     sf::RectangleShape bubbleBackground;
     sf::ConvexShape bubblePointer;
     sf::Vector2f textPosition;
+    const void* owner = nullptr;
 };

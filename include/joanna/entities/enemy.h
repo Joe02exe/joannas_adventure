@@ -22,6 +22,10 @@ class Enemy: public Entity {
         return health;
     }
 
+    bool isDead() const {
+        return health <= 0;
+    }
+
     void resetHealth() {
         health = maxHealth;
     }

@@ -64,6 +64,7 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     currentState = CombatState::PlayerTurn;
     eState = State::Idle;
     pState = State::Idle;
+    victoryTimer = 0.0f;
 }
 
 void CombatSystem::endCombat() {
@@ -74,7 +75,15 @@ void CombatSystem::endCombat() {
     enemy->setPosition(enemyState.position);
     enemy->setScale(enemyState.scale);
     enemy->setFacing(enemyState.facing);
-    enemy->resetHealth();
+    if (enemy->getHealth() > 0) {
+        enemy->resetHealth();
+    }
+}
+
+bool CombatSystem::battleFinished() const {
+    return (currentState == CombatState::Victory ||
+            currentState == CombatState::Defeat) &&
+           victoryTimer > 2.0f;
 }
 
 void CombatSystem::update(float dt) {
@@ -86,6 +95,9 @@ void CombatSystem::update(float dt) {
         updatePlayerTurn(dt, pState, eState);
     } else if (currentState == CombatState::EnemyTurn) {
         updateEnemyTurn(dt, pState, eState);
+    } else if (currentState == CombatState::Victory ||
+               currentState == CombatState::Defeat) {
+        victoryTimer += dt;
     }
 
     player->update(
@@ -171,11 +183,16 @@ void CombatSystem::updateAttackTimeline(
         }
     } else if (turnTimer < attack.endTime) {
         defenderState = State::Hurt;
+        if (!damageDealt) {
+            defender->takeDamage(attack.damage);
+            damageDealt = true;
+            Logger::info("Defender took damage: " + std::to_string(attack.damage) + " remaining: " + std::to_string(defender->getHealth()));
+        }
     } else {
         defenderState = State::Idle;
         phase = TurnPhase::Returning;
         turnTimer = 0.0f;
-        defender->takeDamage(attack.damage);
+        damageDealt = false;
     }
 }
 
@@ -207,7 +224,7 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
             Direction::Right
         );
     } else if (phase == TurnPhase::EndTurn) {
-        if (enemy->getHealth() <= 0) {
+        if (enemy->isDead()) {
             eState = State::Dead;
             currentState = CombatState::Victory;
             std::cout << "Victory!\n";
@@ -266,11 +283,12 @@ void CombatSystem::processCounter(float dt) {
 
     if (counterSuccess && !damageDealt) {
         enemy->takeDamage(1);
+        Logger::info("Damage dealt: 1, remaining: " + std::to_string(enemy->getHealth()));
         damageDealt = true;
     }
 
     if (turnTimer > currentAttack.counterWindowEnd) {
-        if (enemy->getHealth() <= 0) {
+        if (enemy->isDead()) {
             eState = State::Dead;
             currentState = CombatState::Victory;
             std::cout << "Victory!\n";
@@ -298,8 +316,6 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
         enemy->draw(target);
         player->draw(target);
     }
-
-    player->displayHealthBar(target, tileManager);
 
     if (currentState == CombatState::PlayerTurn && phase == TurnPhase::Input) {
         if (player->getInventory().hasItem("3050")) {

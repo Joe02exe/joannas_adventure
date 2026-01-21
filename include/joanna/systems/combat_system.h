@@ -25,6 +25,8 @@ class CombatSystem {
         return currentState;
     }
 
+    bool battleFinished() const;
+
   private:
     Player* player = nullptr;
     Enemy* enemy = nullptr;
@@ -42,6 +44,7 @@ class CombatSystem {
     TurnPhase phase = TurnPhase::Input;
 
     float turnTimer = 0.0f;
+    float victoryTimer = 0.0f;
 
     sf::Vector2f startPos;
     sf::Vector2f targetPos;

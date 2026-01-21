@@ -133,7 +133,7 @@ void Game::run() {
             }
             
             // Goblin interaction
-            if (enemyPtr->updateOverworld(dt, controller.getPlayer(), tileManager)) {
+            if (enemyPtr && enemyPtr->updateOverworld(dt, controller.getPlayer(), tileManager)) {
                 gameStatus = GameStatus::Combat;
                 combatSystem.startCombat(controller.getPlayer(), *enemyPtr);
             }
@@ -143,11 +143,8 @@ void Game::run() {
                 !controller.getPlayer().getInventory().hasItem("3055")) {
                 
                 if (!skeletonPtr) {
-                    sf::Vector2f spawnPos = controller.getPlayer().getPosition();
-                    spawnPos.x += 100.f; // Spawn 100 units to the right of the player
-                    
                     auto skeleton = std::make_unique<Enemy>(
-                        spawnPos, Enemy::EnemyType::Skeleton
+                        sf::Vector2f{100.f, 110.f}, Enemy::EnemyType::Skeleton
                     );
                     skeletonPtr = skeleton.get();
                     entities.push_back(std::move(skeleton));
@@ -158,18 +155,38 @@ void Game::run() {
                     combatSystem.startCombat(controller.getPlayer(), *skeletonPtr);
                 }
 
-                if (skeletonPtr->getHealth() <= 0) {
+                if (skeletonPtr->isDead()) {
                     controller.getPlayer().getInventory().addItem(Item("3055", "counterAttack"));
                     Logger::info("Skeleton defeated. Counter attack added to inventory.");
                 }
             }
         } else if (gameStatus == GameStatus::Combat) {
             combatSystem.update(dt);
-            if (skeletonPtr->getHealth() <= 0 && !controller.getPlayer().getInventory().hasItem("3055")) {
-                controller.getPlayer().getInventory().addItem(Item("3055", "counterAttack"));
-                Logger::info("Skeleton defeated. Counter attack added to inventory.");
-                //TODO maybe screen
+            if (combatSystem.battleFinished()) {
+                combatSystem.endCombat();
                 gameStatus = GameStatus::Overworld;
+
+                if (skeletonPtr && skeletonPtr->isDead() &&
+                    !controller.getPlayer().getInventory().hasItem("3055")) {
+                    controller.getPlayer().getInventory().addItem(
+                        Item("3055", "counterAttack")
+                    );
+                    Logger::info(
+                        "Skeleton defeated. Counter attack added to inventory."
+                    );
+                }
+
+                entities.remove_if([&](const std::unique_ptr<Entity>& entity) {
+                    auto* enemy = dynamic_cast<Enemy*>(entity.get());
+                    if (enemy && enemy->isDead()) {
+                        if (enemy == enemyPtr)
+                            enemyPtr = nullptr;
+                        if (enemy == skeletonPtr)
+                            skeletonPtr = nullptr;
+                        return true;
+                    }
+                    return false;
+                });
             }
         }
         windowManager.clear();
@@ -215,6 +232,10 @@ void Game::run() {
             combatView.setViewport(windowManager.getMainView().getViewport());
             window.setView(combatView);
             combatSystem.render(window, tileManager);
+
+            // ui
+            window.setView(windowManager.getUiView());
+            controller.getPlayer().displayHealthBar(window, tileManager);
         }
 
         if constexpr (IMGUI_ENABLED) {
