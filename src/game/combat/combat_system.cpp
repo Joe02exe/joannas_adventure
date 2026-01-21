@@ -64,6 +64,7 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     currentState = CombatState::PlayerTurn;
     eState = State::Idle;
     pState = State::Idle;
+    victoryTimer = 0.0f;
 }
 
 void CombatSystem::endCombat() {
@@ -74,7 +75,15 @@ void CombatSystem::endCombat() {
     enemy->setPosition(enemyState.position);
     enemy->setScale(enemyState.scale);
     enemy->setFacing(enemyState.facing);
-    enemy->resetHealth();
+    if (enemy->getHealth() > 0) {
+        enemy->resetHealth();
+    }
+}
+
+bool CombatSystem::battleFinished() const {
+    return (currentState == CombatState::Victory ||
+            currentState == CombatState::Defeat) &&
+           victoryTimer > 2.0f;
 }
 
 void CombatSystem::update(float dt) {
@@ -86,6 +95,9 @@ void CombatSystem::update(float dt) {
         updatePlayerTurn(dt, pState, eState);
     } else if (currentState == CombatState::EnemyTurn) {
         updateEnemyTurn(dt, pState, eState);
+    } else if (currentState == CombatState::Victory ||
+               currentState == CombatState::Defeat) {
+        victoryTimer += dt;
     }
 
     player->update(
@@ -207,7 +219,7 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
             Direction::Right
         );
     } else if (phase == TurnPhase::EndTurn) {
-        if (enemy->getHealth() <= 0) {
+        if (enemy->isDead()) {
             eState = State::Dead;
             currentState = CombatState::Victory;
             std::cout << "Victory!\n";
@@ -270,7 +282,7 @@ void CombatSystem::processCounter(float dt) {
     }
 
     if (turnTimer > currentAttack.counterWindowEnd) {
-        if (enemy->getHealth() <= 0) {
+        if (enemy->isDead()) {
             eState = State::Dead;
             currentState = CombatState::Victory;
             std::cout << "Victory!\n";
