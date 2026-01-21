@@ -4,6 +4,7 @@
 #include "joanna/entities/interactable.h"
 #include "joanna/entities/player.h"
 #include "joanna/utils/dialogue_box.h"
+#include "nlohmann/json.hpp"
 #include "joanna/entities/inventory.h"
 #include <SFML/Graphics.hpp>
 #include <optional>

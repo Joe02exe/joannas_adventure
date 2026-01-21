@@ -232,6 +232,10 @@ void Game::run() {
             combatView.setViewport(windowManager.getMainView().getViewport());
             window.setView(combatView);
             combatSystem.render(window, tileManager);
+
+            // ui
+            window.setView(windowManager.getUiView());
+            controller.getPlayer().displayHealthBar(window, tileManager);
         }
 
         if constexpr (IMGUI_ENABLED) {

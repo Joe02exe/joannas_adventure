@@ -183,11 +183,16 @@ void CombatSystem::updateAttackTimeline(
         }
     } else if (turnTimer < attack.endTime) {
         defenderState = State::Hurt;
+        if (!damageDealt) {
+            defender->takeDamage(attack.damage);
+            damageDealt = true;
+            Logger::info("Defender took damage: " + std::to_string(attack.damage) + " remaining: " + std::to_string(defender->getHealth()));
+        }
     } else {
         defenderState = State::Idle;
         phase = TurnPhase::Returning;
         turnTimer = 0.0f;
-        defender->takeDamage(attack.damage);
+        damageDealt = false;
     }
 }
 
@@ -278,6 +283,7 @@ void CombatSystem::processCounter(float dt) {
 
     if (counterSuccess && !damageDealt) {
         enemy->takeDamage(1);
+        Logger::info("Damage dealt: 1, remaining: " + std::to_string(enemy->getHealth()));
         damageDealt = true;
     }
 
@@ -310,8 +316,6 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
         enemy->draw(target);
         player->draw(target);
     }
-
-    player->displayHealthBar(target, tileManager);
 
     if (currentState == CombatState::PlayerTurn && phase == TurnPhase::Input) {
         if (player->getInventory().hasItem("3050")) {
