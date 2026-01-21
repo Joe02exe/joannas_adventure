@@ -19,8 +19,9 @@ DialogueBox::DialogueBox(
     //}
 }
 
-void DialogueBox::setDialogue(const std::vector<std::string>& messages) {
+void DialogueBox::setDialogue(const std::vector<std::string>& messages, const void* owner) {
     clear();
+    this->owner = owner;
     for (const auto& msg : messages) {
         dialogueQueue.push(msg);
     }
@@ -51,6 +52,7 @@ void DialogueBox::clear() {
     visibleText.clear();
     visibleCharCount = 0;
     displayTime = 0.0f;
+    owner = nullptr;
 }
 
 void DialogueBox::nextLine() {
