@@ -5,8 +5,11 @@
 #include <iostream>
 
 CombatSystem::CombatSystem()
-    : backgroundTexture(ResourceManager<sf::Texture>::getInstance()->get(
+    : caveBackground(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/images/combat_background_cave.png"
+      )),
+      beachBackground(ResourceManager<sf::Texture>::getInstance()->get(
+          "assets/images/combat_background_beach.png"
       )),
       attackButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/attack.png"
@@ -39,6 +42,12 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     enemy = &e;
     std::cout << "Combat Started!\n";
 
+    if (enemy->getType() == Enemy::EnemyType::Skeleton) {
+        currentBackground = &beachBackground;
+    } else {
+        currentBackground = &caveBackground;
+    }
+
     // Save state
     playerState.position = player->getPosition();
     playerState.scale = player->getScale();
@@ -50,8 +59,8 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
 
     // Assuming screen size 900x900 and player on left, enemy on right
     // Assuming screen size 900x900 and player on left, enemy on right
-    sf::Vector2f pPos(-100.f, 300);
-    sf::Vector2f ePos(430.f, 300);
+    sf::Vector2f pPos(-100.f, 340);
+    sf::Vector2f ePos(430.f, 340);
 
     player->setPosition(pPos);
     enemy->setPosition(ePos);
@@ -303,7 +312,8 @@ void CombatSystem::processCounter(float dt) {
 void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
 
     // currently set statically... because viewport is set to 900x900
-    sf::Sprite backgroundSprite(backgroundTexture);
+    // currently set statically... because viewport is set to 900x900
+    sf::Sprite backgroundSprite(*currentBackground);
     backgroundSprite.setScale({ 900.f / 1400.f, 900.f / 1400.f });
     backgroundSprite.setPosition({ 0.f, 0.f });
     target.draw(backgroundSprite);
@@ -321,12 +331,12 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
         if (player->getInventory().hasItem("3050")) {
             sf::Sprite attackButtonSprite(attackButtonTexture);
             attackButtonSprite.setScale({ 3, 3 });
-            attackButtonSprite.setPosition({ 95.f, 300.f });
+            attackButtonSprite.setPosition({ 95.f, 330.f });
             target.draw(attackButtonSprite);
         } else {
             sf::Sprite attackButtonSprite(attackButtonRollTexture);
             attackButtonSprite.setScale({ 3, 3 });
-            attackButtonSprite.setPosition({ 95.f, 300.f });
+            attackButtonSprite.setPosition({ 95.f, 330.f });
             target.draw(attackButtonSprite);
         }
     }
@@ -347,7 +357,7 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
         }
 
         counterButtonSprite.setScale({ 3, 3 });
-        counterButtonSprite.setPosition({ 95.f, 300.f });
+        counterButtonSprite.setPosition({ 95.f, 330.f });
         target.draw(counterButtonSprite);
     }
 }

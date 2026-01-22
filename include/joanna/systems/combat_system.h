@@ -36,7 +36,10 @@ class CombatSystem {
     EntityState playerState;
     EntityState enemyState;
 
-    const sf::Texture backgroundTexture;
+    const sf::Texture& caveBackground;
+    const sf::Texture& beachBackground;
+    const sf::Texture* currentBackground = nullptr;
+
     const sf::Texture attackButtonTexture;
     const sf::Texture attackButtonRollTexture;
 

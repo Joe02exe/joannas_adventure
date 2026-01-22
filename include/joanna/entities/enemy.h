@@ -34,6 +34,10 @@ class Enemy: public Entity {
         return attacks;
     }
 
+    EnemyType getType() const {
+        return type;
+    }
+
     enum class OverworldState { Idle, Pursuing };
     bool updateOverworld(float dt, Player& player, TileManager& tileManager);
 
