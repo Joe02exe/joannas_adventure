@@ -16,7 +16,7 @@
                 "Thanks for the carrots!"
             ],
             "req": {
-                "type": "ITEM",
+                "type": "ITEM_REMOVE",
                 "id": "691",
                 "amount": 1
             },
@@ -46,7 +46,29 @@
         {
             "priority": 1,
             "text": [
+                "KEY???"
+            ]
+        },
+        {   
+            "id": "Bring key",
+            "priority": 2,
+            "text": [
                 "KEY!!!"
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "627",
+                "amount": 1
+            },
+            "move": [
+                {
+                    "x": 0,
+                    "y": -50
+                },
+                {
+                    "x": -50,
+                    "y": 0
+                }
             ]
         }
     ]
