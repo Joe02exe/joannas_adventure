@@ -24,7 +24,7 @@ class Player: public Entity {
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
     void takeDamage(int amount);
-    void applyItem(std::string& itemId);
+    bool applyItem(const std::string& itemId);
     void
     displayHealthBar(sf::RenderTarget& target, TileManager& tileManager) const;
 

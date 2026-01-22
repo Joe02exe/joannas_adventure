@@ -81,7 +81,12 @@ bool Controller::getInput(
         // Logger::info("Inventory opened");
         // displayInventory = !displayInventory;
         auto id = player.getInventory().getSelectedItemId();
-        player.applyItem(id);
+        if (id != "") {
+            auto hasApplied = player.applyItem(id);
+            if (hasApplied) {
+                audioManager.play_sfx(SfxId::Surprise);
+            }
+        }
     }
 
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
@@ -116,13 +121,16 @@ bool Controller::getInput(
             }
         }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+
+    bool escapeDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape);
+    if (escapeDown && !keyPressed) {
         Menu menu(windowManager, *this, tileManager, audioManager);
         menu.show(
             renderEngine, tileManager, entities, sharedDialogueBox, audioManager
         );
         return true;
     }
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
             sharedDialogueBox->nextLine();

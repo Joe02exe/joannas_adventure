@@ -44,7 +44,7 @@ class Inventory {
 
     std::size_t slotsUsed() const;
 
-    std::vector<StoredItem> listItems() const;
+    const std::vector<StoredItem>& listItems() const;
 
     std::string getSelectedItemId() const;
 
@@ -102,11 +102,10 @@ class Inventory {
 
   private:
     // Internal helpers assume mutex held
-    std::size_t slotsUsedUnlocked() const;
     std::size_t selectedSlotIndex = 0;
 
     sf::Font font;
-    std::unordered_map<std::string, StoredItem> items_;
+    std::vector<StoredItem> items_;
     std::size_t capacity_;
     std::unordered_map<int, std::string> idToString = { { 691, "carrot" },
                                                         { 3050, "sword" },
