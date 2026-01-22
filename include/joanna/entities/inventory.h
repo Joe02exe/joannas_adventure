@@ -46,6 +46,8 @@ class Inventory {
 
     std::vector<StoredItem> listItems() const;
 
+    std::string getSelectedItemId() const;
+
     void loadState(InventoryState& state);
 
     void clear();

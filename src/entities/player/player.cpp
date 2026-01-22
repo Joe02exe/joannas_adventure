@@ -59,7 +59,8 @@ void Player::update(
             if (currentState == State::Counter) {
                 switchState(State::Idle);
                 state = State::Idle; // Update external state
-                std::cout << "Player finished counter animation, switching to Idle.\n";
+                std::cout << "Player finished counter animation, switching to "
+                             "Idle.\n";
             }
         } else {
             currentFrame =
@@ -118,5 +119,13 @@ void Player::displayHealthBar(
                                 startPos.y });
         heartIcon.setScale({ 3.f, 3.f });
         target.draw(heartIcon);
+    }
+}
+
+void Player::applyItem(std::string& itemId) {
+    Logger::info("Applying item with ID: " + itemId);
+    if (itemId == "1330") {
+        health += 5;
+        inventory.removeItem(itemId, 1);
     }
 }

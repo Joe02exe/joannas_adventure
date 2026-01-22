@@ -78,9 +78,12 @@ bool Controller::getInput(
 
     bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
     if (eDown && !keyPressed) {
-        Logger::info("Inventory opened");
-        displayInventory = !displayInventory;
+        // Logger::info("Inventory opened");
+        // displayInventory = !displayInventory;
+        auto id = player.getInventory().getSelectedItemId();
+        player.applyItem(id);
     }
+
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
         for (const auto& item : tileManager.getRenderObjects()) {

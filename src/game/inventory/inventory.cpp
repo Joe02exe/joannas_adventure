@@ -333,3 +333,7 @@ void Inventory::selectPrevious() {
 int Inventory::getSelectedSlotIndex() const {
     return static_cast<int>(selectedSlotIndex);
 }
+
+std::string Inventory::getSelectedItemId() const {
+    return listItems().at(getSelectedSlotIndex()).item.id;
+}
