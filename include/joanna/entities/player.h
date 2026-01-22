@@ -32,6 +32,8 @@ class Player: public Entity {
         return health;
     }
 
+    void setHealth(int health);
+
     Inventory& getInventory() {
         return inventory;
     }

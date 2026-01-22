@@ -107,9 +107,9 @@ class Inventory {
     sf::Font font;
     std::vector<StoredItem> items_;
     std::size_t capacity_;
-    std::unordered_map<int, std::string> idToString = { { 691, "carrot" },
-                                                        { 3050, "sword" },
-                                                        { 627, "key" },
-                                                        { 703, "mushroom" },
-                                                        { 1330, "heal" } };
+    std::unordered_map<int, std::string> idToString = {
+        { 691, "carrot" },     { 3050, "sword" }, { 3056, "invisible" },
+        { 3055, "invisible" }, { 627, "key" },    { 703, "mushroom" },
+        { 1330, "heal" },
+    };
 };

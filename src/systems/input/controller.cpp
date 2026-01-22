@@ -75,6 +75,18 @@ bool Controller::getInput(
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4)) {
         player.getInventory().selectSlot(3);
     }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5)) {
+        player.getInventory().selectSlot(4);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num6)) {
+        player.getInventory().selectSlot(5);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num7)) {
+        player.getInventory().selectSlot(6);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num8)) {
+        player.getInventory().selectSlot(7);
+    }
 
     bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
     if (eDown && !keyPressed) {
