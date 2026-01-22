@@ -14,6 +14,8 @@ class InteractionButton {
 
     sf::Vector2f getPosition() const;
 
+    void setPosition(const sf::Vector2f& pos);
+
   private:
     const sf::FloatRect box;
     std::unique_ptr<sf::Sprite> sprite;

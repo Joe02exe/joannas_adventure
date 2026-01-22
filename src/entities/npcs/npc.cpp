@@ -1,23 +1,27 @@
 #include "joanna/entities/npc.h"
 #include <algorithm>
+#include <cmath>
 
 json NPC::jsonData;
 
 NPC::NPC(
-    const sf::Vector2f& startPos, const std::string& npcTexturePath,
+    const sf::Vector2f& startPos, const std::string& npcIdlePath,
+    const std::string& npcWalkingPath,
     const std::string& buttonTexturePath,
     std::shared_ptr<DialogueBox> dialogueBox,
     std::string dialogId
 )
     : Interactable(
           sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
-          buttonTexturePath, npcTexturePath,
+          buttonTexturePath, npcIdlePath,
           sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 10 }),
           Direction::Left
       ),
       dialogueBox(dialogueBox),
       dialogId(dialogId) {
-    animations[State::Idle] = Animation(npcTexturePath, { 96, 64 }, 8);
+    this->uniqueSpriteId = npcIdlePath;
+    animations[State::Idle] = Animation(npcIdlePath, { 96, 64 }, 8);
+    animations[State::Walking] = Animation(npcWalkingPath, { 96, 64 }, 8);
 }
 
 void NPC::setDialogue(const std::vector<std::string>& messages) {
@@ -37,18 +41,27 @@ void NPC::interact(Player& player) {
 
     for(auto& entry : dialogList){
         bool conditionMet = true;
+        std::string uniqueKey = "";
+        if (entry.contains("id")) {
+            uniqueKey = this->uniqueSpriteId + "_" + std::string(entry["id"]); 
+            if (player.hasInteraction(uniqueKey)) {
+                continue;
+            }
+        }
         if(entry.contains("req") && !entry["req"].is_null()) {
             json req = entry["req"];
             std::string type = req["type"];
-            if (type == "ITEM") {
+            auto moves = entry["move"];
+            if (type.find("ITEM") != std::string::npos) {
                 std::string itemId = req["id"];
                 int amount = req["amount"];
                 if (inventory.getQuantity(itemId) < amount) {
                     conditionMet = false;
                 }
-                else {
+                else if(type == "ITEM_REMOVE") {
                     inventory.removeItem(itemId, amount);
                 }
+
             }
         }
         
@@ -61,26 +74,59 @@ void NPC::interact(Player& player) {
         if(conditionMet) {
             dialogueBox->setDialogue(entry["text"], this);
             dialogueBox->show();
+            move(entry["move"]);
+            if (!uniqueKey.empty()) {
+                player.addInteraction(uniqueKey);
+            }
             return;
         }
     }
 }
 
-void NPC::update(
-    float dt, State state, Player& player
-) {
-    frameTimer += dt;
+void NPC::update(float dt, Player& player) {
+    if (isMoving) {
+        if (movementQueue.empty()) {
+            isMoving = false;
+            switchState(State::Idle);
+            return;
+        }
 
+        sf::Vector2f target = movementQueue.front();
+        
+        sf::Vector2f currentPos = getPosition();
+        sf::Vector2f diff = target - currentPos;
+        float dist = std::hypot(diff.x, diff.y);
+
+        if (dist < 2.0f) {
+            setPosition(target);
+            movementQueue.pop_front();
+        } 
+        else {
+            sf::Vector2f dir = diff / dist;
+            sf::Vector2f velocity = dir * moveSpeed * dt;
+            
+            setPosition(currentPos + velocity);
+            switchState(State::Walking);
+
+            if (velocity.x > 0) setFacing(Direction::Right);
+            else if (velocity.x < 0) setFacing(Direction::Left);
+        }
+    }
+    else {
+        const Direction direction = this->getPosition().x < player.getPosition().x
+                                        ? Direction::Right
+                                        : Direction::Left;
+        setFacing(direction);
+        switchState(State::Idle);
+    }
+    frameTimer += dt;
     const auto& anim = animations[currentState];
+
     if (frameTimer >= anim.frameTime) {
         frameTimer -= anim.frameTime;
         currentFrame = (currentFrame + 1) % anim.frames.size();
         applyFrame();
     }
-    const Direction direction = this->getPosition().x < player.getPosition().x
-                                    ? Direction::Right
-                                    : Direction::Left;
-    setFacing(direction);
 
     if (dialogueBox && dialogueBox->isActive()) {
         dialogueBox->update(dt, getPosition());
@@ -89,12 +135,11 @@ void NPC::update(
     if (pendingReward.has_value()) {
         if (dialogueBox->getOwner() == this) {
             if (!dialogueBox->isActive() && !dialogueBox->hasMoreLines()) {
-                // Dialogue finished successfully
                 player.getInventory().addItem(pendingReward.value());
                 pendingReward.reset();
+                std::cout << "Reward granted!" << std::endl;
             }
         } else {
-            // Dialogue interrupted or owned by someone else
             pendingReward.reset();
         }
     }
@@ -103,4 +148,36 @@ void NPC::update(
 void NPC::applyFrame() {
     const auto& anim = animations[currentState];
     setFrame(anim.frames[currentFrame]);
+}
+
+
+void NPC::move(const json& moveData) {
+    if (!moveData.is_array()) return;
+    sf::Vector2f futurePos = getPosition();
+
+    for (const auto& step : moveData) {
+        float x = 0.f;
+        float y = 0.f;
+
+        if (step.contains("x")) {
+            x = step["x"].get<float>();
+        }
+
+        if (step.contains("y")) {
+            y = step["y"].get<float>();
+        }
+
+        futurePos += sf::Vector2f(x, y);
+        movementQueue.push_back(futurePos);
+    }
+    isMoving = true;
+}
+
+void NPC::switchState(State newState) {
+    if (currentState != newState) {
+        currentState = newState;
+        currentFrame = 0;
+        frameTimer = 0.f;
+        applyFrame();
+    }
 }

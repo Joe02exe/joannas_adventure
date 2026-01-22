@@ -27,3 +27,7 @@ void InteractionButton::setTexture(const std::string& texturePath) {
 sf::Vector2f InteractionButton::getPosition() const {
     return sprite->getPosition();
 }
+
+void InteractionButton::setPosition(const sf::Vector2f& pos) {
+    sprite->setPosition(pos);
+}

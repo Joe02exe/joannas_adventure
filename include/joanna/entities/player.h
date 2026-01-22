@@ -34,6 +34,14 @@ class Player: public Entity {
         return inventory;
     }
 
+    bool hasInteraction(const std::string& id) const {
+        return visitedInteractions.find(id) != visitedInteractions.end();
+    }
+
+    void addInteraction(const std::string& id) {
+        visitedInteractions.insert(id);
+    }
+
   private:
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
@@ -47,4 +55,5 @@ class Player: public Entity {
 
     void switchState(State newState);
     void applyFrame();
+    std::unordered_set<std::string> visitedInteractions;
 };
