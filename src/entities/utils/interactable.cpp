@@ -16,6 +16,8 @@ Interactable::Interactable(
       button(box, buttonTexturePath) {}
 
 void Interactable::renderButton(sf::RenderTarget& target) {
+    sf::Vector2f currentPos = getPosition();
+    button.setPosition(currentPos + sf::Vector2f(0.f, 0.f));
     button.render(target);
 }
 

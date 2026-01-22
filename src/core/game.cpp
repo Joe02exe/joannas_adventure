@@ -25,7 +25,7 @@ void Game::run() {
     WindowManager windowManager(900, 900, "Joanna's Adventure");
 
     AudioManager audioManager;
-    audioManager.set_current_music(MusicId::Overworld);
+    //audioManager.set_current_music(MusicId::Overworld);
 
     sf::RenderWindow& window = windowManager.getWindow();
     Controller controller(windowManager, audioManager);
@@ -38,7 +38,7 @@ void Game::run() {
     NPC::jsonData = json::parse(file);
     auto sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
+        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png", "assets/player/npc/guard1_walking.png",
         "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
     ));
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
@@ -48,27 +48,23 @@ void Game::run() {
     entities.push_back(std::move(enemy));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
+        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png", "assets/player/npc/guard1_walking.png",
         "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png",
+        sf::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png", "assets/player/npc/guard1_walking.png",
         "assets/buttons/talk_T.png", sharedDialogueBox, "Guard"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png",
+        sf::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png", "assets/player/npc/guard1_walking.png",
         "assets/buttons/talk_T.png", sharedDialogueBox, "Guard"
     ));
 
     TileManager tileManager(window);
     std::vector<sf::FloatRect>& collisions = tileManager.getCollisionRects();
-    for (auto& entity : entities) {
-        if (auto box = entity->getCollisionBox()) {
-            collisions.push_back(*box);
-        }
-    }
+    
 
     RenderEngine renderEngine;
 
@@ -124,8 +120,15 @@ void Game::run() {
         static Enemy* skeletonPtr = nullptr;
 
         if (gameStatus == GameStatus::Overworld) {
+            std::vector<sf::FloatRect> frameCollisions = collisions; 
+            for (const auto& entity : entities) {
+                if (auto box = entity->getCollisionBox()) {
+                    frameCollisions.push_back(*box);
+                }
+            }
+
             bool resetClock = controller.updateStep(
-                dt, window, collisions, entities, sharedDialogueBox,
+                dt, window, frameCollisions, entities, sharedDialogueBox,
                 tileManager, renderEngine
             );
             if (resetClock) {
