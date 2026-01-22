@@ -95,7 +95,7 @@ test:
   stage: test
   script:
     - cd $BUILD_DIR
-    - ctest --output-on-failure || echo "No tests found"
+    - ctest -V --output-on-failure
   needs:
     - job: build
       artifacts: true
