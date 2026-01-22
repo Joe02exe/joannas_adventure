@@ -167,7 +167,7 @@ bool Controller::updateStep(
     // This function can be used for fixed time step updates if needed in future
     for (auto& entity : entities) {
         if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
-            npc->update(dt, State::Idle, player.getPosition());
+            npc->update(dt, State::Idle, player);
         }
     }
     return getInput(

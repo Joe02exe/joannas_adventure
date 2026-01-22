@@ -18,12 +18,14 @@ class CombatSystem {
     void startCombat(Player& player, Enemy& enemy);
     void endCombat();
     void update(float dt);
-    void render(sf::RenderTarget& target);
+    void render(sf::RenderTarget& target, class TileManager& tileManager);
     void handleInput(sf::Event& event);
 
     CombatState getState() const {
         return currentState;
     }
+
+    bool battleFinished() const;
 
   private:
     Player* player = nullptr;
@@ -36,11 +38,13 @@ class CombatSystem {
 
     const sf::Texture backgroundTexture;
     const sf::Texture attackButtonTexture;
+    const sf::Texture attackButtonRollTexture;
 
     CombatState currentState = CombatState::PlayerTurn;
     TurnPhase phase = TurnPhase::Input;
 
     float turnTimer = 0.0f;
+    float victoryTimer = 0.0f;
 
     sf::Vector2f startPos;
     sf::Vector2f targetPos;

@@ -42,7 +42,7 @@ void Game::run() {
         "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
     ));
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
-        sf::Vector2f{ 710.f, 200.f }, "assets/player/enemies/goblin/idle.png"
+        sf::Vector2f{ 710.f, 200.f }, Enemy::EnemyType::Goblin
     );
     auto* enemyPtr = dynamic_cast<Enemy*>(enemy.get());
     entities.push_back(std::move(enemy));
@@ -102,6 +102,11 @@ void Game::run() {
             if (gameStatus == GameStatus::Combat) {
                 combatSystem.handleInput(*event);
             }
+            if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()) {
+                if (keyEvent->code == sf::Keyboard::Key::F1) {
+                    windowManager.getDebugUI().toggle();
+                }
+            }
         }
 
         float dt = clock.restart().asSeconds();
@@ -111,7 +116,13 @@ void Game::run() {
 
         if constexpr (IMGUI_ENABLED) {
             ImGui::SFML::Update(window, sf::seconds(dt));
+            windowManager.getDebugUI().update(
+                dt, window, controller.getPlayer(), gameStatus, combatSystem,
+                *enemyPtr, controller
+            );
         }
+        static Enemy* skeletonPtr = nullptr;
+
         if (gameStatus == GameStatus::Overworld) {
             bool resetClock = controller.updateStep(
                 dt, window, collisions, entities, sharedDialogueBox,
@@ -120,18 +131,63 @@ void Game::run() {
             if (resetClock) {
                 clock.restart();
             }
-            if (enemyPtr->updateOverworld(dt, controller.getPlayer(), tileManager)) {
+            
+            // Goblin interaction
+            if (enemyPtr && enemyPtr->updateOverworld(dt, controller.getPlayer(), tileManager)) {
                 gameStatus = GameStatus::Combat;
                 combatSystem.startCombat(controller.getPlayer(), *enemyPtr);
             }
+
+            // Skeleton Logic
+            if (controller.getPlayer().getInventory().hasItem("3056") && 
+                !controller.getPlayer().getInventory().hasItem("3055")) {
+                
+                if (!skeletonPtr) {
+                    auto skeleton = std::make_unique<Enemy>(
+                        sf::Vector2f{100.f, 110.f}, Enemy::EnemyType::Skeleton
+                    );
+                    skeletonPtr = skeleton.get();
+                    entities.push_back(std::move(skeleton));
+                }
+
+                if (skeletonPtr->updateOverworld(dt, controller.getPlayer(), tileManager)) {
+                    gameStatus = GameStatus::Combat;
+                    combatSystem.startCombat(controller.getPlayer(), *skeletonPtr);
+                }
+
+                if (skeletonPtr->isDead()) {
+                    controller.getPlayer().getInventory().addItem(Item("3055", "counterAttack"));
+                    Logger::info("Skeleton defeated. Counter attack added to inventory.");
+                }
+            }
         } else if (gameStatus == GameStatus::Combat) {
             combatSystem.update(dt);
-        }
-        if constexpr (IMGUI_ENABLED) {
-            windowManager.getDebugUI().update(
-                dt, window, controller.getPlayer(), gameStatus, combatSystem,
-                *enemyPtr, controller
-            );
+            if (combatSystem.battleFinished()) {
+                combatSystem.endCombat();
+                gameStatus = GameStatus::Overworld;
+
+                if (skeletonPtr && skeletonPtr->isDead() &&
+                    !controller.getPlayer().getInventory().hasItem("3055")) {
+                    controller.getPlayer().getInventory().addItem(
+                        Item("3055", "counterAttack")
+                    );
+                    Logger::info(
+                        "Skeleton defeated. Counter attack added to inventory."
+                    );
+                }
+
+                entities.remove_if([&](const std::unique_ptr<Entity>& entity) {
+                    auto* enemy = dynamic_cast<Enemy*>(entity.get());
+                    if (enemy && enemy->isDead()) {
+                        if (enemy == enemyPtr)
+                            enemyPtr = nullptr;
+                        if (enemy == skeletonPtr)
+                            skeletonPtr = nullptr;
+                        return true;
+                    }
+                    return false;
+                });
+            }
         }
         windowManager.clear();
 
@@ -175,7 +231,11 @@ void Game::run() {
             sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
             combatView.setViewport(windowManager.getMainView().getViewport());
             window.setView(combatView);
-            combatSystem.render(window);
+            combatSystem.render(window, tileManager);
+
+            // ui
+            window.setView(windowManager.getUiView());
+            controller.getPlayer().displayHealthBar(window, tileManager);
         }
 
         if constexpr (IMGUI_ENABLED) {

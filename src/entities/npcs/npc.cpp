@@ -48,19 +48,18 @@ void NPC::interact(Player& player) {
                 }
                 else {
                     inventory.removeItem(itemId, amount);
-                    if(!entry["reward"].is_null()){
-                        json reward = entry["reward"];
-                        std::string rewardId = reward["id"];
-                        int rewardAmount = reward["amount"];
-                        std::string rewardName = reward["name"];
-                        inventory.addItem(Item(rewardId, rewardName));
-                    }
-                    
                 }
             }
         }
+        
+        if(conditionMet && !entry["reward"].is_null()){
+            json reward = entry["reward"];
+            std::string rewardId = reward["id"];
+            std::string rewardName = reward["name"];
+            pendingReward = Item(rewardId, rewardName);
+        }
         if(conditionMet) {
-            dialogueBox->setDialogue(entry["text"]);
+            dialogueBox->setDialogue(entry["text"], this);
             dialogueBox->show();
             return;
         }
@@ -68,7 +67,7 @@ void NPC::interact(Player& player) {
 }
 
 void NPC::update(
-    float dt, State state, const sf::Vector2f& playerPos
+    float dt, State state, Player& player
 ) {
     frameTimer += dt;
 
@@ -78,13 +77,26 @@ void NPC::update(
         currentFrame = (currentFrame + 1) % anim.frames.size();
         applyFrame();
     }
-    const Direction direction = this->getPosition().x < playerPos.x
+    const Direction direction = this->getPosition().x < player.getPosition().x
                                     ? Direction::Right
                                     : Direction::Left;
     setFacing(direction);
 
     if (dialogueBox && dialogueBox->isActive()) {
         dialogueBox->update(dt, getPosition());
+    }
+
+    if (pendingReward.has_value()) {
+        if (dialogueBox->getOwner() == this) {
+            if (!dialogueBox->isActive() && !dialogueBox->hasMoreLines()) {
+                // Dialogue finished successfully
+                player.getInventory().addItem(pendingReward.value());
+                pendingReward.reset();
+            }
+        } else {
+            // Dialogue interrupted or owned by someone else
+            pendingReward.reset();
+        }
     }
 }
 
