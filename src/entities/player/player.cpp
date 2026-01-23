@@ -108,8 +108,6 @@ void Player::displayHealthBar(
 ) const {
     auto heartIcon = tileManager.getTextureById(3052);
     const auto size = target.getView().getSize();
-    // const auto center = target.getView().getCenter();
-    // const sf::Vector2f startPos(-300.f, 280.f);
     const sf::Vector2f startPos(
         -size.x / 2 + heartIcon.getLocalBounds().size.x,
         -size.y / 2 + heartIcon.getLocalBounds().size.y
@@ -130,13 +128,17 @@ bool Player::applyItem(const std::string& itemId) {
         return true;
     }
     if (itemId == "703") {
-        // TODO increase attack damage here;
+        for (auto& item : attacks) {
+            if (item.name == "Attack") {
+                item.damage += 5;
+            }
+        }
         inventory.removeItem(itemId, 1);
         return true;
     }
     return false;
 }
 
-void Player::setHealth(int health) {
-    this->health = std::min(health, maxHealth);
+void Player::setHealth(const int newHealth) {
+    this->health = std::min(newHealth, maxHealth);
 }

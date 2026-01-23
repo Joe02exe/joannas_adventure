@@ -32,7 +32,7 @@ class Player: public Entity {
         return health;
     }
 
-    void setHealth(int health);
+    void setHealth(int newHealth);
 
     Inventory& getInventory() {
         return inventory;
