@@ -121,7 +121,6 @@ void Player::displayHealthBar(
 }
 
 bool Player::applyItem(const std::string& itemId) {
-    Logger::info("Applying item with ID: " + itemId);
     if (itemId == "1330") {
         health += 5;
         inventory.removeItem(itemId, 1);

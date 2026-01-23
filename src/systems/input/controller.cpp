@@ -90,8 +90,6 @@ bool Controller::getInput(
 
     bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
     if (eDown && !keyPressed) {
-        // Logger::info("Inventory opened");
-        // displayInventory = !displayInventory;
         auto id = player.getInventory().getSelectedItemId();
         if (id != "") {
             auto hasApplied = player.applyItem(id);
