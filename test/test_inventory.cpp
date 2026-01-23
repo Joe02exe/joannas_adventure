@@ -148,3 +148,37 @@ TEST_F(InventoryTest, SelectionSlotInvalid) {
     EXPECT_EQ(inv.getSelectedItemId(), "A");
     EXPECT_EQ(inv.getSelectedSlotIndex(), 0);
 }
+
+TEST_F(InventoryTest, AddInvisibleItem) {
+    Inventory inv(10);
+    inv.addItem(createItem("A"), 1);
+    inv.addItem(createItem("B"), 1);
+
+    EXPECT_EQ(inv.slotsUsed(), 2);
+
+    const auto item = Item("1056", "invisible", true);
+    inv.addItem(item, 1);
+
+    EXPECT_EQ(inv.slotsUsed(), 3);
+    EXPECT_EQ(inv.listItems().at(2).item.name, "invisible");
+}
+
+TEST_F(InventoryTest, CheckOrderWithInvisibleItem) {
+    Inventory inv(10);
+
+    const auto item = Item("1056", "invisible", true);
+    inv.addItem(item, 1);
+
+    EXPECT_EQ(inv.slotsUsed(), 1);
+    EXPECT_EQ(inv.listItems().at(0).item.name, "invisible");
+
+    inv.addItem(createItem("A"), 1);
+    EXPECT_EQ(inv.slotsUsed(), 2);
+    EXPECT_EQ(inv.listItems().at(0).item.id, "A");
+    EXPECT_EQ(inv.listItems().at(1).item.name, "invisible");
+
+    inv.addItem(createItem("B"), 1);
+    EXPECT_EQ(inv.listItems().at(0).item.id, "A");
+    EXPECT_EQ(inv.listItems().at(1).item.id, "B");
+    EXPECT_EQ(inv.listItems().at(2).item.name, "invisible");
+}

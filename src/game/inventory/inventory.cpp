@@ -43,8 +43,18 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
         return 0;
     }
 
-    items_.emplace_back(item, quantity);
-    return quantity;
+    auto it =
+        std::find_if(items_.begin(), items_.end(), [](const StoredItem& item) {
+            return item.item.name == "invisible";
+        });
+
+    if (it != items_.end()) {
+        items_.insert(it, StoredItem(item, quantity));
+        return quantity;
+    } else {
+        items_.emplace_back(item, quantity);
+        return quantity;
+    }
 }
 
 std::uint32_t
@@ -248,6 +258,10 @@ void Inventory::drawItems(
     for (std::size_t i = 0; i < itemCount; ++i) {
         const std::size_t col = i % columns;
         const std::size_t row = i / columns;
+
+        if (vec.at(i).item.name == "invisible") {
+            continue;
+        }
 
         sf::Vector2f slotPos;
         StoredItem& st = vec[i];
