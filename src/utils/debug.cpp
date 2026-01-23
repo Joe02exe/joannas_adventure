@@ -59,7 +59,10 @@ void DebugUI::update(
     ImGui::InputInt("Item id", &item_id);
 
     if (ImGui::Button("Add item to inventory")) {
-        player.getInventory().addItem(Item(std::to_string(item_id), "item"));
+        auto map = player.getInventory().mapGidToName();
+        player.getInventory().addItem(
+            Item(std::to_string(item_id), map[item_id])
+        );
     }
     if (ImGui::Button("Add carrot to inventory")) {
         player.getInventory().addItem(Item("691", "carrot"));

@@ -24,8 +24,6 @@ Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
     miniMapView.setCenter(player.getPosition());
 }
 
-
-
 // clang-format on
 
 bool Controller::getInput(
@@ -63,11 +61,44 @@ bool Controller::getInput(
         dir *= 1.5f;
         state = State::Running;
     }
+
+    // Inventory toggle
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) {
+        player.getInventory().selectSlot(0);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2)) {
+        player.getInventory().selectSlot(1);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3)) {
+        player.getInventory().selectSlot(2);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4)) {
+        player.getInventory().selectSlot(3);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5)) {
+        player.getInventory().selectSlot(4);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num6)) {
+        player.getInventory().selectSlot(5);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num7)) {
+        player.getInventory().selectSlot(6);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num8)) {
+        player.getInventory().selectSlot(7);
+    }
+
     bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
     if (eDown && !keyPressed) {
-        Logger::info("Inventory opened");
-        displayInventory = !displayInventory;
+        auto id = player.getInventory().getSelectedItemId();
+        if (id != "") {
+            auto hasApplied = player.applyItem(id);
+            if (hasApplied) {
+                audioManager.play_sfx(SfxId::Surprise);
+            }
+        }
     }
+
     bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
     if (spaceDown && !keyPressed) {
         for (const auto& item : tileManager.getRenderObjects()) {
@@ -100,13 +131,16 @@ bool Controller::getInput(
             }
         }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+
+    bool escapeDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape);
+    if (escapeDown && !keyPressed) {
         Menu menu(windowManager, *this, tileManager, audioManager);
         menu.show(
             renderEngine, tileManager, entities, sharedDialogueBox, audioManager
         );
         return true;
     }
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
             sharedDialogueBox->nextLine();
@@ -153,7 +187,6 @@ bool Controller::updateStep(
         if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
             npc->update(dt, player);
         }
-
     }
     return getInput(
         dt, window, collisions, entities, sharedDialogueBox, tileManager,

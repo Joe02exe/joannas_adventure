@@ -48,8 +48,8 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void Menu::resetToDefaultMenu() {
-    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "Options",
-                 "About", "Quit" });
+    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save",
+                 "Options", "About", "Quit" });
 }
 
 void Menu::rebuildUI() {
@@ -272,6 +272,7 @@ void Menu::executeSelection() {
                 sf::Vector2f(state.player.x, state.player.y)
             );
             controller->getPlayer().getInventory().loadState(state.inventory);
+            controller->getPlayer().setHealth(state.player.health);
             tileManager->loadObjectsFromSaveGame(state.map.items);
             isMenuOpen = false;
         } else {

@@ -19,16 +19,20 @@ class Player: public Entity {
         const std::string& runPath, const sf::Vector2f& startPos
     );
 
-    void update(float dt, State& state, bool facingLeft, AudioManager& pManager);
+    void
+    update(float dt, State& state, bool facingLeft, AudioManager& pManager);
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
     void takeDamage(int amount);
+    bool applyItem(const std::string& itemId);
     void
     displayHealthBar(sf::RenderTarget& target, TileManager& tileManager) const;
 
     int getHealth() const {
         return health;
     }
+
+    void setHealth(int newHealth);
 
     Inventory& getInventory() {
         return inventory;

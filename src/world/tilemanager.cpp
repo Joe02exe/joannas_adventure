@@ -223,6 +223,8 @@ void TileManager::processLayer(const std::string& layerName) {
         // TODO : refactor this if more items are needed
         std::vector<tson::Object*> carrots;
         std::vector<tson::Object*> swords;
+        std::vector<tson::Object*> mushrooms;
+        std::vector<tson::Object*> healPotions;
 
         for (auto& obj : layer->getObjects()) {
             int currentGid = static_cast<int>(obj.getGid());
@@ -233,10 +235,18 @@ void TileManager::processLayer(const std::string& layerName) {
             if (currentGid == 3050) {
                 swords.push_back(&obj);
             }
+            if (currentGid == 703) {
+                mushrooms.push_back(&obj);
+            }
+            if (currentGid == 1330) {
+                healPotions.push_back(&obj);
+            }
         }
 
         randomlySelectItems(carrots, 7);
         randomlySelectItems(swords, 1);
+        randomlySelectItems(mushrooms, 1);
+        randomlySelectItems(healPotions, 1);
     }
 
     if (!layer || layer->getType() != tson::LayerType::TileLayer) {

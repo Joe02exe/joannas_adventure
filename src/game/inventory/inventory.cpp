@@ -25,38 +25,26 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
     if (quantity == 0) {
         return 0;
     }
-    const std::size_t usedSlots = slotsUsedUnlocked();
-
-    const auto it = items_.find(item.id);
-    const bool exists = (it != items_.end());
+    const std::size_t usedSlots = items_.size();
 
     if (item.stackable) {
-        if (!exists) {
-            if (usedSlots + 1 > capacity_) {
-                return 0;
-            }
-            items_.emplace(item.id, StoredItem(item, quantity));
-            return quantity;
-        } else {
-            it->second.quantity += quantity;
-            return quantity;
-        }
-    } else {
-        const std::size_t freeSlots =
-            (capacity_ > usedSlots) ? (capacity_ - usedSlots) : 0;
-        const std::uint32_t canAdd = static_cast<std::uint32_t>(
-            std::min<std::size_t>(freeSlots, quantity)
+        auto it = std::find_if(
+            items_.begin(), items_.end(),
+            [&](const StoredItem& si) { return si.item.id == item.id; }
         );
-        if (canAdd == 0) {
-            return 0;
+
+        if (it != items_.end()) {
+            it->quantity += quantity;
+            return quantity;
         }
-        if (!exists) {
-            items_.emplace(item.id, StoredItem(item, canAdd));
-        } else {
-            it->second.quantity += canAdd;
-        }
-        return canAdd;
     }
+
+    if (usedSlots + 1 > capacity_) {
+        return 0;
+    }
+
+    items_.emplace_back(item, quantity);
+    return quantity;
 }
 
 std::uint32_t
@@ -64,51 +52,74 @@ Inventory::removeItem(const std::string& id, std::uint32_t quantity) {
     if (quantity == 0) {
         return 0;
     }
-    const auto it = items_.find(id);
+
+    auto it =
+        std::find_if(items_.begin(), items_.end(), [&](const StoredItem& si) {
+            return si.item.id == id;
+        });
+
     if (it == items_.end()) {
         return 0;
     }
-    const std::uint32_t removed =
-        std::min<uint32_t>(it->second.quantity, quantity);
-    it->second.quantity -= removed;
-    if (it->second.quantity == 0) {
+
+    const std::uint32_t removed = std::min<uint32_t>(it->quantity, quantity);
+
+    it->quantity -= removed;
+
+    if (it->quantity == 0) {
         items_.erase(it);
+
+        // Safety check: if we erased the slot we currently have selected,
+        // clamp selection to valid range
+        if (selectedSlotIndex >= items_.size() && !items_.empty()) {
+            selectedSlotIndex = items_.size() - 1;
+        } else if (items_.empty()) {
+            selectedSlotIndex = 0;
+        }
     }
+
     return removed;
 }
 
 bool Inventory::hasItem(const std::string& id) const {
-    return items_.find(id) != items_.end();
+    auto it =
+        std::find_if(items_.begin(), items_.end(), [&](const StoredItem& si) {
+            return si.item.id == id;
+        });
+    return it != items_.end();
 }
 
 std::uint32_t Inventory::getQuantity(const std::string& id) const {
-    auto it = items_.find(id);
-    return (it == items_.end()) ? 0u : it->second.quantity;
+    auto it =
+        std::find_if(items_.begin(), items_.end(), [&](const StoredItem& si) {
+            return si.item.id == id;
+        });
+
+    return (it == items_.end()) ? 0u : it->quantity;
 }
 
 std::size_t Inventory::slotsUsed() const {
-    return slotsUsedUnlocked();
+    return items_.size();
 }
 
-std::vector<StoredItem> Inventory::listItems() const {
-    std::vector<StoredItem> out;
-    out.reserve(items_.size());
-    for (const auto& [fst, snd] : items_) {
-        out.push_back(snd);
-    }
-    return out;
+const std::vector<StoredItem>& Inventory::listItems() const {
+    return items_;
 }
 
 void Inventory::loadState(InventoryState& state) {
     items_.clear();
+    items_.reserve(state.items.size()); // Optimization
     for (auto& itemState : state.items) {
-        Item item(itemState.id, idToString[std::stoi(itemState.id)]);
-        items_.emplace(item.id, StoredItem(item, itemState.quantity));
+        // Warning: map lookups like idToString[...] can throw if key missing
+        // safely handled via .at() or ensuring data integrity
+        Item item(itemState.id, idToString.at(std::stoi(itemState.id)));
+        items_.emplace_back(item, itemState.quantity);
     }
 }
 
 void Inventory::clear() {
     items_.clear();
+    selectedSlotIndex = 0;
 }
 
 void Inventory::setCapacity(std::size_t cap) {
@@ -117,18 +128,6 @@ void Inventory::setCapacity(std::size_t cap) {
 
 std::size_t Inventory::capacity() const {
     return capacity_;
-}
-
-std::size_t Inventory::slotsUsedUnlocked() const {
-    std::size_t slots = 0;
-    for (const auto& kv : items_) {
-        if (kv.second.item.stackable) {
-            slots += 1;
-        } else {
-            slots += kv.second.quantity;
-        }
-    }
-    return slots;
 }
 
 void Inventory::draw(sf::RenderTarget& target) const {
@@ -162,7 +161,7 @@ void Inventory::draw(sf::RenderTarget& target) const {
 void Inventory::drawSlot(
     sf::RenderTarget& target, const float slotSize, const float padding,
     const sf::Vector2f startPos, std::size_t i, std::size_t col,
-    std::size_t row, sf::Vector2f& slotPos
+    std::size_t row, sf::Vector2f& slotPos, bool isSelected
 ) const {
     slotPos = { startPos.x + static_cast<float>(col) * (slotSize + padding),
                 startPos.y + static_cast<float>(row) * (slotSize + padding) };
@@ -170,9 +169,15 @@ void Inventory::drawSlot(
     // Slot rectangle
     sf::RectangleShape slot({ slotSize, slotSize });
     slot.setPosition(slotPos);
-    slot.setFillColor(sf::Color(40, 40, 40, 200));
-    slot.setOutlineThickness(1.f);
-    slot.setOutlineColor(sf::Color(120, 120, 120, 200));
+    if (isSelected) {
+        slot.setFillColor(sf::Color(70, 70, 70, 220));
+        slot.setOutlineThickness(2.f);
+        slot.setOutlineColor(sf::Color(200, 200, 50, 220));
+    } else {
+        slot.setFillColor(sf::Color(40, 40, 40, 200));
+        slot.setOutlineThickness(1.f);
+        slot.setOutlineColor(sf::Color(120, 120, 120, 200));
+    }
     target.draw(slot);
 }
 
@@ -246,8 +251,12 @@ void Inventory::drawItems(
 
         sf::Vector2f slotPos;
         StoredItem& st = vec[i];
+        bool isSelected = (i == this->selectedSlotIndex);
 
-        drawSlot(target, slotSize, padding, startPos, i, col, row, slotPos);
+        drawSlot(
+            target, slotSize, padding, startPos, i, col, row, slotPos,
+            isSelected
+        );
         drawItemName(target, slotSize, slotPos, st);
         drawItemQuantity(target, slotSize, slotPos, st);
         drawItemSprite(target, tileManager, slotSize, slotPos, st);
@@ -259,11 +268,7 @@ void Inventory::displayInventory(
 ) const {
 
     // Convert unordered_map to vector for display order
-    std::vector<StoredItem> vec;
-    vec.reserve(items_.size());
-    for (const auto& p : items_) {
-        vec.push_back(p.second);
-    }
+    const auto& vec = items_;
 
     const std::size_t columns = 8;
     const float slotSize = 64.f;
@@ -290,4 +295,45 @@ void Inventory::displayInventory(
         target, tileManager, vec, columns, slotSize, padding, itemCount,
         startPos
     );
+}
+
+void Inventory::selectNext() {
+    if (items_.empty())
+        return;
+    selectedSlotIndex++;
+    if (selectedSlotIndex >= items_.size()) {
+        selectedSlotIndex = 0; // Wrap to start
+    }
+}
+
+void Inventory::selectSlot(std::size_t index) {
+    if (items_.empty())
+        return;
+    selectedSlotIndex = index;
+    if (selectedSlotIndex >= items_.size()) {
+        selectedSlotIndex = 0; // Wrap to start
+    }
+}
+
+void Inventory::selectPrevious() {
+    if (items_.empty())
+        return;
+    if (selectedSlotIndex == 0) {
+        selectedSlotIndex = items_.size() - 1; // Wrap to end
+    } else {
+        selectedSlotIndex--;
+    }
+}
+
+int Inventory::getSelectedSlotIndex() const {
+    return static_cast<int>(selectedSlotIndex);
+}
+
+std::string Inventory::getSelectedItemId() const {
+    try {
+        auto item = listItems().at(getSelectedSlotIndex());
+        return item.item.id;
+    } catch (const std::out_of_range& e) {
+        return "";
+    }
 }

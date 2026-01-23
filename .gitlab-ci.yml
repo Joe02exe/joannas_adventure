@@ -35,7 +35,8 @@ default:
         libflac-dev \
         libvorbis-dev \
         libgl1-mesa-dev \
-        libegl1-mesa-dev
+        libegl1-mesa-dev \
+        xvfb
 
 # --- Setup vcpkg and dependencies ---
 setup:
@@ -95,7 +96,7 @@ test:
   stage: test
   script:
     - cd $BUILD_DIR
-    - ctest --output-on-failure || echo "No tests found"
+    - xvfb-run ctest -V --output-on-failure
   needs:
     - job: build
       artifacts: true

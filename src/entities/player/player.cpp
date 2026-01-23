@@ -59,7 +59,8 @@ void Player::update(
             if (currentState == State::Counter) {
                 switchState(State::Idle);
                 state = State::Idle; // Update external state
-                std::cout << "Player finished counter animation, switching to Idle.\n";
+                std::cout << "Player finished counter animation, switching to "
+                             "Idle.\n";
             }
         } else {
             currentFrame =
@@ -107,8 +108,6 @@ void Player::displayHealthBar(
 ) const {
     auto heartIcon = tileManager.getTextureById(3052);
     const auto size = target.getView().getSize();
-    // const auto center = target.getView().getCenter();
-    // const sf::Vector2f startPos(-300.f, 280.f);
     const sf::Vector2f startPos(
         -size.x / 2 + heartIcon.getLocalBounds().size.x,
         -size.y / 2 + heartIcon.getLocalBounds().size.y
@@ -119,4 +118,30 @@ void Player::displayHealthBar(
         heartIcon.setScale({ 3.f, 3.f });
         target.draw(heartIcon);
     }
+}
+
+bool Player::applyItem(const std::string& itemId) {
+    if (itemId == "1330") {
+        health += 5;
+        inventory.removeItem(itemId, 1);
+        return true;
+    }
+    if (itemId == "703") {
+        for (auto& item : attacks) {
+            if (item.name == "Attack") {
+                item.damage += 5;
+            }
+        }
+        inventory.removeItem(itemId, 1);
+        return true;
+    }
+    return false;
+}
+
+void Player::setHealth(const int newHealth) {
+    if (newHealth < 0) {
+        this->health = 0;
+        return;
+    }
+    this->health = std::min(newHealth, maxHealth);
 }
