@@ -25,7 +25,8 @@ void Game::run() {
     WindowManager windowManager(900, 900, "Joanna's Adventure");
 
     AudioManager audioManager;
-    //audioManager.set_current_music(MusicId::Overworld);
+    MusicId currentMusicId = MusicId::Overworld;
+    audioManager.set_current_music(currentMusicId);
 
     sf::RenderWindow& window = windowManager.getWindow();
     Controller controller(windowManager, audioManager);
@@ -80,6 +81,12 @@ void Game::run() {
     CombatSystem combatSystem;
     GameStatus gameStatus = GameStatus::Overworld;
 
+    const auto getRegionMusic = [](const sf::Vector2f& pos) -> MusicId {
+        if (pos.x > 540.f) return MusicId::Underworld;
+        if (pos.y < 215.f) return MusicId::Beach;
+        return MusicId::Overworld;
+    };
+
     PostProcessing postProc(900, 900);
     while (window.isOpen()) {
 
@@ -108,6 +115,17 @@ void Game::run() {
         float dt = clock.restart().asSeconds();
         if (dt <= 0.0f) {
             dt = 0.0001f;
+        }
+
+        MusicId targetMusic = MusicId::Overworld;
+        if (gameStatus == GameStatus::Combat) {
+            targetMusic = MusicId::Combat;
+        } else {
+            targetMusic = getRegionMusic(controller.getPlayer().getPosition());
+        }
+        if (targetMusic != currentMusicId) {
+            currentMusicId = targetMusic;
+            audioManager.set_current_music(currentMusicId);
         }
 
         if constexpr (IMGUI_ENABLED) {

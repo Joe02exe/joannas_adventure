@@ -3,7 +3,7 @@
 #include "joanna/utils/resourcemanager.h"
 #include <SFML/Audio.hpp>
 
-AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(50.0f) {
+AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(30.0f) {
 
     auto* buffer_manager = ResourceManager<sf::SoundBuffer>::getInstance();
 
