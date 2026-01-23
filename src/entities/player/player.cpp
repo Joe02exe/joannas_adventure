@@ -140,5 +140,9 @@ bool Player::applyItem(const std::string& itemId) {
 }
 
 void Player::setHealth(const int newHealth) {
+    if (newHealth < 0) {
+        this->health = 0;
+        return;
+    }
     this->health = std::min(newHealth, maxHealth);
 }

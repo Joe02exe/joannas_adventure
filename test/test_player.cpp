@@ -77,3 +77,17 @@ TEST_F(PlayerTest, SetHealth) {
     EXPECT_EQ(player.getHealth(), 20);
 }
 
+TEST_F(PlayerTest, SetHealthInvalid) {
+    Player player(
+        "assets/player/main/idle.png",
+        "assets/player/main/walk.png",
+        "assets/player/main/run.png",
+        {0.f, 0.f}
+    );
+
+    EXPECT_EQ(player.getHealth(), 20);
+
+    player.setHealth(-1);
+
+    EXPECT_EQ(player.getHealth(), 0);
+}
