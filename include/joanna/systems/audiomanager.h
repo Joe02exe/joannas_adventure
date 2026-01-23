@@ -15,7 +15,7 @@ enum class SfxId : std::uint8_t {
     // These are not all SFX. More in assets/sfx folder.
 };
 
-enum class MusicId : std::uint8_t { Overworld, Underworld, Beach };
+enum class MusicId : std::uint8_t { Overworld, Underworld, Beach, Combat };
 
 class AudioManager {
   public:
