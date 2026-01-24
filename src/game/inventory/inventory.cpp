@@ -314,6 +314,9 @@ void Inventory::selectNext() {
     if (items_.empty())
         return;
     selectedSlotIndex++;
+    if (selectedSlotIndex >= items_.size()) {
+        selectedSlotIndex = 0;
+    }
     checkInventoryInvisibleBounds();
 }
 
@@ -321,6 +324,9 @@ void Inventory::selectSlot(std::size_t index) {
     if (items_.empty())
         return;
     selectedSlotIndex = index;
+    if (selectedSlotIndex >= items_.size()) {
+        selectedSlotIndex = 0;
+    }
     checkInventoryInvisibleBounds();
 }
 
