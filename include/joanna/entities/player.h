@@ -3,6 +3,7 @@
 #include "./entity.h"
 #include "./entityutils.h"
 #include "./inventory.h"
+#include "./stats.h"
 #include "joanna/core/combattypes.h"
 #include "joanna/systems/audiomanager.h"
 #include "joanna/world/tilemanager.h"
@@ -38,6 +39,10 @@ class Player: public Entity {
         return inventory;
     }
 
+    Stats& getStats() {
+        return stats;
+    }
+
     bool hasInteraction(const std::string& id) const {
         return visitedInteractions.find(id) != visitedInteractions.end();
     }
@@ -50,6 +55,7 @@ class Player: public Entity {
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
     Inventory inventory = Inventory(20);
+    Stats stats = Stats(10,10);
     std::vector<Attack> attacks;
 
     float frameTimer = 0.f;

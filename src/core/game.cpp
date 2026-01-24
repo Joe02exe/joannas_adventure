@@ -26,7 +26,7 @@ void Game::run() {
 
     AudioManager audioManager;
     MusicId currentMusicId = MusicId::Overworld;
-    audioManager.set_current_music(currentMusicId);
+    //audioManager.set_current_music(currentMusicId);
 
     sf::RenderWindow& window = windowManager.getWindow();
     Controller controller(windowManager, audioManager);
@@ -242,6 +242,10 @@ void Game::run() {
                     }
                     controller.getPlayer().displayHealthBar(
                         target, tileManager
+                    );
+                    controller.getPlayer().getStats().draw(
+                        target, 
+                        fontRenderer.getFont()
                     );
                 },
                 nullptr
