@@ -27,10 +27,14 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
     }
     const std::size_t usedSlots = items_.size();
 
+    auto name = mapGidToName()[std::stoi(item.id)];
+
+    auto item_new = Item(item.id, name, item.stackable);
+
     if (item.stackable) {
         auto it = std::find_if(
             items_.begin(), items_.end(),
-            [&](const StoredItem& si) { return si.item.id == item.id; }
+            [&](const StoredItem& si) { return si.item.id == item_new.id; }
         );
 
         if (it != items_.end()) {
@@ -43,16 +47,18 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
         return 0;
     }
 
-    auto it =
-        std::find_if(items_.begin(), items_.end(), [](const StoredItem& item) {
-            return item.item.name == "invisible";
-        });
+    auto it = std::find_if(
+        items_.begin(), items_.end(),
+        [](const StoredItem& itemLambda) {
+            return itemLambda.item.name == "invisible";
+        }
+    );
 
     if (it != items_.end()) {
-        items_.insert(it, StoredItem(item, quantity));
+        items_.insert(it, StoredItem(item_new, quantity));
         return quantity;
     }
-    items_.emplace_back(item, quantity);
+    items_.emplace_back(item_new, quantity);
     return quantity;
 }
 
