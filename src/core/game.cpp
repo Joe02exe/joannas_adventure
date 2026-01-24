@@ -245,7 +245,9 @@ void Game::run() {
                     );
                     controller.getPlayer().getStats().draw(
                         target, 
-                        fontRenderer.getFont()
+                        fontRenderer.getFont(),
+                        controller.getPlayer().getCurrentExp(),
+                        controller.getPlayer().getExpToNextLevel()
                     );
                 },
                 nullptr

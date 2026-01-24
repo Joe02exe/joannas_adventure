@@ -51,6 +51,12 @@ class Player: public Entity {
         visitedInteractions.insert(id);
     }
 
+    void gainExp(int amount);
+    void levelUp();
+    int getLevel() const { return level; }
+    int getCurrentExp() const { return currentExp; }
+    int getExpToNextLevel() const { return expToNextLevel; }
+
   private:
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
@@ -62,6 +68,10 @@ class Player: public Entity {
     int currentFrame = 0;
     int health;
     int maxHealth;
+    int level = 1;
+    int currentExp = 0;
+    int expToNextLevel = 10;
+
 
     void switchState(State newState);
     void applyFrame();

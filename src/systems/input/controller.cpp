@@ -110,6 +110,7 @@ bool Controller::getInput(
             if (dx * dx + dy * dy <= 16.f * 16.f) {
                 if (tileManager.removeObjectById(static_cast<int>(item.id))) {
                     auto map = player.getInventory().mapGidToName();
+                    player.gainExp(5);
                     audioManager.play_sfx(SfxId::Collect);
                     player.addItemToInventory(Item(
                         std::to_string(item_gid),

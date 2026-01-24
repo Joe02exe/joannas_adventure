@@ -9,5 +9,5 @@ class Stats {
         int attack;
         int defense;
 
-        void draw(sf::RenderTarget& target, const sf::Font& font) const;
+        void draw(sf::RenderTarget& target, const sf::Font& font, int currentExp, int expToNextLevel) const;
 };
