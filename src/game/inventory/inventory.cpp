@@ -51,10 +51,9 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
     if (it != items_.end()) {
         items_.insert(it, StoredItem(item, quantity));
         return quantity;
-    } else {
-        items_.emplace_back(item, quantity);
-        return quantity;
     }
+    items_.emplace_back(item, quantity);
+    return quantity;
 }
 
 std::uint32_t
@@ -315,25 +314,25 @@ void Inventory::selectNext() {
     if (items_.empty())
         return;
     selectedSlotIndex++;
-    if (selectedSlotIndex >= items_.size()) {
-        selectedSlotIndex = 0; // Wrap to start
-    }
+    checkInventoryInvisibleBounds();
 }
 
 void Inventory::selectSlot(std::size_t index) {
     if (items_.empty())
         return;
     selectedSlotIndex = index;
-    if (selectedSlotIndex >= items_.size()) {
-        selectedSlotIndex = 0; // Wrap to start
-    }
+    checkInventoryInvisibleBounds();
 }
 
 void Inventory::selectPrevious() {
     if (items_.empty())
         return;
     if (selectedSlotIndex == 0) {
-        selectedSlotIndex = items_.size() - 1; // Wrap to end
+        const auto it = std::find_if(
+            items_.begin(), items_.end(),
+            [](const StoredItem& item) { return item.item.name == "invisible"; }
+        );
+        selectedSlotIndex = std::distance(items_.begin(), it) - 1;
     } else {
         selectedSlotIndex--;
     }
@@ -349,5 +348,20 @@ std::string Inventory::getSelectedItemId() const {
         return item.item.id;
     } catch (const std::out_of_range& e) {
         return "";
+    }
+}
+
+void Inventory::checkInventoryInvisibleBounds() {
+    const auto it =
+        std::find_if(items_.begin(), items_.end(), [](const StoredItem& item) {
+            return item.item.name == "invisible";
+        });
+    if (it != items_.end()) {
+        if (const std::size_t index = std::distance(items_.begin(), it);
+            selectedSlotIndex >= index) {
+            if (selectedSlotIndex >= index) {
+                selectedSlotIndex = 0;
+            }
+        }
     }
 }

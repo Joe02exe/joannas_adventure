@@ -101,7 +101,7 @@ class Inventory {
     }
 
   private:
-    // Internal helpers assume mutex held
+    void checkInventoryInvisibleBounds();
     std::size_t selectedSlotIndex = 0;
 
     sf::Font font;
