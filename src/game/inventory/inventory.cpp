@@ -27,7 +27,12 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
     }
     const std::size_t usedSlots = items_.size();
 
-    auto name = mapGidToName()[std::stoi(item.id)];
+    auto map = mapGidToName();
+    auto iterator = map.find(std::stoi(item.id));
+    auto name = item.name;
+    if (iterator != map.end()) {
+        name = iterator->second;
+    }
 
     auto item_new = Item(item.id, name, item.stackable);
 
