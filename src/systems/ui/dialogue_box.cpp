@@ -34,15 +34,12 @@ void DialogueBox::addDialogueLine(const std::string& message) {
 }
 
 void DialogueBox::show() {
-    // Only start if we have messages and aren't already open
     if (!dialogueQueue.empty() && !active) {
         active = true;
         
-        // IMPORTANT: Clear this so nextLine() knows we are ready for a new message
         currentDialogue.clear();
         visibleCharCount = 0;
         
-        // Let nextLine handle fetching and WRAPPING the text
         nextLine();
     }
 }
