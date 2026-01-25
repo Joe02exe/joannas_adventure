@@ -13,7 +13,8 @@
         {
             "priority": 2,
             "text": [
-                "Thanks for the carrots!"
+                "Thanks for the carrots!",
+                "Take this key."
             ],
             "req": {
                 "type": "ITEM_REMOVE",
@@ -25,6 +26,17 @@
                 "name": "key",
                 "amount": 1
             }
+        },
+        {
+            "priority": 3,
+            "text": [
+                "Thanks for your help again!"
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "627",
+                "amount": 1
+            }
         }
     ],
     "Pirat": [
@@ -33,7 +45,7 @@
             "text": [
                 "The skeletons have stolen my treasure!",
                 "Bring it back to me...",
-                "Arrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+                "Arrrrrrrrrrrrrrrrrrrrrrrr"
             ],
             "reward": {
                 "id": "3056",
@@ -50,8 +62,21 @@
             ]
         },
         {   
-            "id": "Bring key",
             "priority": 2,
+            "text": [
+                "Nice key!",
+                "This surely could have opened a gate...",
+                "... if the devs would have put here one."
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "627",
+                "amount": 1
+            }
+        },
+        {   
+            "id": "Bring key",
+            "priority": 3,
             "text": [
                 "KEY!!!"
             ],
