@@ -27,10 +27,19 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
     }
     const std::size_t usedSlots = items_.size();
 
+    auto map = mapGidToName();
+    auto iterator = map.find(std::stoi(item.id));
+    auto name = item.name;
+    if (iterator != map.end()) {
+        name = iterator->second;
+    }
+
+    auto item_new = Item(item.id, name, item.stackable);
+
     if (item.stackable) {
         auto it = std::find_if(
             items_.begin(), items_.end(),
-            [&](const StoredItem& si) { return si.item.id == item.id; }
+            [&](const StoredItem& si) { return si.item.id == item_new.id; }
         );
 
         if (it != items_.end()) {
@@ -43,7 +52,18 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
         return 0;
     }
 
-    items_.emplace_back(item, quantity);
+    auto it = std::find_if(
+        items_.begin(), items_.end(),
+        [](const StoredItem& itemLambda) {
+            return itemLambda.item.name == "invisible";
+        }
+    );
+
+    if (it != items_.end()) {
+        items_.insert(it, StoredItem(item_new, quantity));
+        return quantity;
+    }
+    items_.emplace_back(item_new, quantity);
     return quantity;
 }
 
@@ -249,6 +269,10 @@ void Inventory::drawItems(
         const std::size_t col = i % columns;
         const std::size_t row = i / columns;
 
+        if (vec.at(i).item.name == "invisible") {
+            continue;
+        }
+
         sf::Vector2f slotPos;
         StoredItem& st = vec[i];
         bool isSelected = (i == this->selectedSlotIndex);
@@ -302,8 +326,9 @@ void Inventory::selectNext() {
         return;
     selectedSlotIndex++;
     if (selectedSlotIndex >= items_.size()) {
-        selectedSlotIndex = 0; // Wrap to start
+        selectedSlotIndex = 0;
     }
+    checkInventoryInvisibleBounds();
 }
 
 void Inventory::selectSlot(std::size_t index) {
@@ -311,15 +336,20 @@ void Inventory::selectSlot(std::size_t index) {
         return;
     selectedSlotIndex = index;
     if (selectedSlotIndex >= items_.size()) {
-        selectedSlotIndex = 0; // Wrap to start
+        selectedSlotIndex = 0;
     }
+    checkInventoryInvisibleBounds();
 }
 
 void Inventory::selectPrevious() {
     if (items_.empty())
         return;
     if (selectedSlotIndex == 0) {
-        selectedSlotIndex = items_.size() - 1; // Wrap to end
+        const auto it = std::find_if(
+            items_.begin(), items_.end(),
+            [](const StoredItem& item) { return item.item.name == "invisible"; }
+        );
+        selectedSlotIndex = std::distance(items_.begin(), it) - 1;
     } else {
         selectedSlotIndex--;
     }
@@ -335,5 +365,20 @@ std::string Inventory::getSelectedItemId() const {
         return item.item.id;
     } catch (const std::out_of_range& e) {
         return "";
+    }
+}
+
+void Inventory::checkInventoryInvisibleBounds() {
+    const auto it =
+        std::find_if(items_.begin(), items_.end(), [](const StoredItem& item) {
+            return item.item.name == "invisible";
+        });
+    if (it != items_.end()) {
+        if (const std::size_t index = std::distance(items_.begin(), it);
+            selectedSlotIndex >= index) {
+            if (selectedSlotIndex >= index) {
+                selectedSlotIndex = 0;
+            }
+        }
     }
 }
