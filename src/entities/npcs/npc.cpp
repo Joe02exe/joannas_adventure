@@ -22,6 +22,15 @@ NPC::NPC(
     this->uniqueSpriteId = npcIdlePath;
     animations[State::Idle] = Animation(npcIdlePath, { 96, 64 }, 8);
     animations[State::Walking] = Animation(npcWalkingPath, { 96, 64 }, 8);
+    auto rawList = jsonData[dialogId];
+    
+    std::sort(rawList.begin(), rawList.end(), 
+        [](const json& a, const json& b) {
+            return a["priority"] > b["priority"];
+        }
+    );
+
+    this->sortedDialogue = rawList;
 }
 
 void NPC::setDialogue(const std::vector<std::string>& messages) {
@@ -30,53 +39,57 @@ void NPC::setDialogue(const std::vector<std::string>& messages) {
     }
 }
 
+std::string createKey(const nlohmann::json& entry, const Player& player, const std::string& uniqueSpriteId) {
+    std::string result = "";
+    if (entry.contains("id")) {
+        result = uniqueSpriteId + "_" + std::string(entry["id"]); 
+        if (player.hasInteraction(result)) {
+            result = "alreadySeen";
+        }
+    }
+    return result;
+}
+
+bool checkRequirements(nlohmann::json& entry, Player& player) {
+    bool conditionMet = true;
+    if(entry.contains("req") && !entry["req"].is_null()) {
+        json req = entry["req"];
+        std::string type = req["type"];
+        if (type.find("ITEM") != std::string::npos) {
+            std::string itemId = req["id"];
+            int amount = req["amount"];
+            if (player.getInventory().getQuantity(itemId) < amount) {
+                conditionMet = false;
+            }
+            else if(type == "ITEM_REMOVE") {
+                player.getInventory().removeItem(itemId, amount);
+            }
+
+        }
+    }
+
+    return conditionMet;
+}
+
 void NPC::interact(Player& player) {
-    auto& inventory = player.getInventory();
-    auto dialogList = jsonData[dialogId];
-    std::sort(dialogList.begin(), dialogList.end(), 
-        [](const nlohmann::json& a, const nlohmann::json& b) {
-            return a["priority"] > b["priority"];
+    for(auto& entry : sortedDialogue){
+        std::string uniqueKey = createKey(entry, player, this->uniqueSpriteId);
+        if (uniqueKey == "alreadySeen") {
+            continue;
         }
-    );
 
-    for(auto& entry : dialogList){
-        bool conditionMet = true;
-        std::string uniqueKey = "";
-        if (entry.contains("id")) {
-            uniqueKey = this->uniqueSpriteId + "_" + std::string(entry["id"]); 
-            if (player.hasInteraction(uniqueKey)) {
-                continue;
-            }
-        }
-        if(entry.contains("req") && !entry["req"].is_null()) {
-            json req = entry["req"];
-            std::string type = req["type"];
-            auto moves = entry["move"];
-            if (type.find("ITEM") != std::string::npos) {
-                std::string itemId = req["id"];
-                int amount = req["amount"];
-                if (inventory.getQuantity(itemId) < amount) {
-                    conditionMet = false;
-                }
-                else if(type == "ITEM_REMOVE") {
-                    inventory.removeItem(itemId, amount);
-                }
+        bool conditionMet = checkRequirements(entry, player);
 
-            }
-        }
-        
-        if(conditionMet && !entry["reward"].is_null()){
-            json reward = entry["reward"];
-            std::string rewardId = reward["id"];
-            std::string rewardName = reward["name"];
-            pendingReward = Item(rewardId, rewardName);
-        }
         if(conditionMet) {
             dialogueBox->setDialogue(entry["text"], this);
             dialogueBox->show();
             move(entry["move"]);
             if (!uniqueKey.empty()) {
                 player.addInteraction(uniqueKey);
+            }
+            if(!entry["reward"].is_null()) {
+                json reward = entry["reward"];
+                pendingReward = Item(reward["id"], reward["name"]);
             }
             return;
         }

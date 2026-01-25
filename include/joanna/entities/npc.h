@@ -52,4 +52,5 @@ class NPC: public Interactable {
     std::shared_ptr<DialogueBox> dialogueBox;
     std::string dialogId;
     std::optional<Item> pendingReward;
+    std::vector<nlohmann::json> sortedDialogue;
 };
