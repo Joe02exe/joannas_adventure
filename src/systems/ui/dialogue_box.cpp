@@ -19,6 +19,8 @@ DialogueBox::DialogueBox(
     //}
 }
 
+static const float TEXT_MAX_WIDTH = 240.0f - (15.0f * 2);
+
 void DialogueBox::setDialogue(const std::vector<std::string>& messages, const void* owner) {
     clear();
     this->owner = owner;
@@ -32,14 +34,17 @@ void DialogueBox::addDialogueLine(const std::string& message) {
 }
 
 void DialogueBox::show() {
+    // Only start if we have messages and aren't already open
     if (!dialogueQueue.empty() && !active) {
         active = true;
-        currentDialogue = dialogueQueue.front();
-        dialogueQueue.pop();
+        
+        // IMPORTANT: Clear this so nextLine() knows we are ready for a new message
+        currentDialogue.clear();
         visibleCharCount = 0;
-        displayTime = 0.0f;
+        
+        // Let nextLine handle fetching and WRAPPING the text
+        nextLine();
     }
-    nextLine();
 }
 
 void DialogueBox::hide() {
@@ -56,17 +61,19 @@ void DialogueBox::clear() {
 }
 
 void DialogueBox::nextLine() {
-    if (isTyping()) {
-        // If still typing, show full line
+    if (active && !currentDialogue.empty() && visibleCharCount < currentDialogue.length()) {
         skipTypewriter();
-    } else if (!dialogueQueue.empty()) {
-        // Move to next line
-        currentDialogue = dialogueQueue.front();
+    } 
+    else if (!dialogueQueue.empty()) {
+        std::string rawMessage = dialogueQueue.front();
         dialogueQueue.pop();
+        
+        currentDialogue = wrapText(rawMessage, TEXT_MAX_WIDTH);
+
         visibleCharCount = 0;
         displayTime = 0.0f;
-    } else {
-        // No more lines, hide dialogue
+    } 
+    else {
         hide();
     }
 }
@@ -121,8 +128,11 @@ std::string DialogueBox::wrapText(const std::string& text, float maxWidth) {
 }
 
 void DialogueBox::updateTypewriter(float dt) {
+    if (!active) return;
+
     displayTime += dt;
-    size_t targetCharCount = static_cast<size_t>(displayTime / 0.05f);
+    
+    size_t targetCharCount = static_cast<size_t>(displayTime / 0.10f);
     
     if (targetCharCount > currentDialogue.length()) {
         visibleCharCount = currentDialogue.length();
@@ -130,9 +140,7 @@ void DialogueBox::updateTypewriter(float dt) {
         visibleCharCount = targetCharCount;
     }
     
-    std::string rawVisibleText = currentDialogue.substr(0, visibleCharCount);
-    float maxWidth = 240.0f - (15.0f * 2);
-    visibleText = wrapText(rawVisibleText, maxWidth);
+    visibleText = currentDialogue.substr(0, visibleCharCount);
 }
 
 void DialogueBox::updateBubbleGeometry(const sf::Vector2f& targetPosition) {
