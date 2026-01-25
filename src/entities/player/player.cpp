@@ -145,3 +145,22 @@ void Player::setHealth(const int newHealth) {
     }
     this->health = std::min(newHealth, maxHealth);
 }
+
+void Player::gainExp(int amount) {
+    currentExp += amount;
+
+    while (currentExp >= expToNextLevel) {
+        levelUp();
+    }
+}
+
+void Player::levelUp() {
+    currentExp -= expToNextLevel;
+    
+    level++;
+
+    expToNextLevel = static_cast<int>(expToNextLevel * 1.2f);
+
+    stats.attack += 2;
+    stats.defense += 1;
+}
