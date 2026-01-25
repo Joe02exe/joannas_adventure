@@ -30,7 +30,7 @@
         {
             "priority": 3,
             "text": [
-                "Thanks for your help again!"
+                "Thanks again for your help!"
             ],
             "req": {
                 "type": "ITEM",
@@ -66,7 +66,7 @@
             "text": [
                 "Nice key!",
                 "This surely could have opened a gate...",
-                "... if the devs would have put here one."
+                "... if the devs would have put one here."
             ],
             "req": {
                 "type": "ITEM",
