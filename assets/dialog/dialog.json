@@ -44,8 +44,8 @@
             "priority": 1,
             "text": [
                 "Hi Joanna... :(",
-                "The desert took my crew... a skeleton did the rest :(",
-                "I barely survived, but I learned how to strike back and survived",
+                "The desert took my crew... a skeleton did the rest...",
+                "I barely survived, but I learned how to strike back and survived...",
                 "Stay sharp... it attacks when you least expect it..."
             ],
             "reward": {
@@ -57,8 +57,8 @@
         {
             "priority": 2,
             "text": [
-                "Arrr! You survived!",
-                "Now you can counter the attack of your enemies. Use it well."
+                "Arrr! You survived...",
+                "Now you can counter the attack of your enemies..."
             ],
             "req": {
                 "type": "ITEM",

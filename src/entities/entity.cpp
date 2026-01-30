@@ -1,5 +1,4 @@
 #include "joanna/entities/entity.h"
-#include "joanna/utils/resourcemanager.h"
 
 Entity::Entity(
     const sf::FloatRect& box, const sf::Texture& texture,
@@ -39,28 +38,28 @@ std::optional<sf::FloatRect> Entity::getCollisionBox() const {
 }
 
 std::optional<sf::Vector2f> Entity::getCollisionBoxCenter() const {
-    if (!collisionBox)
+    if (!collisionBox) {
         return std::nullopt;
+    }
 
     const auto& cb = *collisionBox;
-    return sf::Vector2f{ cb.position.x + cb.size.x / 2,
-                         cb.position.y + cb.size.y / 2 };
+    return sf::Vector2f{ cb.position.x + (cb.size.x / 2),
+                         cb.position.y + (cb.size.y / 2) };
 }
 
 sf::Vector2f Entity::getPosition() const {
     const auto& boundingBox = getBoundingBox();
-    return { boundingBox.position.x + boundingBox.size.x / 2,
-             boundingBox.position.y + boundingBox.size.y / 2 };
+    return { boundingBox.position.x + (boundingBox.size.x / 2),
+             boundingBox.position.y + (boundingBox.size.y / 2) };
 }
 
 void Entity::setPosition(const sf::Vector2f& position) {
-    // Logger::info(
-    //     "Setting entity {} position to ({}, {})", id, position.x, position.y
-    // );
+
     const sf::Vector2f delta = position - getPosition();
     sprite->setPosition(getBoundingBox().position + delta);
-    if (!collisionBox) // if entity has no collision, we don't want to set it
+    if (!collisionBox) { // if entity has no collision, we don't want to set it
         return;
+    }
     this->collisionBox =
         sf::FloatRect({ collisionBox->position + delta }, collisionBox->size);
 }
@@ -71,7 +70,7 @@ sf::FloatRect Entity::getBoundingBox() const {
 
 void Entity::setFacing(Direction newDirection) {
     this->direction = newDirection;
-    // Re-apply current frame to update flipping
+    // re-apply current frame to update flipping
     setFrame(currentTextureRect);
 }
 
@@ -82,7 +81,7 @@ Direction Entity::getFacing() const {
 void Entity::setScale(const sf::Vector2f& scale) {
     currentScale = scale;
     sprite->setScale(scale);
-    // Re-apply facing to update scale and origin
+    // re-apply facing to update scale and origin
     setFacing(getFacing());
 }
 
