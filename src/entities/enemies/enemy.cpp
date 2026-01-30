@@ -131,7 +131,7 @@ int Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
     const sf::Vector2f myPos = getPosition();
     const auto distToPlayer = getDistance(playerPos, myPos);
 
-    if (distToPlayer < 10.f) {
+    if (shouldTriggerCombat(distToPlayer)) {
         return COMBAT_TRIGGERED;
     }
 
@@ -206,6 +206,14 @@ State Enemy::handleIdleBehavior(float dt, const sf::Vector2f& myPos) {
     }
 
     return State::Idle;
+}
+
+float Enemy::getDistance(const sf::Vector2f& p1, const sf::Vector2f& p2) {
+    return static_cast<float>(std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2)));
+}
+
+bool Enemy::shouldTriggerCombat(float distToPlayer) {
+    return distToPlayer < 10.f;
 }
 
 State Enemy::handlePursuingBehavior(
