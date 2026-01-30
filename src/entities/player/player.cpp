@@ -16,20 +16,22 @@ Player::Player(
           Direction::Right
       ),
       health(20), maxHealth(20), inventory(20) {
-    animations[State::Idle] = Animation(idlePath, { 96, 64 }, 9);
-    animations[State::Walking] = Animation(walkPath, { 96, 64 }, 8);
-    animations[State::Running] = Animation(runPath, { 96, 64 }, 8);
+    this->animations[State::Idle] = Animation(idlePath, { 96, 64 }, 9);
+    this->animations[State::Walking] = Animation(walkPath, { 96, 64 }, 8);
+    this->animations[State::Running] = Animation(runPath, { 96, 64 }, 8);
 
     // Load combat animations
-    animations[State::Attack] =
+    this->animations[State::Attack] =
         Animation("assets/player/main/attack.png", { 96, 64 }, 10);
-    animations[State::Roll] =
+    this->animations[State::Roll] =
         Animation("assets/player/main/roll.png", { 96, 64 }, 10);
-    animations[State::Hurt] =
+    this->animations[State::Hurt] =
         Animation("assets/player/main/hurt.png", { 96, 64 }, 8);
-    animations[State::Dead] =
+    this->animations[State::Dead] =
         Animation("assets/player/main/dead.png", { 96, 64 }, 13);
-    animations[State::Counter] =
+    this->animations[State::Mining] =
+        Animation("assets/player/main/mining.png", { 96, 64 }, 10);
+    this->animations[State::Counter] =
         Animation("assets/player/main/punch.png", { 96, 64 }, 3);
 
     // Initialize attacks
@@ -43,63 +45,63 @@ void Player::update(
     setFacing(facingLeft ? Direction::Left : Direction::Right);
     switchState(state);
 
-    frameTimer += dt;
-    const auto& anim = animations[currentState];
-    if (frameTimer >= anim.frameTime) {
+    this->frameTimer += dt;
+    const auto& anim = this->animations[this->currentState];
+    if (this->frameTimer >= anim.frameTime) {
         if ((state == State::Running || state == State::Walking) &&
-            currentFrame % 4 == 0) {
+            this->currentFrame % 4 == 0) {
             pManager.play_sfx(SfxId::Footstep);
         }
 
-        frameTimer -= anim.frameTime; // keep leftover time
+        this->frameTimer -= anim.frameTime; // keep leftover time
 
-        if ((currentState == State::Dead || currentState == State::Counter) &&
-            currentFrame == anim.frames.size() - 1) {
+        if ((this->currentState == State::Dead || this->currentState == State::Counter) &&
+            this->currentFrame == anim.frames.size() - 1) {
             // Do not loop dead or counter animation
-            if (currentState == State::Counter) {
-                switchState(State::Idle);
+            if (this->currentState == State::Counter) {
+                this->switchState(State::Idle);
                 state = State::Idle; // Update external state
                 std::cout << "Player finished counter animation, switching to "
                              "Idle.\n";
             }
         } else {
-            currentFrame =
-                (currentFrame + 1) % static_cast<int>(anim.frames.size());
+            this->currentFrame =
+                (this->currentFrame + 1) % static_cast<int>(anim.frames.size());
         }
 
-        applyFrame();
+        this->applyFrame();
     }
 }
 
 void Player::applyFrame() {
-    const auto& anim = animations[currentState];
+    const auto& anim = animations[this->currentState];
     setTexture(anim.texture);
-    setFrame(anim.frames[currentFrame]);
+    setFrame(anim.frames[this->currentFrame]);
 }
 
 void Player::switchState(State newState) {
-    if (currentState != newState) {
-        currentState = newState;
-        currentFrame = 0;
-        frameTimer = 0.f;
-        applyFrame();
+    if (this->currentState != newState) {
+        this->currentState = newState;
+        this->currentFrame = 0;
+        this->frameTimer = 0.f;
+        this->applyFrame();
     }
 }
 
 void Player::draw(sf::RenderTarget& target) const {
-    render(target);
+    this->render(target);
 }
 
 void Player::addItemToInventory(
     const Item& item, const std::uint32_t quantity
 ) {
-    inventory.addItem(item, quantity);
+    this->inventory.addItem(item, quantity);
 }
 
 void Player::takeDamage(int amount) {
-    health -= amount;
-    health = std::max(health, 0);
-    std::cout << "Player took " << amount << " damage. Health: " << health
+    this->health -= amount;
+    this->health = std::max(this->health, 0);
+    std::cout << "Player took " << amount << " damage. Health: " << this->health
               << "\n";
 }
 
@@ -109,11 +111,11 @@ void Player::displayHealthBar(
     auto heartIcon = tileManager.getTextureById(3052);
     const auto size = target.getView().getSize();
     const sf::Vector2f startPos(
-        -size.x / 2 + heartIcon.getLocalBounds().size.x,
-        -size.y / 2 + heartIcon.getLocalBounds().size.y
+        (-size.x / 2) + heartIcon.getLocalBounds().size.x,
+        (-size.y / 2) + heartIcon.getLocalBounds().size.y
     );
-    for (int i = 0; i < health / 2; ++i) {
-        heartIcon.setPosition({ startPos.x + static_cast<float>(i) * 32.f,
+    for (int i = 0; i < this->health / 2; ++i) {
+        heartIcon.setPosition({ startPos.x + (static_cast<float>(i) * 32.f),
                                 startPos.y });
         heartIcon.setScale({ 3.f, 3.f });
         target.draw(heartIcon);
@@ -122,17 +124,17 @@ void Player::displayHealthBar(
 
 bool Player::applyItem(const std::string& itemId) {
     if (itemId == "1330") {
-        health += 5;
-        inventory.removeItem(itemId, 1);
+        this->health += 5;
+        this->inventory.removeItem(itemId, 1);
         return true;
     }
     if (itemId == "703") {
-        for (auto& item : attacks) {
+        for (auto& item : this->attacks) {
             if (item.name == "Attack") {
                 item.damage += 5;
             }
         }
-        inventory.removeItem(itemId, 1);
+        this->inventory.removeItem(itemId, 1);
         return true;
     }
     return false;
@@ -143,24 +145,24 @@ void Player::setHealth(const int newHealth) {
         this->health = 0;
         return;
     }
-    this->health = std::min(newHealth, maxHealth);
+    this->health = std::min(newHealth, this->maxHealth);
 }
 
 void Player::gainExp(int amount) {
-    currentExp += amount;
+    this->currentExp += amount;
 
-    while (currentExp >= expToNextLevel) {
+    while (this->currentExp >= this->expToNextLevel) {
         levelUp();
     }
 }
 
 void Player::levelUp() {
-    currentExp -= expToNextLevel;
+    this->currentExp -= this->expToNextLevel;
     
-    level++;
+    this->level++;
 
-    expToNextLevel = static_cast<int>(expToNextLevel * 1.2f);
+    this->expToNextLevel = static_cast<int>((float)this->expToNextLevel * 1.2f);
 
-    stats.attack += 2;
-    stats.defense += 1;
+    this->stats.attack += 2;
+    this->stats.defense += 1;
 }
