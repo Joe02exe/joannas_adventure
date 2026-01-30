@@ -1,11 +1,10 @@
 #include "joanna/entities/enemy.h"
 #include "joanna/entities/player.h"
-#include "joanna/world/tilemanager.h"
 #include "joanna/utils/resourcemanager.h"
+#include "joanna/world/tilemanager.h"
 
 #include <algorithm>
-#include <cstdlib>  // for rand
-#include <iostream> // for std::cout
+#include <cstdlib> // for rand
 
 Enemy::Enemy(const sf::Vector2f& startPos, EnemyType type)
     : Entity(
@@ -18,8 +17,7 @@ Enemy::Enemy(const sf::Vector2f& startPos, EnemyType type)
                   : "assets/player/enemies/skeleton/idle.png"
           ),
           // no hitbox for now
-          std::nullopt,
-          Direction::Right
+          std::nullopt, Direction::Right
       ),
       homePoint(startPos), patrolTarget(startPos), type(type) {
 
@@ -28,23 +26,37 @@ Enemy::Enemy(const sf::Vector2f& startPos, EnemyType type)
                                : "assets/player/enemies/skeleton/";
 
     if (type == EnemyType::Goblin) {
-        animations[State::Idle] = Animation(basePath + "idle.png", { 96, 64 }, 8);
-        animations[State::Walking] = Animation(basePath + "run.png", { 96, 64 }, 8);
-        animations[State::Running] = Animation(basePath + "run.png", { 96, 64 }, 8);
-        animations[State::Attack] = Animation(basePath + "attack.png", { 96, 64 }, 9);
-        animations[State::Hurt] = Animation(basePath + "hurt.png", { 96, 64 }, 8);
-        animations[State::Dead] = Animation(basePath + "dead.png", { 96, 64 }, 9);
-        
-        animations[State::Roll] = Animation(basePath + "roll.png", { 96, 64 }, 10);
-        animations[State::Mining] = Animation(basePath + "mining.png", { 96, 64 }, 10);
+        animations[State::Idle] =
+            Animation(basePath + "idle.png", { 96, 64 }, 8);
+        animations[State::Walking] =
+            Animation(basePath + "run.png", { 96, 64 }, 8);
+        animations[State::Running] =
+            Animation(basePath + "run.png", { 96, 64 }, 8);
+        animations[State::Attack] =
+            Animation(basePath + "attack.png", { 96, 64 }, 9);
+        animations[State::Hurt] =
+            Animation(basePath + "hurt.png", { 96, 64 }, 8);
+        animations[State::Dead] =
+            Animation(basePath + "dead.png", { 96, 64 }, 9);
+
+        animations[State::Roll] =
+            Animation(basePath + "roll.png", { 96, 64 }, 10);
+        animations[State::Mining] =
+            Animation(basePath + "mining.png", { 96, 64 }, 10);
     } else {
         // Skeleton
-        animations[State::Idle] = Animation(basePath + "idle.png", { 96, 64 }, 6);
-        animations[State::Walking] = Animation(basePath + "walk.png", { 96, 64 }, 8);
-        animations[State::Running] = Animation(basePath + "walk.png", { 96, 64 }, 8);
-        animations[State::Attack] = Animation(basePath + "attack.png", { 96, 64 }, 7);
-        animations[State::Hurt] = Animation(basePath + "hurt.png", { 96, 64 }, 8);
-        animations[State::Dead] = Animation(basePath + "dead.png", { 96, 64 }, 10);
+        animations[State::Idle] =
+            Animation(basePath + "idle.png", { 96, 64 }, 6);
+        animations[State::Walking] =
+            Animation(basePath + "walk.png", { 96, 64 }, 8);
+        animations[State::Running] =
+            Animation(basePath + "walk.png", { 96, 64 }, 8);
+        animations[State::Attack] =
+            Animation(basePath + "attack.png", { 96, 64 }, 7);
+        animations[State::Hurt] =
+            Animation(basePath + "hurt.png", { 96, 64 }, 8);
+        animations[State::Dead] =
+            Animation(basePath + "dead.png", { 96, 64 }, 10);
     }
 
     // Set initial texture
@@ -52,11 +64,14 @@ Enemy::Enemy(const sf::Vector2f& startPos, EnemyType type)
 
     // Initialize attacks
     if (type == EnemyType::Goblin) {
-        attacks.push_back({ "Mining", 4, State::Mining, 0.4f, 0.9f, 0.f, 130.f, 5.f, true, 0.1f, 0.43f, 130.f });
-        attacks.push_back({ "Roll", 2, State::Roll, 0.2f, 0.8f, -800.f, 85.f, -5.f, true, 0.16f, 0.23f, 280.f });
+        attacks.push_back({ "Mining", 4, State::Mining, 0.4f, 0.9f, 0.f, 130.f,
+                            5.f, true, 0.1f, 0.43f, 130.f });
+        attacks.push_back({ "Roll", 2, State::Roll, 0.2f, 0.8f, -800.f, 85.f,
+                            -5.f, true, 0.16f, 0.23f, 280.f });
     } else {
         // Skeleton attacks
-        attacks.push_back({ "Attack", 2, State::Attack, 0.32f, 0.7f, 0.f, 100.f, 5.f, true, 0.1f, 0.5f, 100.f });
+        attacks.push_back({ "Attack", 2, State::Attack, 0.32f, 0.7f, 0.f, 100.f,
+                            5.f, true, 0.1f, 0.5f, 100.f });
     }
 }
 
@@ -65,22 +80,23 @@ void Enemy::update(float dt, State state) {
         switchState(state);
     }
 
-    frameTimer += dt;
-    const auto& anim = animations[currentState];
+    this->frameTimer += dt;
+    const auto& anim = animations[this->currentState];
     // Use frameCount from animation if we had it exposed, or just size of
     // frames
-    float duration = static_cast<float>(anim.frames.size()) * Animation::frameTime;
+    float duration =
+        static_cast<float>(anim.frames.size()) * Animation::frameTime;
 
-    if (frameTimer >= Animation::frameTime) {
-        frameTimer -= Animation::frameTime;
+    if (this->frameTimer >= Animation::frameTime) {
+        this->frameTimer -= Animation::frameTime;
 
-        if (currentState == State::Dead &&
-            currentFrame == anim.frames.size() - 1) {
+        if (this->currentState == State::Dead &&
+            this->currentFrame == anim.frames.size() - 1) {
             // Do not loop dead animation
         } else {
-            currentFrame++;
-            if (currentFrame >= anim.frames.size()) {
-                currentFrame = 0;
+            this->currentFrame++;
+            if (this->currentFrame >= anim.frames.size()) {
+                this->currentFrame = 0;
             }
         }
         applyFrame();
@@ -93,9 +109,9 @@ void Enemy::draw(sf::RenderTarget& target) const {
 
 void Enemy::switchState(State newState) {
     if (currentState != newState) {
-        currentState = newState;
-        currentFrame = 0;
-        frameTimer = 0.f;
+        this->currentState = newState;
+        this->currentFrame = 0;
+        this->frameTimer = 0.f;
         applyFrame();
     }
 }
@@ -113,9 +129,7 @@ void Enemy::takeDamage(int amount) {
 int Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
     const sf::Vector2f playerPos = player.getPosition();
     const sf::Vector2f myPos = getPosition();
-    const auto distToPlayer = static_cast<float>(
-        std::sqrt(std::pow(playerPos.x - myPos.x, 2) + std::pow(playerPos.y - myPos.y, 2))
-    );
+    const auto distToPlayer = getDistance(playerPos, myPos);
 
     if (distToPlayer < 10.f) {
         return COMBAT_TRIGGERED;
@@ -128,7 +142,8 @@ int Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
     if (aiState == OverworldState::Idle) {
         nextAnimState = handleIdleBehavior(dt, myPos);
     } else if (aiState == OverworldState::Pursuing) {
-        nextAnimState = handlePursuingBehavior(dt, myPos, playerPos, distToPlayer);
+        nextAnimState =
+            handlePursuingBehavior(dt, myPos, playerPos, distToPlayer);
     }
     // graphical update
     update(dt, nextAnimState);
@@ -136,8 +151,8 @@ int Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
 }
 
 void Enemy::updateAIState(
-    float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos, float distToPlayer,
-    TileManager& tileManager
+    float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos,
+    float distToPlayer, TileManager& tileManager
 ) {
     const float torchRadius = 100.f; // player "brightness"
     const bool hasLOS = tileManager.checkLineOfSight(myPos, playerPos);
@@ -172,13 +187,14 @@ State Enemy::handleIdleBehavior(float dt, const sf::Vector2f& myPos) {
         const float angle = static_cast<float>(rand() % 360) * 3.14159f / 180.f;
         const float dist = static_cast<float>(rand() % 100) / 100.f * radius;
         sf::Vector2f potentialTarget =
-            homePoint + sf::Vector2f(std::cos(angle) * dist, std::sin(angle) * dist);
+            homePoint +
+            sf::Vector2f(std::cos(angle) * dist, std::sin(angle) * dist);
         patrolTarget = potentialTarget;
         patrolTimer = 10.f;
     }
 
     sf::Vector2f dir = patrolTarget - myPos;
-    const float distToTarget = std::sqrt((dir.x * dir.x) + (dir.y * dir.y));
+    const float distToTarget = getDistance(myPos, patrolTarget);
 
     if (distToTarget > 5.f) {
         dir /= distToTarget;
@@ -187,33 +203,41 @@ State Enemy::handleIdleBehavior(float dt, const sf::Vector2f& myPos) {
         setPosition(myPos + move);
         setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
         return State::Walking;
-    } 
-    
+    }
+
     return State::Idle;
 }
 
 State Enemy::handlePursuingBehavior(
-    float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos, float distToPlayer
+    float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos,
+    float distToPlayer
 ) {
     sf::Vector2f dir = playerPos - myPos;
-    
-    // Always face the player when pursuing
     setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
+    dir /= distToPlayer;
+    const sf::Vector2f move = dir * speed * dt;
+    const sf::Vector2f nextPos = myPos + move;
+    const auto distNextToHome = getDistance(nextPos, homePoint);
 
-    if (distToPlayer > 10.f) {
-        dir /= distToPlayer;
-        const sf::Vector2f move = dir * speed * dt;
-        const sf::Vector2f nextPos = myPos + move;
-        const auto distNextToHome = static_cast<float>(
-            std::sqrt(std::pow(nextPos.x - homePoint.x, 2) + std::pow(nextPos.y - homePoint.y, 2))
+    sf::Vector2f actualNextPos = myPos;
+    // move only if the new position is within max radius
+    if (distNextToHome <= 60.f) {
+        actualNextPos = nextPos;
+    } else {
+        // slide along the border
+        sf::Vector2f homeToNext = nextPos - homePoint;
+        float dist = std::sqrt(
+            (homeToNext.x * homeToNext.x) + (homeToNext.y * homeToNext.y)
         );
-
-        // move only if the new position is within max radius
-        if (distNextToHome <= 60.f) {
-            setPosition(nextPos);
-            return State::Running;
-        } 
+        if (dist > 0.001f) {
+            actualNextPos = homePoint + (homeToNext / dist) * 60.f;
+        }
     }
-    
+    // only run if we actually moved significantly compared to the last frame
+    if (std::abs(actualNextPos.x - myPos.x) > 0.1f ||
+        std::abs(actualNextPos.y - myPos.y) > 0.1f) {
+        setPosition(actualNextPos);
+        return State::Running;
+    }
     return State::Idle;
 }

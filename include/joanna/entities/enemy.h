@@ -58,6 +58,10 @@ class Enemy: public Entity {
     int maxHealth = 10;
 
     // AI movement variables
+    static float getDistance(const sf::Vector2f& p1, const sf::Vector2f& p2) {
+        return static_cast<float>(std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2)));
+    }
+
     OverworldState aiState = OverworldState::Idle;
     sf::Vector2f homePoint;
     sf::Vector2f patrolTarget;
