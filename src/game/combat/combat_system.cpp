@@ -312,9 +312,8 @@ void CombatSystem::processCounter(float dt) {
 void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
 
     // currently set statically... because viewport is set to 900x900
-    // currently set statically... because viewport is set to 900x900
+
     sf::Sprite backgroundSprite(*currentBackground);
-    backgroundSprite.setScale({ 900.f / 1400.f, 900.f / 1400.f });
     backgroundSprite.setPosition({ 0.f, 0.f });
     target.draw(backgroundSprite);
 
