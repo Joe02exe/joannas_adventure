@@ -154,7 +154,7 @@ void Game::run() {
             }
             
             // Goblin interaction
-            if (enemyPtr && enemyPtr->updateOverworld(dt, controller.getPlayer(), tileManager)) {
+            if (enemyPtr && enemyPtr->updateOverworld(dt, controller.getPlayer(), tileManager) == COMBAT_TRIGGERED) {
                 gameStatus = GameStatus::Combat;
                 combatSystem.startCombat(controller.getPlayer(), *enemyPtr);
             }
@@ -171,7 +171,7 @@ void Game::run() {
                     entities.push_back(std::move(skeleton));
                 }
 
-                if (skeletonPtr->updateOverworld(dt, controller.getPlayer(), tileManager)) {
+                if (skeletonPtr->updateOverworld(dt, controller.getPlayer(), tileManager) == COMBAT_TRIGGERED) {
                     gameStatus = GameStatus::Combat;
                     combatSystem.startCombat(controller.getPlayer(), *skeletonPtr);
                 }

@@ -110,24 +110,40 @@ void Enemy::takeDamage(int amount) {
     health = std::max(health - amount, 0);
 }
 
-bool Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
+int Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
     const sf::Vector2f playerPos = player.getPosition();
     const sf::Vector2f myPos = getPosition();
-    const auto distToPlayer = static_cast<float>(std::sqrt(std::pow(playerPos.x - myPos.x, 2) + std::pow(playerPos.y - myPos.y, 2)));
-    const auto distToHome = static_cast<float>(std::sqrt(std::pow(myPos.x - homePoint.x, 2) + std::pow(myPos.y - homePoint.y, 2)));
+    const auto distToPlayer = static_cast<float>(
+        std::sqrt(std::pow(playerPos.x - myPos.x, 2) + std::pow(playerPos.y - myPos.y, 2))
+    );
 
-    // trigger combat if very close to player
     if (distToPlayer < 10.f) {
-        return true;
+        return COMBAT_TRIGGERED;
     }
 
-    // torch radius (player "brightness")
-    const float torchRadius = 20.f; 
+    updateAIState(dt, myPos, playerPos, distToPlayer, tileManager);
+
+    State nextAnimState = State::Idle;
+
+    if (aiState == OverworldState::Idle) {
+        nextAnimState = handleIdleBehavior(dt, myPos);
+    } else if (aiState == OverworldState::Pursuing) {
+        nextAnimState = handlePursuingBehavior(dt, myPos, playerPos, distToPlayer);
+    }
+    // graphical update
+    update(dt, nextAnimState);
+    return COMBAT_IDLE;
+}
+
+void Enemy::updateAIState(
+    float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos, float distToPlayer,
+    TileManager& tileManager
+) {
+    const float torchRadius = 100.f; // player "brightness"
     const bool hasLOS = tileManager.checkLineOfSight(myPos, playerPos);
 
-    // State Transitions
     if (aiState == OverworldState::Idle) {
-        if (hasLOS || distToPlayer < torchRadius) {
+        if (hasLOS && distToPlayer < torchRadius) {
             if (reactionTimer == 0.f) {
                 reactionTimer = 0.2f; // Start reaction delay
             } else {
@@ -138,66 +154,66 @@ bool Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) 
                 }
             }
         } else {
-            reactionTimer = 0.f; // Reset if player lost before reaction complete
+            reactionTimer = 0.f;
         }
     } else if (aiState == OverworldState::Pursuing) {
-        // stop pursuing if lost player (max radius check removed to prevent oscillation)
-        if (!hasLOS && distToPlayer > torchRadius) {
+        // stop pursuing if lost player
+        if (!hasLOS || distToPlayer > torchRadius) {
             aiState = OverworldState::Idle;
             patrolTarget = homePoint;
         }
     }
+}
 
-    State nextAnimState = State::Idle;
-
-    if (aiState == OverworldState::Idle) {
-        patrolTimer -= dt;
-        if (patrolTimer <= 0.f) {
-            const float radius = 30.f;
-            const float angle = static_cast<float>(rand() % 360) * 3.14159f / 180.f;
-            const float dist = static_cast<float>(rand() % 100) / 100.f * radius;
-            sf::Vector2f potentialTarget = homePoint + sf::Vector2f(std::cos(angle) * dist, std::sin(angle) * dist);
-            patrolTarget = potentialTarget;
-            patrolTimer = 10.f;
-        }
-        sf::Vector2f dir = patrolTarget - myPos;
-        const float distToTarget = std::sqrt((dir.x * dir.x) + (dir.y * dir.y));
-        
-        if (distToTarget > 5.f) {
-            dir /= distToTarget;
-            const sf::Vector2f move = dir * speed * dt * 0.5f;
-
-            setPosition(myPos + move);
-            nextAnimState = State::Walking;
-            setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
-        } else {
-            nextAnimState = State::Idle;
-        }
-
-    } else if (aiState == OverworldState::Pursuing) {
-        // chase player
-        sf::Vector2f dir = playerPos - myPos;
-        if (distToPlayer > 10.f) {
-            dir /= distToPlayer;
-            const sf::Vector2f move = dir * speed * dt;
-            const sf::Vector2f nextPos = myPos + move;
-            const auto distNextToHome = static_cast<float>(std::sqrt(std::pow(nextPos.x - homePoint.x, 2) + std::pow(nextPos.y - homePoint.y, 2)));
-
-            // move only if the NEW position is within the max pursuit radius -> this allows the enemy to move back towards home if it's currently stuck at the boundary
-            if (distNextToHome <= 60.f) {
-                setPosition(nextPos);
-                nextAnimState = State::Running;
-            } else {
-                nextAnimState = State::Idle;
-            }
-            
-            // always face the player when pursuing
-            setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
-        } else {
-             nextAnimState = State::Idle;
-             setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
-        }
+State Enemy::handleIdleBehavior(float dt, const sf::Vector2f& myPos) {
+    patrolTimer -= dt;
+    if (patrolTimer <= 0.f) {
+        const float radius = 30.f;
+        const float angle = static_cast<float>(rand() % 360) * 3.14159f / 180.f;
+        const float dist = static_cast<float>(rand() % 100) / 100.f * radius;
+        sf::Vector2f potentialTarget =
+            homePoint + sf::Vector2f(std::cos(angle) * dist, std::sin(angle) * dist);
+        patrolTarget = potentialTarget;
+        patrolTimer = 10.f;
     }
-    update(dt, nextAnimState);
-    return false;
+
+    sf::Vector2f dir = patrolTarget - myPos;
+    const float distToTarget = std::sqrt((dir.x * dir.x) + (dir.y * dir.y));
+
+    if (distToTarget > 5.f) {
+        dir /= distToTarget;
+        const sf::Vector2f move = dir * speed * dt * 0.5f;
+
+        setPosition(myPos + move);
+        setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
+        return State::Walking;
+    } 
+    
+    return State::Idle;
+}
+
+State Enemy::handlePursuingBehavior(
+    float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos, float distToPlayer
+) {
+    sf::Vector2f dir = playerPos - myPos;
+    
+    // Always face the player when pursuing
+    setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
+
+    if (distToPlayer > 10.f) {
+        dir /= distToPlayer;
+        const sf::Vector2f move = dir * speed * dt;
+        const sf::Vector2f nextPos = myPos + move;
+        const auto distNextToHome = static_cast<float>(
+            std::sqrt(std::pow(nextPos.x - homePoint.x, 2) + std::pow(nextPos.y - homePoint.y, 2))
+        );
+
+        // move only if the new position is within max radius
+        if (distNextToHome <= 60.f) {
+            setPosition(nextPos);
+            return State::Running;
+        } 
+    }
+    
+    return State::Idle;
 }

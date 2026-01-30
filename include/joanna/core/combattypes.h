@@ -3,6 +3,9 @@
 #include "joanna/entities/entityutils.h"
 #include <string>
 
+#define COMBAT_TRIGGERED 1
+#define COMBAT_IDLE 0
+
 enum class CombatState { PlayerTurn, EnemyTurn, Victory, Defeat };
 
 struct Attack {
