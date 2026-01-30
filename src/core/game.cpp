@@ -295,7 +295,7 @@ void Game::renderOverworld(float dt) {
     );
     postProc.apply(windowManager.getWindow(), clock.getElapsedTime().asSeconds());
 }
-// Helper for resizing
+
 void Game::resize(
     const sf::Vector2u size, float targetAspectRatio, sf::View& camera,
     sf::RenderWindow& window, PostProcessing& postProc
@@ -304,23 +304,23 @@ void Game::resize(
     const float as = static_cast<float>(size.x) / static_cast<float>(size.y);
 
     if (as >= targetAspectRatio) {
-        // Window is wider than target
+        // window is wider than target
         const float width = targetAspectRatio / as;
         const float x = (1.f - width) / 2.f;
         camera.setViewport(sf::FloatRect({x, 0.f}, {width, 1.f}));
     } else {
-        // Window is taller than target
+        // window is taller than target
         const float height = as / targetAspectRatio;
         const float y = (1.f - height) / 2.f;
         camera.setViewport(sf::FloatRect({0.f, y}, {1.f, height}));
     }
 
     if constexpr (IMGUI_ENABLED) {
-        // Update ImGui if needed (handled by processEvent mostly)
+        // update ImGui if needed (handled by processEvent mostly)
     }
     
     postProc.resize(size.x, size.y);
-    window.setView(camera); // Apply view immediately if needed, or MainView will be used later
+    window.setView(camera); // apply view immediately if needed, or MainView will be used later
 }
 
 void Game::renderCombat() {
@@ -332,4 +332,10 @@ void Game::renderCombat() {
     // ui
     windowManager.getWindow().setView(windowManager.getUiView());
     controller->getPlayer().displayHealthBar(windowManager.getWindow(), tileManager);
+    controller->getPlayer().getStats().draw(
+        windowManager.getWindow(), 
+        fontRenderer.getFont(),
+        controller->getPlayer().getCurrentExp(),
+        controller->getPlayer().getExpToNextLevel()
+    );
 }

@@ -305,6 +305,7 @@ void CombatSystem::processCounter(float dt) {
             eState = State::Idle;
             phase = TurnPhase::Returning;
             currentState = CombatState::EnemyTurn;
+            damageDealt = false; // Reset damage flag so next attacks work
         }
     }
 }
