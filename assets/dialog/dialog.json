@@ -43,13 +43,26 @@
         {
             "priority": 1,
             "text": [
-                "The skeletons have stolen my treasure!",
-                "Bring it back to me...",
-                "Arrrrrrrrrrrrrrrrrrrrrrrr"
+                "Hi Joanna... :(",
+                "The desert took my crew... a skeleton did the rest...",
+                "I barely survived, but I learned how to strike back and survived...",
+                "Stay sharp... it attacks when you least expect it..."
             ],
             "reward": {
                 "id": "3056",
                 "name": "pirateToken",
+                "amount": 1
+            }
+        },
+        {
+            "priority": 2,
+            "text": [
+                "Arrr! You survived...",
+                "Now you can counter the attack of your enemies..."
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "3055",
                 "amount": 1
             }
         }
