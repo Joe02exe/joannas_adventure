@@ -109,6 +109,14 @@ bool Inventory::hasItem(const std::string& id) const {
     return it != items_.end();
 }
 
+bool Inventory::hasItemByName(const std::string& name) const {
+    auto it =
+        std::find_if(items_.begin(), items_.end(), [&](const StoredItem& si) {
+            return si.item.name == name;
+        });
+    return it != items_.end();
+}
+
 std::uint32_t Inventory::getQuantity(const std::string& id) const {
     auto it =
         std::find_if(items_.begin(), items_.end(), [&](const StoredItem& si) {

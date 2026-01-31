@@ -91,6 +91,10 @@ void RenderEngine::render(
 
     for (auto& entity : entities) {
         if (auto* interactable = dynamic_cast<Interactable*>(entity.get())) {
+            if (dynamic_cast<Stone*>(entity.get()) != nullptr &&
+                !player.getInventory().hasItemByName("pickaxe")) {
+                continue;
+            }
             if (interactable->canPlayerInteract(player.getPosition())) {
                 interactable->renderButton(target);
             }

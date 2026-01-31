@@ -4,13 +4,16 @@ Stone::Stone(const sf::Vector2f& position)
     : Interactable(
           sf::FloatRect(position, { 16.f, 16.f }),
           "assets/buttons/interact_T.png", "assets/interactables/stone.png",
-          sf::FloatRect(position, { 28.f, 28.f }) // Collision box
+          sf::FloatRect(position, { 16.f, 16.f }) // Collision box
       ) {
     // Initial frame
     setFrame(sf::IntRect({ 0, 0 }, { 16, 16 }));
 }
 
 void Stone::interact(Player& player) {
+    if (!player.getInventory().hasItemByName("pickaxe")) {
+        return;
+    }
     if (waitingForHit) {
         return; // Already interacting
     }

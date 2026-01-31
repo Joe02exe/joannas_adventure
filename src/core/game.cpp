@@ -187,8 +187,8 @@ void Game::updateOverworld(float dt) {
     }
 
     // Skeleton Logic
-    if (controller->getPlayer().getInventory().hasItem("3056") && 
-        !controller->getPlayer().getInventory().hasItem("3055")) {
+    if (controller->getPlayer().getInventory().hasItemByName("piratToken") && 
+        !controller->getPlayer().getInventory().hasItemByName("counterAttack")) {
         
         if (skeletonPtr == nullptr) {
             auto skeleton = std::make_unique<Enemy>(
@@ -217,7 +217,7 @@ void Game::updateCombat(float dt) {
         gameStatus = GameStatus::Overworld;
 
         if ((skeletonPtr != nullptr) && skeletonPtr->isDead() &&
-            controller && !controller->getPlayer().getInventory().hasItem("3055")) {
+            controller && !controller->getPlayer().getInventory().hasItemByName("counterAttack")) {
             controller->getPlayer().getInventory().addItem(
                 Item("3055", "counterAttack")
             );
