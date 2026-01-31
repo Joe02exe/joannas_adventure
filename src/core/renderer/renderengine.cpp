@@ -1,5 +1,4 @@
 #include "joanna/core/renderengine.h"
-#include "joanna/utils/logger.h"
 
 RenderEngine::RenderEngine() = default;
 

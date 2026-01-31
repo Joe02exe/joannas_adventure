@@ -183,8 +183,8 @@ void Inventory::drawSlot(
     const sf::Vector2f startPos, std::size_t i, std::size_t col,
     std::size_t row, sf::Vector2f& slotPos, bool isSelected
 ) const {
-    slotPos = { startPos.x + static_cast<float>(col) * (slotSize + padding),
-                startPos.y + static_cast<float>(row) * (slotSize + padding) };
+    slotPos = { startPos.x + (static_cast<float>(col) * (slotSize + padding)),
+                startPos.y + (static_cast<float>(row) * (slotSize + padding)) };
 
     // Slot rectangle
     sf::RectangleShape slot({ slotSize, slotSize });
@@ -211,8 +211,8 @@ void Inventory::drawItemName(
     name.setFillColor(sf::Color::White);
 
     sf::FloatRect tb = name.getLocalBounds();
-    name.setOrigin({ tb.position.x + tb.size.x / 2.f, tb.position.y });
-    name.setPosition({ slotPos.x + slotSize / 2.f, slotPos.y + 4.f });
+    name.setOrigin({ tb.position.x + (tb.size.x / 2.f), tb.position.y });
+    name.setPosition({ slotPos.x + (slotSize / 2.f), slotPos.y + 4.f });
 
     target.draw(name);
 }
@@ -301,12 +301,13 @@ void Inventory::displayInventory(
     std::size_t itemCount = vec.size();
     std::size_t rows = (itemCount + columns) / columns;
     float totalWidth =
-        columns * slotSize + padding * (columns - 1) + 2 * padding;
-    float totalHeight = static_cast<float>(rows) * slotSize +
-                        padding * (static_cast<float>(rows) - 1) + 2 * padding;
+        (columns * slotSize) + (padding * (columns - 1)) + (2 * padding);
+    float totalHeight = (static_cast<float>(rows) * slotSize) +
+                        (padding * (static_cast<float>(rows) - 1)) +
+                        (2 * padding);
 
     const auto center = target.getView().getCenter();
-    const sf::Vector2f startPos(center.x - totalWidth / 2.f, 360.f);
+    const sf::Vector2f startPos(center.x - (totalWidth / 2.f), 360.f);
 
     sf::RectangleShape bg({ totalWidth, totalHeight });
     bg.setPosition(startPos - sf::Vector2f(padding, padding));
@@ -322,8 +323,9 @@ void Inventory::displayInventory(
 }
 
 void Inventory::selectNext() {
-    if (items_.empty())
+    if (items_.empty()) {
         return;
+    }
     selectedSlotIndex++;
     if (selectedSlotIndex >= items_.size()) {
         selectedSlotIndex = 0;
@@ -332,8 +334,9 @@ void Inventory::selectNext() {
 }
 
 void Inventory::selectSlot(std::size_t index) {
-    if (items_.empty())
+    if (items_.empty()) {
         return;
+    }
     selectedSlotIndex = index;
     if (selectedSlotIndex >= items_.size()) {
         selectedSlotIndex = 0;
@@ -342,8 +345,9 @@ void Inventory::selectSlot(std::size_t index) {
 }
 
 void Inventory::selectPrevious() {
-    if (items_.empty())
+    if (items_.empty()) {
         return;
+    }
     if (selectedSlotIndex == 0) {
         const auto it = std::find_if(
             items_.begin(), items_.end(),

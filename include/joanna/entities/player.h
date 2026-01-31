@@ -9,7 +9,6 @@
 #include "joanna/world/tilemanager.h"
 
 #include <SFML/Graphics.hpp>
-#include <memory>
 #include <string>
 #include <unordered_map>
 

@@ -1,8 +1,6 @@
 #include "joanna/world/tilemanager.h"
-#include "joanna/entities/player.h"
 #include "joanna/utils/logger.h"
 #include "joanna/utils/resourcemanager.h"
-#include "spdlog/spdlog.h"
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -12,8 +10,7 @@
 #include <string>
 
 TileManager::TileManager(sf::RenderWindow& renderWindow)
-    : window(&renderWindow), tsonParser(), m_currentMap(nullptr), m_textures(),
-      m_tiles() {
+    : window(&renderWindow), m_currentMap(nullptr) {
     if (!loadMap("./assets/environment/map/newmap.json")) {
         Logger::error("Failed to load map!");
     }
@@ -65,11 +62,13 @@ bool TileManager::checkLineOfSight(
     sf::Vector2f start, sf::Vector2f end, float stepSize
 ) const {
     const sf::Vector2f direction = end - start;
-    const float distance =
-        std::sqrt(direction.x * direction.x + direction.y * direction.y);
+    const float distance = std::sqrt(
+        (direction.x * direction.x) + (direction.y * direction.y)
+    );
 
-    if (distance <= stepSize)
+    if (distance <= stepSize) {
         return true; // too close to have obstacles
+}
 
     const sf::Vector2f step = (direction / distance) * stepSize;
     const int steps = static_cast<int>(distance / stepSize);
@@ -139,11 +138,6 @@ void TileManager::renderProgressBar(const std::string& message) const {
     window->display();
 }
 
-// rendering renderEngine
-// maps
-// ogg for sound SountBufferManager
-// texturemanager as singleton
-
 sf::FloatRect calculatePixelRect(
     const sf::Texture& tex, const sf::IntRect& texRect, const sf::Vector2f& pos
 ) {
@@ -163,18 +157,10 @@ sf::FloatRect calculatePixelRect(
             );
             if (c.a > 0) { // if pixel is not transparent
                 hasOpaque = true;
-                if (x < left) {
-                    left = x;
-                }
-                if (x > right) {
-                    right = x;
-                }
-                if (y < top) {
-                    top = y;
-                }
-                if (y > bottom) {
-                    bottom = y;
-                }
+                left = std::min(x, left);
+                right = std::max(x, right);
+                top = std::min(y, top);
+                bottom = std::max(y, bottom);
             }
         }
     }
@@ -249,7 +235,7 @@ void TileManager::processLayer(const std::string& layerName) {
         randomlySelectItems(healPotions, 1);
     }
 
-    if (!layer || layer->getType() != tson::LayerType::TileLayer) {
+    if ((layer == nullptr) || layer->getType() != tson::LayerType::TileLayer) {
         return;
     }
 

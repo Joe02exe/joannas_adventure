@@ -1,13 +1,11 @@
 #include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
-#include "joanna/entities/npc.h"
-#include "joanna/entities/player.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
 #include "joanna/systems/menu.h"
 #include "joanna/utils/dialogue_box.h"
 #include "joanna/world/tilemanager.h"
-#include "joanna/systems/combat_system.h"
+#include "joanna/game/combat/combat_system.h"
 #include "joanna/core/postprocessing.h"
 #include "joanna/systems/audiomanager.h"
 #include "joanna/entities/enemy.h"
@@ -20,7 +18,6 @@
 class Game {
   public:
     Game();
-    // Made run non-static to access members
     void run();
 
   private:
@@ -35,7 +32,7 @@ class Game {
     void renderCombat();
 
     static void resize(
-        const sf::Vector2u size, float targetAspectRatio, sf::View& camera,
+        sf::Vector2u size, float targetAspectRatio, sf::View& camera,
         sf::RenderWindow& window, PostProcessing& postProc
     );
 

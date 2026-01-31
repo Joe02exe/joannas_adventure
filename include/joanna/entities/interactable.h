@@ -4,7 +4,6 @@
 #include "joanna/entities/player.h"
 #include "joanna/entities/entityutils.h"
 #include "joanna/entities/interactionbutton.h"
-#include "joanna/utils/logger.h"
 #include <SFML/Graphics.hpp>
 #include <optional>
 

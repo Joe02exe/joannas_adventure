@@ -36,12 +36,16 @@ class CombatSystem {
     EntityState playerState;
     EntityState enemyState;
 
-    const sf::Texture& caveBackground;
-    const sf::Texture& beachBackground;
-    const sf::Texture* currentBackground = nullptr;
+    sf::Texture caveBackground;
+    sf::Texture beachBackground;
+    sf::Texture* currentBackground = nullptr;
 
-    const sf::Texture attackButtonTexture;
-    const sf::Texture attackButtonRollTexture;
+    sf::Texture attackButtonTexture;
+    sf::Texture attackButtonRollTexture;
+
+    sf::Texture counterButtonTexture;
+    sf::Texture counterButtonGoodTexture;
+    sf::Texture counterButtonBadTexture;
 
     CombatState currentState = CombatState::PlayerTurn;
     TurnPhase phase = TurnPhase::Input;
@@ -56,11 +60,17 @@ class CombatSystem {
     State pState = State::Idle;
     State eState = State::Idle;
 
+    bool canCounter = false;
+    bool counterSuccess = false;
+    bool damageDealt = false;
+
     void updatePlayerTurn(float dt, State& pState, State& eState);
     void updateEnemyTurn(float dt, State& pState, State& eState);
     void processApproach(float dt, Entity* actor, sf::Vector2f target, float speed, float threshold, State& actorState);
     void processReturn(float dt, Entity* actor, sf::Vector2f startPos, float speed, float threshold, State& actorState, Direction moveFacing, Direction endFacing);
     void updateAttackMovement(float dt, Entity* attacker, const sf::Vector2f& targetPos, const Attack& attack);
+    void e_chooseAttack();
+    void processCounter(float dt);
 
     template <typename Defender>
     void processAttack(float dt, Entity* attacker, Defender* defender, State& attackerState, State& defenderState, const Attack& attack);
@@ -68,13 +78,4 @@ class CombatSystem {
     template <typename Defender>
     void updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack);
     
-    void e_chooseAttack();
-
-    sf::Texture counterButtonTexture;
-    sf::Texture counterButtonGoodTexture;
-    sf::Texture counterButtonBadTexture;
-    bool canCounter = false;
-    bool counterSuccess = false;
-    bool damageDealt = false;
-    void processCounter(float dt);
 };

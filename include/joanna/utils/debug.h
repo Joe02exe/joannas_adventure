@@ -3,7 +3,7 @@
 #include "joanna/core/gamestatus.h"
 #include "joanna/entities/enemy.h"
 #include "joanna/entities/player.h"
-#include "joanna/systems/combat_system.h"
+#include "joanna/game/combat/combat_system.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 
 class Controller;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "joanna/utils/logger.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 
@@ -17,7 +16,7 @@ class InteractionButton {
     void setPosition(const sf::Vector2f& pos);
 
   private:
-    const sf::FloatRect box;
+    sf::FloatRect box;
     std::unique_ptr<sf::Sprite> sprite;
     sf::Texture texture;
 };

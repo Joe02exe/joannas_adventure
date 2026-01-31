@@ -1,4 +1,4 @@
-#include "joanna/systems/combat_system.h"
+#include "joanna/game/combat/combat_system.h"
 #include "joanna/utils/resourcemanager.h"
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window/Event.hpp>
