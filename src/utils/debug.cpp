@@ -70,6 +70,9 @@ void DebugUI::update(
     if (ImGui::Button("Add sword to inventory")) {
         player.getInventory().addItem(Item("3050", "sword"));
     }
+    if (ImGui::Button("Add pickaxe to inventory")) {
+        player.getInventory().addItem(Item("3113", "pickaxe"));
+    }
 
     if (gameStatus == GameStatus::Overworld) {
         if (ImGui::Button("Start Combat")) {

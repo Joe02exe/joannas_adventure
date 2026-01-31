@@ -11,6 +11,7 @@
 #include <SFML/Graphics/View.hpp>
 #include <algorithm>
 #include <joanna/entities/npc.h>
+#include "joanna/entities/interactables/stone.h"
 
 Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
     : windowManager(windowManager), audioManager(audioManager),
@@ -39,27 +40,29 @@ bool Controller::getInput(
     State state = State::Idle;
     sf::Vector2f dir{ 0.f, 0.f };
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-        dir.x -= 1.f * factor * dt;
-        facingLeft = true;
-        state = State::Walking;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-        dir.x += 1.f * factor * dt;
-        facingLeft = false;
-        state = State::Walking;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-        dir.y -= 1.f * factor * dt;
-        state = State::Walking;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-        dir.y += 1.f * factor * dt;
-        state = State::Walking;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
-        dir *= 1.5f;
-        state = State::Running;
+    if (player.getState() != State::Mining) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+            dir.x -= 1.f * factor * dt;
+            facingLeft = true;
+            state = State::Walking;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+            dir.x += 1.f * factor * dt;
+            facingLeft = false;
+            state = State::Walking;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+            dir.y -= 1.f * factor * dt;
+            state = State::Walking;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+            dir.y += 1.f * factor * dt;
+            state = State::Walking;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
+            dir *= 1.5f;
+            state = State::Running;
+        }
     }
 
     // Inventory toggle
@@ -188,7 +191,18 @@ bool Controller::updateStep(
         if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
             npc->update(dt, player);
         }
+        if (auto* stone = dynamic_cast<Stone*>(entity.get())) {
+            stone->update(dt, player);
+        }
     }
+
+    // Remove destroyed stones
+    entities.remove_if([](const std::unique_ptr<Entity>& e) {
+        if (auto* stone = dynamic_cast<Stone*>(e.get())) {
+            return stone->shouldBeRemoved();
+        }
+        return false;
+    });
     return getInput(
         dt, window, collisions, entities, sharedDialogueBox, tileManager,
         renderEngine

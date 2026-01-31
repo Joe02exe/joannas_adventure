@@ -4,6 +4,8 @@
 #include "joanna/core/windowmanager.h"
 #include "joanna/entities/npc.h"
 #include "joanna/entities/player.h"
+#include "joanna/entities/interactables/stone.h"
+#include "joanna/entities/interactables/chest.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
 #include "joanna/systems/menu.h"
@@ -36,7 +38,7 @@ void Game::initialize() {
     
     entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/talk_T.png", sharedDialogueBox, "Joe"
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Joe"
     ));
     
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
@@ -47,18 +49,23 @@ void Game::initialize() {
 
     entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/talk_T.png", sharedDialogueBox, "Pirat"
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Pirat"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/talk_T.png", sharedDialogueBox, "Guard"
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Guard"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/talk_T.png", sharedDialogueBox, "Guard"
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Guard"
     ));
+
+    entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }));
+    entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }));
+
+    entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
 
     menu = std::make_unique<Menu>(windowManager, *controller, tileManager, audioManager);
     menu->show(
@@ -180,8 +187,8 @@ void Game::updateOverworld(float dt) {
     }
 
     // Skeleton Logic
-    if (controller->getPlayer().getInventory().hasItem("3056") && 
-        !controller->getPlayer().getInventory().hasItem("3055")) {
+    if (controller->getPlayer().getInventory().hasItemByName("piratToken") && 
+        !controller->getPlayer().getInventory().hasItemByName("counterAttack")) {
         
         if (skeletonPtr == nullptr) {
             auto skeleton = std::make_unique<Enemy>(
@@ -210,7 +217,7 @@ void Game::updateCombat(float dt) {
         gameStatus = GameStatus::Overworld;
 
         if ((skeletonPtr != nullptr) && skeletonPtr->isDead() &&
-            controller && !controller->getPlayer().getInventory().hasItem("3055")) {
+            controller && !controller->getPlayer().getInventory().hasItemByName("counterAttack")) {
             controller->getPlayer().getInventory().addItem(
                 Item("3055", "counterAttack")
             );

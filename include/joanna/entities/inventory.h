@@ -40,6 +40,8 @@ class Inventory {
 
     bool hasItem(const std::string& id) const;
 
+    bool hasItemByName(const std::string& name) const;
+
     std::uint32_t getQuantity(const std::string& id) const;
 
     std::size_t slotsUsed() const;
@@ -108,8 +110,8 @@ class Inventory {
     std::vector<StoredItem> items_;
     std::size_t capacity_;
     std::unordered_map<int, std::string> idToString = {
-        { 691, "carrot" },     { 3050, "sword" }, { 3056, "invisible" },
-        { 3055, "invisible" }, { 627, "key" },    { 703, "mushroom" },
-        { 1330, "heal" },
+        { 691, "carrot" },     { 3050, "sword" }, { 3056, "piratToken" },
+        { 3055, "counterAttack" }, { 627, "key" },    { 703, "mushroom" },
+        { 1330, "heal" }, { 3113, "pickaxe" },
     };
 };

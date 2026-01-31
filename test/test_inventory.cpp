@@ -10,7 +10,7 @@ protected:
     }
 
     Item createItem(const std::string& id, bool stackable = true) {
-        return Item(id, "Test Item " + id, stackable);
+        return {id, "Test Item " + id, stackable};
     }
 };
 
