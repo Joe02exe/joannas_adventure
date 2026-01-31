@@ -40,27 +40,29 @@ bool Controller::getInput(
     State state = State::Idle;
     sf::Vector2f dir{ 0.f, 0.f };
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-        dir.x -= 1.f * factor * dt;
-        facingLeft = true;
-        state = State::Walking;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-        dir.x += 1.f * factor * dt;
-        facingLeft = false;
-        state = State::Walking;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-        dir.y -= 1.f * factor * dt;
-        state = State::Walking;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-        dir.y += 1.f * factor * dt;
-        state = State::Walking;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
-        dir *= 1.5f;
-        state = State::Running;
+    if (player.getState() != State::Mining) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+            dir.x -= 1.f * factor * dt;
+            facingLeft = true;
+            state = State::Walking;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+            dir.x += 1.f * factor * dt;
+            facingLeft = false;
+            state = State::Walking;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+            dir.y -= 1.f * factor * dt;
+            state = State::Walking;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+            dir.y += 1.f * factor * dt;
+            state = State::Walking;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
+            dir *= 1.5f;
+            state = State::Running;
+        }
     }
 
     // Inventory toggle
