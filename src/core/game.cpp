@@ -5,6 +5,7 @@
 #include "joanna/entities/npc.h"
 #include "joanna/entities/player.h"
 #include "joanna/entities/interactables/stone.h"
+#include "joanna/entities/interactables/chest.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
 #include "joanna/systems/menu.h"
@@ -63,6 +64,8 @@ void Game::initialize() {
 
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }));
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }));
+
+    entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
 
     menu = std::make_unique<Menu>(windowManager, *controller, tileManager, audioManager);
     menu->show(

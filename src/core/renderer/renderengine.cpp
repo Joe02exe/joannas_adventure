@@ -31,7 +31,7 @@ void RenderEngine::render(
 
     // Explicitly draw stones early so they are behind the player/pickaxe
     for (const auto& entity : entities) {
-        if (dynamic_cast<Stone*>(entity.get())) {
+        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
             entity->render(target);
         }
     }
@@ -43,7 +43,9 @@ void RenderEngine::render(
 
     // draw iteractables below player
     for (auto& entity : entities) {
-        if (dynamic_cast<Stone*>(entity.get())) continue;
+        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
+            continue;
+        }
 
         if (entity->getCollisionBox().has_value()) {
             float middleEntity = entity->getCollisionBox().value().position.y +
@@ -69,7 +71,9 @@ void RenderEngine::render(
 
     // draw entities above player
     for (auto& entity : entities) {
-        if (dynamic_cast<Stone*>(entity.get())) continue;
+        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
+            continue;
+        }
 
         if (entity->getCollisionBox().has_value()) {
             float middleEntity = entity->getCollisionBox().value().position.y +
