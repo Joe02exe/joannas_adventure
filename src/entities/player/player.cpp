@@ -43,7 +43,11 @@ void Player::update(
     float dt, State& state, bool facingLeft, AudioManager& pManager
 ) {
     setFacing(facingLeft ? Direction::Left : Direction::Right);
-    switchState(state);
+
+    // Only switch state if we are not in a blocking animation
+    if (this->currentState != State::Mining) {
+        switchState(state);
+    }
 
     this->frameTimer += dt;
     const auto& anim = this->animations[this->currentState];
@@ -55,14 +59,15 @@ void Player::update(
 
         this->frameTimer -= anim.frameTime; // keep leftover time
 
-        if ((this->currentState == State::Dead || this->currentState == State::Counter) &&
+        if ((this->currentState == State::Dead || this->currentState == State::Counter || this->currentState == State::Mining) &&
             this->currentFrame == anim.frames.size() - 1) {
-            // Do not loop dead or counter animation
-            if (this->currentState == State::Counter) {
+            // Do not loop dead, counter, or mining animation
+            if (this->currentState == State::Counter || this->currentState == State::Mining) {
                 this->switchState(State::Idle);
                 state = State::Idle; // Update external state
-                std::cout << "Player finished counter animation, switching to "
-                             "Idle.\n";
+                if (this->currentState == State::Counter) {
+                    std::cout << "Player finished counter animation, switching to Idle.\n";
+                }
             }
         } else {
             this->currentFrame =
@@ -86,6 +91,10 @@ void Player::switchState(State newState) {
         this->frameTimer = 0.f;
         this->applyFrame();
     }
+}
+
+void Player::startMining() {
+    switchState(State::Mining);
 }
 
 void Player::draw(sf::RenderTarget& target) const {
