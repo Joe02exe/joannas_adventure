@@ -39,7 +39,7 @@ add_executable(unit_tests test/test_inventory.cpp ${TEST_FILES} ${GAME_SOURCES})
 target_compile_definitions(main PRIVATE
     LOGGING_ENABLED=1
     # for windows systems we have to disable the IMGUI window, statical / dynamic linking issues
-    IMGUI_ENABLED=1
+    IMGUI_ENABLED=0
     GOD_MODE_ENABLED=1
     INFINITE_RESOURCES_ENABLED=1
 )
