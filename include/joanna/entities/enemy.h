@@ -13,6 +13,8 @@ class Enemy: public Entity {
     enum class EnemyType { Goblin, Skeleton };
     Enemy(const sf::Vector2f& startPos, EnemyType type);
 
+    static bool shouldTriggerCombat(float distToPlayer);
+
     void update(float dt, State state);
     void draw(sf::RenderTarget& target) const;
 
@@ -39,9 +41,12 @@ class Enemy: public Entity {
     }
 
     enum class OverworldState { Idle, Pursuing };
-    bool updateOverworld(float dt, Player& player, TileManager& tileManager);
+    int updateOverworld(float dt, Player& player, TileManager& tileManager);
 
   private:
+    void updateAIState(float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos, float distToPlayer, TileManager& tileManager);
+    State handleIdleBehavior(float dt, const sf::Vector2f& myPos);
+    State handlePursuingBehavior(float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos, float distToPlayer);
     void switchState(State newState);
     void applyFrame();
 
@@ -55,6 +60,8 @@ class Enemy: public Entity {
     int maxHealth = 10;
 
     // AI movement variables
+    static float getDistance(const sf::Vector2f& p1, const sf::Vector2f& p2);
+
     OverworldState aiState = OverworldState::Idle;
     sf::Vector2f homePoint;
     sf::Vector2f patrolTarget;

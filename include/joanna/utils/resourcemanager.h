@@ -69,8 +69,9 @@ template <typename Resource> std::mutex ResourceManager<Resource>::mtx;
 template <>
 inline sf::Font& ResourceManager<sf::Font>::get(const std::string& filename) {
     auto it = resources.find(filename);
-    if (it != resources.end())
+    if (it != resources.end()) {
         return *(it->second);
+    }
 
     auto res = std::make_unique<sf::Font>();
     if (!res->openFromFile(filename)) {

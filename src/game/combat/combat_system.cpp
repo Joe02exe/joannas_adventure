@@ -1,4 +1,4 @@
-#include "joanna/systems/combat_system.h"
+#include "joanna/game/combat/combat_system.h"
 #include "joanna/utils/resourcemanager.h"
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window/Event.hpp>
@@ -305,6 +305,7 @@ void CombatSystem::processCounter(float dt) {
             eState = State::Idle;
             phase = TurnPhase::Returning;
             currentState = CombatState::EnemyTurn;
+            damageDealt = false; // Reset damage flag so next attacks work
         }
     }
 }
@@ -312,9 +313,8 @@ void CombatSystem::processCounter(float dt) {
 void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
 
     // currently set statically... because viewport is set to 900x900
-    // currently set statically... because viewport is set to 900x900
+
     sf::Sprite backgroundSprite(*currentBackground);
-    backgroundSprite.setScale({ 900.f / 1400.f, 900.f / 1400.f });
     backgroundSprite.setPosition({ 0.f, 0.f });
     target.draw(backgroundSprite);
 
@@ -328,7 +328,7 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
     }
 
     if (currentState == CombatState::PlayerTurn && phase == TurnPhase::Input) {
-        if (player->getInventory().hasItem("3050")) {
+        if (player->getInventory().hasItemByName("sword")) {
             sf::Sprite attackButtonSprite(attackButtonTexture);
             attackButtonSprite.setScale({ 3, 3 });
             attackButtonSprite.setPosition({ 95.f, 330.f });
@@ -342,7 +342,7 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
     }
 
     if (currentAttack.counterable && currentState == CombatState::EnemyTurn &&
-        (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) && player->getInventory().hasItem("3055")) {
+        (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) && player->getInventory().hasItemByName("counterAttack")) {
         sf::Sprite counterButtonSprite(counterButtonTexture);
 
         if (phase == TurnPhase::Attacking &&
@@ -368,7 +368,7 @@ void CombatSystem::handleInput(sf::Event& event) {
             startPos = player->getPosition();
             targetPos = enemy->getPosition();
             if (keyEvent->code == sf::Keyboard::Key::A) {
-                if (player->getInventory().hasItem("3050")) {
+                if (player->getInventory().hasItemByName("sword")) {
                     currentAttack = { "Attack", 2, State::Attack, 0.3f, 0.8f };
                     targetPos.x -= 120.f; // close range attack, but still a bit
                                           // away from the enemy
@@ -390,7 +390,7 @@ void CombatSystem::handleInput(sf::Event& event) {
         if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
             if (keyEvent->code == sf::Keyboard::Key::D) {
                 // Check if player has the Counter Attack ability
-                if (!player->getInventory().hasItem("3055")) {
+                if (!player->getInventory().hasItemByName("counterAttack")) {
                     return;
                 }
 

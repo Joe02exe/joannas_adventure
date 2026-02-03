@@ -9,7 +9,6 @@
 #include "joanna/world/tilemanager.h"
 
 #include <SFML/Graphics.hpp>
-#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -22,6 +21,10 @@ class Player: public Entity {
 
     void
     update(float dt, State& state, bool facingLeft, AudioManager& pManager);
+    void startMining();
+    State getState() const { return currentState; }
+    int getCurrentFrame() const { return currentFrame; }
+
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
     void takeDamage(int amount);

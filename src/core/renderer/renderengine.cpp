@@ -1,5 +1,5 @@
 #include "joanna/core/renderengine.h"
-#include "joanna/utils/logger.h"
+#include "joanna/entities/interactables/stone.h"
 
 RenderEngine::RenderEngine() = default;
 
@@ -29,6 +29,13 @@ void RenderEngine::render(
         drawTile(tile);
     }
 
+    // Explicitly draw stones early so they are behind the player/pickaxe
+    for (const auto& entity : entities) {
+        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
+            entity->render(target);
+        }
+    }
+
     // draw collidable/decorative tiles with player sorting
     float playerBottom = player.getCollisionBox().value().position.y +
                          player.getCollisionBox().value().size.y;
@@ -36,6 +43,10 @@ void RenderEngine::render(
 
     // draw iteractables below player
     for (auto& entity : entities) {
+        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
+            continue;
+        }
+
         if (entity->getCollisionBox().has_value()) {
             float middleEntity = entity->getCollisionBox().value().position.y +
                                  entity->getCollisionBox().value().size.y;
@@ -60,6 +71,10 @@ void RenderEngine::render(
 
     // draw entities above player
     for (auto& entity : entities) {
+        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
+            continue;
+        }
+
         if (entity->getCollisionBox().has_value()) {
             float middleEntity = entity->getCollisionBox().value().position.y +
                                  entity->getCollisionBox().value().size.y;
@@ -76,6 +91,10 @@ void RenderEngine::render(
 
     for (auto& entity : entities) {
         if (auto* interactable = dynamic_cast<Interactable*>(entity.get())) {
+            if (dynamic_cast<Stone*>(entity.get()) != nullptr &&
+                !player.getInventory().hasItemByName("pickaxe")) {
+                continue;
+            }
             if (interactable->canPlayerInteract(player.getPosition())) {
                 interactable->renderButton(target);
             }

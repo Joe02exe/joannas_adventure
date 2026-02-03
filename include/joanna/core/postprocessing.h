@@ -5,7 +5,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <functional>
-#include <stdexcept>
 
 class PostProcessing {
   public:
