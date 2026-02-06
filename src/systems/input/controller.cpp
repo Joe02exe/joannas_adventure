@@ -136,8 +136,8 @@ bool Controller::getInput(
         }
     }
 
-    bool escapeDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape);
-    if (escapeDown && !keyPressed) {
+    bool pDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P);
+    if (pDown && !keyPressed) {
         Menu menu(windowManager, *this, tileManager, audioManager);
         menu.show(
             renderEngine, tileManager, entities, sharedDialogueBox, audioManager

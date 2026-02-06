@@ -48,8 +48,7 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void Menu::resetToDefaultMenu() {
-    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save",
-                 "Options", "About", "Quit" });
+    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "About", "Quit" });
 }
 
 void Menu::rebuildUI() {
@@ -233,6 +232,9 @@ void Menu::executeSelection() {
         isMenuOpen = false; // Start new game
         tileManager->reloadObjectsFromTileson();
         controller->getPlayer().getInventory().clear();
+        controller->getPlayer().setHealth(20);
+        controller->getPlayer().setPosition({ 150.f, 400.f });
+        windowManager->setCenter({ 150.f, 400.f });
     } else if (choice == "Load game") {
         loadingInteraction = true;
         setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
