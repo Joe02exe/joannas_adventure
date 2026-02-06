@@ -62,6 +62,11 @@ void Game::initialize() {
         "assets/buttons/interact_T.png", sharedDialogueBox, "Guard"
     ));
 
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 500.f, 300.f }, "assets/player/npc/boy1.png", "assets/player/npc/guard1_walking.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Boy"
+    ));
+
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }));
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }));
 
