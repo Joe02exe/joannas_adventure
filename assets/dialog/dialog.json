@@ -109,5 +109,28 @@
                 }
             ]
         }
+    ],
+    "Boy": [
+        {   
+            "priority": 1,
+            "text": [
+                "Tell Giovannino it was me!"
+            ]
+        },
+        {   
+            "id": "Carrot",
+            "priority": 2,
+            "text": [
+                "Have you met Giovannino?",
+                "He f'ed up our collision system and view port multiple times...",
+                "... so I stole and hid his carrots.",
+                "I have one left, you can have it."
+            ],
+            "reward": {
+                "id": "691",
+                "name": "carrot",
+                "amount": 1
+            }
+        }
     ]
 }
