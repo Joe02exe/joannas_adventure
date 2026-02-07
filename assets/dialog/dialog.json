@@ -3,12 +3,12 @@
         {
             "priority": 1,
             "text": [
-                "Ostia, didn't see you there traveler!", "My name is Giovannino.",
+                "Ostia, didn't see you there traveler!", 
+                "My name is Giovannino. I live here and am very well respected and liked!",
                 "I would like to show you around...",
                 "... but someone stole my carrots.",
                 "Can you bring all five back to me?"
-            ],
-            "req": null
+            ]
         },
         {
             "priority": 2,
@@ -129,6 +129,55 @@
             "reward": {
                 "id": "691",
                 "name": "carrot",
+                "amount": 1
+            }
+        }
+    ],
+    "Miner": [
+        {   
+            "priority": 1,
+            "text": [
+                "Please get me my bones!"
+            ]
+        },
+        {   
+            "id": "First dialog",
+            "priority": 2,
+            "text": [
+                "Greetings Traveler, my name is Karl. I am the local miner.",
+                "I was about to begin my mining tour, but then I tripped, because Giovannino bumped into me.",
+                "He really is not liked and respected around here.",
+                "Now my hip is broken and I need 3 bones to replace it.",
+                "Can you get them for me? As a reward I will give you my pickaxe!"
+            ]
+        },
+        {   
+            "priority": 3,
+            "text": [
+                "Thank you so much! Now I can walk again.",
+                "However, in the near future someone else want be able to walk for quite some time..."
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "3113",
+                "amount": 1
+            }
+        },
+        {   
+            "id": "get_pickaxe",
+            "priority": 4,
+            "text": [
+                "These bones are perfect!",
+                "Here you go."
+            ],
+            "req": {
+                "type": "ITEM_REMOVE",
+                "id": "628",
+                "amount": 3
+            },
+            "reward": {
+                "id": "3113",
+                "name": "pickaxe",
                 "amount": 1
             }
         }

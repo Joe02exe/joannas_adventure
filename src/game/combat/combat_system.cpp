@@ -237,6 +237,7 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
             eState = State::Dead;
             currentState = CombatState::Victory;
             std::cout << "Victory!\n";
+            player->gainExp(15);
         } else {
             currentState = CombatState::EnemyTurn;
             phase = TurnPhase::Input;
@@ -301,6 +302,7 @@ void CombatSystem::processCounter(float dt) {
             eState = State::Dead;
             currentState = CombatState::Victory;
             std::cout << "Victory!\n";
+            player->gainExp(15);
         } else {
             eState = State::Idle;
             phase = TurnPhase::Returning;

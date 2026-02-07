@@ -67,6 +67,11 @@ void Game::initialize() {
         "assets/buttons/interact_T.png", sharedDialogueBox, "Boy"
     ));
 
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 520.f, 430.f }, "assets/player/npc/miner.png", "assets/player/npc/guard1_walking.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Miner"
+    ));
+
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }));
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }));
 
@@ -213,6 +218,41 @@ void Game::updateOverworld(float dt) {
             Logger::info("Skeleton defeated. Counter attack added to inventory.");
         }
     }
+
+    if (controller->getPlayer().getPosition().y < 200.f && controller->getPlayer().getPosition().x > 200.f && controller->getPlayer().getPosition().x < 400.f) {
+
+        if (randomSkeletonPtr == nullptr && (std::rand() % 10000 < 5)) {
+            auto randomSkeleton = std::make_unique<Enemy>(
+                sf::Vector2f{controller->getPlayer().getPosition().x + 15.f, controller->getPlayer().getPosition().y}, 
+                Enemy::EnemyType::Skeleton
+            );
+            
+            randomSkeletonPtr = randomSkeleton.get(); 
+            
+            entities.push_back(std::move(randomSkeleton));
+        }
+
+        if (randomSkeletonPtr != nullptr) {
+            bool stillExists = false;
+            for (const auto& entity : entities) {
+                if (entity.get() == randomSkeletonPtr) {
+                    stillExists = true;
+                    break;
+                }
+            }
+            
+            if (!stillExists) {
+                randomSkeletonPtr = nullptr;
+            }
+        }
+
+        if (randomSkeletonPtr != nullptr) {
+            if (randomSkeletonPtr->updateOverworld(dt, controller->getPlayer(), tileManager) == COMBAT_TRIGGERED) {
+                gameStatus = GameStatus::Combat;
+                combatSystem.startCombat(controller->getPlayer(), *randomSkeletonPtr);
+            }
+        }
+    }
 }
 
 void Game::updateCombat(float dt) {
@@ -229,6 +269,9 @@ void Game::updateCombat(float dt) {
             Logger::info(
                 "Skeleton defeated. Counter attack added to inventory."
             );
+        }
+        else if(randomSkeletonPtr != nullptr && randomSkeletonPtr->isDead()){
+            controller->getPlayer().getInventory().addItem(Item("628", "Bone"));
         }
 
         entities.remove_if([&](const std::unique_ptr<Entity>& entity) {

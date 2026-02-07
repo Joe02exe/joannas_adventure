@@ -59,6 +59,7 @@ class Game {
     // pointers to specific enemies for logic tracking
     Enemy* enemyPtr = nullptr;
     Enemy* skeletonPtr = nullptr;
+    Enemy* randomSkeletonPtr = nullptr;
     
     // Config
     const float FIXED_TIMESTEP = 0.016f;
