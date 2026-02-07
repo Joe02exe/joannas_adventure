@@ -235,7 +235,7 @@ void TileManager::processLayer(const std::string& layerName) {
 
         randomlySelectItems(carrots, 4);
         randomlySelectItems(swords, 1);
-        randomlySelectItems(pickaxes, 1);
+        //randomlySelectItems(pickaxes, 1);
         randomlySelectItems(mushrooms, 1);
         randomlySelectItems(healPotions, 1);
     }
