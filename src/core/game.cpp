@@ -248,6 +248,7 @@ void Game::updateOverworld(float dt) {
             }
 
             if (randomSkeletonPtr->isDead()) {
+                controller->getPlayer().getInventory().addItem(Item("628", "Bone"));
                 randomSkeletonPtr = nullptr;
             }
         }
