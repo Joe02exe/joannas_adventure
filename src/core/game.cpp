@@ -246,11 +246,6 @@ void Game::updateOverworld(float dt) {
                 gameStatus = GameStatus::Combat;
                 combatSystem.startCombat(controller->getPlayer(), *randomSkeletonPtr);
             }
-
-            if (randomSkeletonPtr->isDead()) {
-                controller->getPlayer().getInventory().addItem(Item("628", "Bone"));
-                randomSkeletonPtr = nullptr;
-            }
         }
     }
 }
@@ -269,6 +264,9 @@ void Game::updateCombat(float dt) {
             Logger::info(
                 "Skeleton defeated. Counter attack added to inventory."
             );
+        }
+        else if(randomSkeletonPtr != nullptr && randomSkeletonPtr->isDead()){
+            controller->getPlayer().getInventory().addItem(Item("628", "Bone"));
         }
 
         entities.remove_if([&](const std::unique_ptr<Entity>& entity) {
