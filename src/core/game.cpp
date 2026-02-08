@@ -2,10 +2,10 @@
 
 #include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
+#include "joanna/entities/interactables/chest.h"
+#include "joanna/entities/interactables/stone.h"
 #include "joanna/entities/npc.h"
 #include "joanna/entities/player.h"
-#include "joanna/entities/interactables/stone.h"
-#include "joanna/entities/interactables/chest.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
 #include "joanna/systems/menu.h"
@@ -22,10 +22,8 @@
 
 Game::Game()
     : windowManager(900, 900, "Joanna's Adventure"),
-      tileManager(windowManager.getWindow()),
-      postProc(900, 900),
-      fontRenderer("assets/font/Pixellari.ttf")
-{
+      tileManager(windowManager.getWindow()), postProc(900, 900),
+      fontRenderer("assets/font/Pixellari.ttf") {
     initialize();
 }
 
@@ -35,12 +33,13 @@ void Game::initialize() {
     std::ifstream file("assets/dialog/dialog.json");
     NPC::jsonData = json::parse(file);
     sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
-    
+
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Joe"
+        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Joe"
     ));
-    
+
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
         sf::Vector2f{ 710.f, 200.f }, Enemy::EnemyType::Goblin
     );
@@ -48,18 +47,21 @@ void Game::initialize() {
     entities.push_back(std::move(enemy));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Pirat"
+        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Pirat"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Guard"
+        sf::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Guard"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Guard"
+        sf::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Guard"
     ));
 
     entities.push_back(std::make_unique<NPC>(
@@ -77,7 +79,9 @@ void Game::initialize() {
 
     entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
 
-    menu = std::make_unique<Menu>(windowManager, *controller, tileManager, audioManager);
+    menu = std::make_unique<Menu>(
+        windowManager, *controller, tileManager, audioManager
+    );
     menu->show(
         renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );
@@ -116,10 +120,12 @@ void Game::handleInput() {
             window.close();
         }
         if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-            Game::resize({resized->size.x, resized->size.y}, 
-                         static_cast<float>(resized->size.x) / static_cast<float>(resized->size.y), 
-                         windowManager.getMainView(), window, postProc);
-            windowManager.handleResizeEvent({resized->size.x, resized->size.y});
+            Game::resize(
+                { resized->size.x, resized->size.y }, 1.0f,
+                windowManager.getMainView(), window, postProc
+            );
+            windowManager.handleResizeEvent({ resized->size.x, resized->size.y }
+            );
         }
         if (gameStatus == GameStatus::Combat) {
             combatSystem.handleInput(*event);
@@ -135,8 +141,12 @@ void Game::handleInput() {
 void Game::update(float dt) {
     // Music logic
     const auto getRegionMusic = [](const sf::Vector2f& pos) -> MusicId {
-        if (pos.x > 540.f) { return MusicId::Underworld; }
-        if (pos.y < 215.f) { return MusicId::Beach; }
+        if (pos.x > 540.f) {
+            return MusicId::Underworld;
+        }
+        if (pos.y < 215.f) {
+            return MusicId::Beach;
+        }
         return MusicId::Overworld;
     };
 
@@ -173,9 +183,12 @@ void Game::update(float dt) {
 }
 
 void Game::updateOverworld(float dt) {
-    if (!controller) { return; }
+    if (!controller) {
+        return;
+    }
 
-    std::vector<sf::FloatRect> frameCollisions = tileManager.getCollisionRects(); 
+    std::vector<sf::FloatRect> frameCollisions =
+        tileManager.getCollisionRects();
     for (const auto& entity : entities) {
         if (auto box = entity->getCollisionBox()) {
             frameCollisions.push_back(*box);
@@ -183,39 +196,47 @@ void Game::updateOverworld(float dt) {
     }
 
     bool resetClock = controller->updateStep(
-        dt, windowManager.getWindow(), frameCollisions, entities, sharedDialogueBox,
-        tileManager, renderEngine
+        dt, windowManager.getWindow(), frameCollisions, entities,
+        sharedDialogueBox, tileManager, renderEngine
     );
     if (resetClock) {
         clock.restart();
     }
-    
+
     // Goblin interaction
-    if ((enemyPtr != nullptr) && enemyPtr->updateOverworld(dt, controller->getPlayer(), tileManager) == COMBAT_TRIGGERED) {
+    if ((enemyPtr != nullptr) &&
+        enemyPtr->updateOverworld(dt, controller->getPlayer(), tileManager) ==
+            COMBAT_TRIGGERED) {
         gameStatus = GameStatus::Combat;
         combatSystem.startCombat(controller->getPlayer(), *enemyPtr);
     }
 
     // Skeleton Logic
-    if (controller->getPlayer().getInventory().hasItemByName("piratToken") && 
-        !controller->getPlayer().getInventory().hasItemByName("counterAttack")) {
-        
+    if (controller->getPlayer().getInventory().hasItemByName("piratToken") &&
+        !controller->getPlayer().getInventory().hasItemByName("counterAttack"
+        )) {
+
         if (skeletonPtr == nullptr) {
             auto skeleton = std::make_unique<Enemy>(
-                sf::Vector2f{100.f, 110.f}, Enemy::EnemyType::Skeleton
+                sf::Vector2f{ 100.f, 110.f }, Enemy::EnemyType::Skeleton
             );
             skeletonPtr = skeleton.get();
             entities.push_back(std::move(skeleton));
         }
 
-        if (skeletonPtr->updateOverworld(dt, controller->getPlayer(), tileManager) == COMBAT_TRIGGERED) {
+        if (skeletonPtr->updateOverworld(
+                dt, controller->getPlayer(), tileManager
+            ) == COMBAT_TRIGGERED) {
             gameStatus = GameStatus::Combat;
             combatSystem.startCombat(controller->getPlayer(), *skeletonPtr);
         }
 
         if (skeletonPtr->isDead()) {
-            controller->getPlayer().getInventory().addItem(Item("3055", "counterAttack"));
-            Logger::info("Skeleton defeated. Counter attack added to inventory.");
+            controller->getPlayer().getInventory().addItem(
+                Item("3055", "counterAttack")
+            );
+            Logger::info("Skeleton defeated. Counter attack added to inventory."
+            );
         }
     }
 
@@ -261,13 +282,14 @@ void Game::updateCombat(float dt) {
         combatSystem.endCombat();
         gameStatus = GameStatus::Overworld;
 
-        if ((skeletonPtr != nullptr) && skeletonPtr->isDead() &&
-            controller && !controller->getPlayer().getInventory().hasItemByName("counterAttack")) {
+        if ((skeletonPtr != nullptr) && skeletonPtr->isDead() && controller &&
+            !controller->getPlayer().getInventory().hasItemByName(
+                "counterAttack"
+            )) {
             controller->getPlayer().getInventory().addItem(
                 Item("3055", "counterAttack")
             );
-            Logger::info(
-                "Skeleton defeated. Counter attack added to inventory."
+            Logger::info("Skeleton defeated. Counter attack added to inventory."
             );
         }
         else if(randomSkeletonPtr != nullptr && randomSkeletonPtr->isDead()){
@@ -307,7 +329,18 @@ void Game::render(float dt) {
 }
 
 void Game::renderOverworld(float dt) {
-    if (!controller) { return; }
+    // Lazy resize check
+    if (postProc.getRenderTexture().getSize() !=
+        windowManager.getWindow().getSize()) {
+        postProc.resize(
+            windowManager.getWindow().getSize().x,
+            windowManager.getWindow().getSize().y
+        );
+    }
+
+    if (!controller) {
+        return;
+    }
 
     controller->getPlayerView().setViewport(
         windowManager.getMainView().getViewport()
@@ -336,19 +369,24 @@ void Game::renderOverworld(float dt) {
                     target, tileManager
                 );
             }
-            controller->getPlayer().displayHealthBar(
-                target, tileManager
-            );
+            controller->getPlayer().displayHealthBar(target, tileManager);
             controller->getPlayer().getStats().draw(
-                target, 
-                fontRenderer.getFont(),
+                target, fontRenderer.getFont(),
                 controller->getPlayer().getCurrentExp(),
                 controller->getPlayer().getExpToNextLevel()
             );
         },
         nullptr
     );
-    postProc.apply(windowManager.getWindow(), clock.getElapsedTime().asSeconds());
+    sf::View fullView(sf::FloatRect(
+        { 0.f, 0.f },
+        { static_cast<float>(windowManager.getWindow().getSize().x),
+          static_cast<float>(windowManager.getWindow().getSize().y) }
+    ));
+    windowManager.getWindow().setView(fullView);
+    postProc.apply(
+        windowManager.getWindow(), clock.getElapsedTime().asSeconds()
+    );
 }
 
 void Game::resize(
@@ -362,35 +400,61 @@ void Game::resize(
         // window is wider than target
         const float width = targetAspectRatio / as;
         const float x = (1.f - width) / 2.f;
-        camera.setViewport(sf::FloatRect({x, 0.f}, {width, 1.f}));
+        camera.setViewport(sf::FloatRect({ x, 0.f }, { width, 1.f }));
     } else {
         // window is taller than target
         const float height = as / targetAspectRatio;
         const float y = (1.f - height) / 2.f;
-        camera.setViewport(sf::FloatRect({0.f, y}, {1.f, height}));
+        camera.setViewport(sf::FloatRect({ 0.f, y }, { 1.f, height }));
     }
 
     if constexpr (IMGUI_ENABLED) {
         // update ImGui if needed (handled by processEvent mostly)
     }
-    
+
     postProc.resize(size.x, size.y);
-    window.setView(camera); // apply view immediately if needed, or MainView will be used later
+    window.setView(camera
+    ); // apply view immediately if needed, or MainView will be used later
 }
 
 void Game::renderCombat() {
-    sf::View combatView(sf::FloatRect({0.f, 0.f}, {900.f, 900.f}));
-    combatView.setViewport(windowManager.getMainView().getViewport());
-    windowManager.getWindow().setView(combatView);
-    combatSystem.render(windowManager.getWindow(), tileManager);
+    // Lazy resize check
+    if (postProc.getRenderTexture().getSize() !=
+        windowManager.getWindow().getSize()) {
+        postProc.resize(
+            windowManager.getWindow().getSize().x,
+            windowManager.getWindow().getSize().y
+        );
+    }
 
-    // ui
-    windowManager.getWindow().setView(windowManager.getUiView());
-    controller->getPlayer().displayHealthBar(windowManager.getWindow(), tileManager);
-    controller->getPlayer().getStats().draw(
-        windowManager.getWindow(), 
-        fontRenderer.getFont(),
-        controller->getPlayer().getCurrentExp(),
-        controller->getPlayer().getExpToNextLevel()
+    // combat view (using main view viewport for correct pillarboxing)
+    sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
+    combatView.setViewport(windowManager.getMainView().getViewport());
+
+    postProc.drawScene(
+        [&](sf::RenderTarget& target, const sf::View& view) {
+            target.setView(combatView);
+            combatSystem.render(target, tileManager);
+
+            // ui
+            target.setView(windowManager.getUiView());
+            controller->getPlayer().displayHealthBar(target, tileManager);
+            controller->getPlayer().getStats().draw(
+                target, fontRenderer.getFont(),
+                controller->getPlayer().getCurrentExp(),
+                controller->getPlayer().getExpToNextLevel()
+            );
+        },
+        nullptr
+    );
+
+    sf::View fullView(sf::FloatRect(
+        { 0.f, 0.f },
+        { static_cast<float>(windowManager.getWindow().getSize().x),
+          static_cast<float>(windowManager.getWindow().getSize().y) }
+    ));
+    windowManager.getWindow().setView(fullView);
+    postProc.apply(
+        windowManager.getWindow(), clock.getElapsedTime().asSeconds()
     );
 }
