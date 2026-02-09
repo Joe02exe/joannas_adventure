@@ -79,6 +79,12 @@ void Game::initialize() {
 
     entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
 
+    controller->getPlayer().onLevelUp([this](int newLevel) {
+        std::string msg = "Level Up! You have reached level " + std::to_string(newLevel);
+        this->sharedDialogueBox->setDialogue({msg});
+        this->sharedDialogueBox->show();
+    });
+
     menu = std::make_unique<Menu>(
         windowManager, *controller, tileManager, audioManager
     );
@@ -199,6 +205,11 @@ void Game::updateOverworld(float dt) {
         dt, windowManager.getWindow(), frameCollisions, entities,
         sharedDialogueBox, tileManager, renderEngine
     );
+
+    if (sharedDialogueBox && sharedDialogueBox->isActive() && sharedDialogueBox->getOwner() == nullptr) {
+        sharedDialogueBox->update(dt, controller->getPlayer().getPosition());
+    }
+
     if (resetClock) {
         clock.restart();
     }

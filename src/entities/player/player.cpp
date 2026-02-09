@@ -174,4 +174,11 @@ void Player::levelUp() {
 
     this->stats.attack += 2;
     this->stats.defense += 1;
+    this->health = maxHealth;
+
+    if (levelUpListener) {
+        std::cout << "Here" << std::endl;
+        levelUpListener(this->level);
+    }
+    std::cout << "There" << std::endl;
 }

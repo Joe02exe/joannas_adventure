@@ -60,7 +60,11 @@ class Player: public Entity {
     int getCurrentExp() const { return currentExp; }
     int getExpToNextLevel() const { return expToNextLevel; }
 
+    using LevelUpListener = std::function<void(int)>;
+    void onLevelUp(LevelUpListener listener) { levelUpListener = listener; }
+ 
   private:
+    LevelUpListener levelUpListener;
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
     Inventory inventory = Inventory(20);
