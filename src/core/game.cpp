@@ -80,8 +80,9 @@ void Game::initialize() {
     entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
 
     controller->getPlayer().onLevelUp([this](int newLevel) {
-        std::string msg = "Level Up! You have reached level " + std::to_string(newLevel);
-        this->sharedDialogueBox->setDialogue({msg});
+        std::string msg1 = "Level Up! You have reached level " + std::to_string(newLevel) + ".";
+        std::string msg2 = "Your stats increased: +2 attack and +1 defense.";
+        this->sharedDialogueBox->setDialogue({msg1, msg2});
         this->sharedDialogueBox->show();
     });
 
