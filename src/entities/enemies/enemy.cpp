@@ -64,13 +64,13 @@ Enemy::Enemy(const sf::Vector2f& startPos, EnemyType type)
 
     // Initialize attacks
     if (type == EnemyType::Goblin) {
-        attacks.push_back({ "Mining", 4, State::Mining, 0.4f, 0.9f, 0.f, 130.f,
+        attacks.push_back({ "Mining", 50, State::Mining, 0.4f, 0.9f, 0.f, 130.f,
                             5.f, true, 0.1f, 0.43f, 130.f });
-        attacks.push_back({ "Roll", 2, State::Roll, 0.2f, 0.8f, -800.f, 85.f,
+        attacks.push_back({ "Roll", 30, State::Roll, 0.2f, 0.8f, -800.f, 85.f,
                             -5.f, true, 0.16f, 0.23f, 280.f });
     } else {
         // Skeleton attacks
-        attacks.push_back({ "Attack", 2, State::Attack, 0.32f, 0.7f, 0.f, 100.f,
+        attacks.push_back({ "Attack", 30, State::Attack, 0.32f, 0.7f, 0.f, 100.f,
                             5.f, true, 0.1f, 0.5f, 100.f });
     }
 }

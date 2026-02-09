@@ -232,7 +232,7 @@ void Menu::executeSelection() {
         isMenuOpen = false; // Start new game
         tileManager->reloadObjectsFromTileson();
         controller->getPlayer().getInventory().clear();
-        controller->getPlayer().setHealth(20);
+        controller->getPlayer().setHealth(200);
         controller->getPlayer().setPosition({ 150.f, 400.f });
         windowManager->setCenter({ 150.f, 400.f });
     } else if (choice == "Load game") {

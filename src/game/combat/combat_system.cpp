@@ -194,9 +194,9 @@ void CombatSystem::updateAttackTimeline(
             else {
                 damage += attacker->getStats().attack;
             }
-            defender->takeDamage(damage);
+            defender->takeDamage(damage - defense);
             damageDealt = true;
-            Logger::info("Defender took damage: " + std::to_string(damage) + " remaining: " + std::to_string(defender->getHealth()));
+            Logger::info("Defender took damage: " + std::to_string(damage - defense) + " remaining: " + std::to_string(defender->getHealth()));
         }
     } else {
         defenderState = State::Idle;

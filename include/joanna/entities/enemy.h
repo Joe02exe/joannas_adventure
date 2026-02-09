@@ -56,8 +56,8 @@ class Enemy: public Entity {
     int currentFrame = 0;
 
     std::vector<Attack> attacks;
-    int health = 10;
-    int maxHealth = 10;
+    int health = 100;
+    int maxHealth = 100;
 
     // AI movement variables
     static float getDistance(const sf::Vector2f& p1, const sf::Vector2f& p2);
