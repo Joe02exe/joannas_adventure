@@ -155,7 +155,7 @@
             "priority": 3,
             "text": [
                 "Thank you so much! Now I can walk again.",
-                "However, in the near future someone else want be able to walk for quite some time..."
+                "However, in the near future someone else won't be able to walk for quite some time..."
             ],
             "req": {
                 "type": "ITEM",

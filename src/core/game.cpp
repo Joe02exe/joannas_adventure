@@ -79,6 +79,13 @@ void Game::initialize() {
 
     entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
 
+    controller->getPlayer().onLevelUp([this](int newLevel) {
+        std::string msg1 = "Level Up! You have reached level " + std::to_string(newLevel) + ".";
+        std::string msg2 = "Your stats increased: +2 attack and +1 defense.";
+        this->sharedDialogueBox->setDialogue({msg1, msg2});
+        this->sharedDialogueBox->show();
+    });
+
     menu = std::make_unique<Menu>(
         windowManager, *controller, tileManager, audioManager
     );
@@ -199,6 +206,11 @@ void Game::updateOverworld(float dt) {
         dt, windowManager.getWindow(), frameCollisions, entities,
         sharedDialogueBox, tileManager, renderEngine
     );
+
+    if (sharedDialogueBox && sharedDialogueBox->isActive() && sharedDialogueBox->getOwner() == nullptr) {
+        sharedDialogueBox->update(dt, controller->getPlayer().getPosition());
+    }
+
     if (resetClock) {
         clock.restart();
     }
@@ -242,7 +254,7 @@ void Game::updateOverworld(float dt) {
 
     if (controller->getPlayer().getPosition().y < 200.f && controller->getPlayer().getPosition().x > 200.f && controller->getPlayer().getPosition().x < 400.f) {
 
-        if (randomSkeletonPtr == nullptr && (std::rand() % 10000 < 5)) {
+        if (randomSkeletonPtr == nullptr && (std::rand() % 3000 < 5)) {
             auto randomSkeleton = std::make_unique<Enemy>(
                 sf::Vector2f{controller->getPlayer().getPosition().x + 15.f, controller->getPlayer().getPosition().y}, 
                 Enemy::EnemyType::Skeleton

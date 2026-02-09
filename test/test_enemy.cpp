@@ -15,7 +15,7 @@ TEST_F(EnemyTest, InitialState) {
     Enemy goblin({100.f, 100.f}, Enemy::EnemyType::Goblin);
 
     EXPECT_EQ(goblin.getType(), Enemy::EnemyType::Goblin);
-    EXPECT_EQ(goblin.getHealth(), 10); // Default health seems to be 10
+    EXPECT_EQ(goblin.getHealth(), 100);
     EXPECT_FALSE(goblin.isDead());
     
     Enemy skeleton({200.f, 200.f}, Enemy::EnemyType::Skeleton);
@@ -24,12 +24,12 @@ TEST_F(EnemyTest, InitialState) {
 
 TEST_F(EnemyTest, TakeDamage) {
     Enemy enemy({0.f, 0.f}, Enemy::EnemyType::Goblin);
-    EXPECT_EQ(enemy.getHealth(), 10);
+    EXPECT_EQ(enemy.getHealth(), 100);
 
     enemy.takeDamage(3);
-    EXPECT_EQ(enemy.getHealth(), 7);
+    EXPECT_EQ(enemy.getHealth(), 97);
 
-    enemy.takeDamage(10);
+    enemy.takeDamage(100);
     EXPECT_EQ(enemy.getHealth(), 0);
     EXPECT_TRUE(enemy.isDead());
 }
@@ -37,10 +37,10 @@ TEST_F(EnemyTest, TakeDamage) {
 TEST_F(EnemyTest, ResetHealth) {
     Enemy enemy({0.f, 0.f}, Enemy::EnemyType::Goblin);
     enemy.takeDamage(5);
-    EXPECT_EQ(enemy.getHealth(), 5);
+    EXPECT_EQ(enemy.getHealth(), 95);
 
     enemy.resetHealth();
-    EXPECT_EQ(enemy.getHealth(), 10);
+    EXPECT_EQ(enemy.getHealth(), 100);
 }
 
 TEST_F(EnemyTest, CombatTriggerLogic) {

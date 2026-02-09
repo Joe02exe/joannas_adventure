@@ -132,7 +132,7 @@ void DialogueBox::updateTypewriter(float dt) {
 
     displayTime += dt;
 
-    size_t targetCharCount = static_cast<size_t>(displayTime / 0.10f);
+    size_t targetCharCount = static_cast<size_t>(displayTime / 0.05f);
 
     if (targetCharCount > currentDialogue.length()) {
         visibleCharCount = currentDialogue.length();

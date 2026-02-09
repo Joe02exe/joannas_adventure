@@ -72,10 +72,10 @@ class CombatSystem {
     void e_chooseAttack();
     void processCounter(float dt);
 
-    template <typename Defender>
-    void processAttack(float dt, Entity* attacker, Defender* defender, State& attackerState, State& defenderState, const Attack& attack);
+    template <typename Defender, typename Attacker>
+    void processAttack(float dt, Attacker* attacker, Defender* defender, State& attackerState, State& defenderState, const Attack& attack);
 
-    template <typename Defender>
-    void updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack);
+    template <typename Defender, typename Attacker>
+    void updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack, Attacker* attacker);
     
 };

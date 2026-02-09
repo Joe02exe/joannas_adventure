@@ -15,7 +15,7 @@ Player::Player(
           sf::FloatRect({ startPos.x - 5.f, startPos.y - 2.f }, { 10.f, 9.f }),
           Direction::Right
       ),
-      health(20), maxHealth(20), inventory(20) {
+      health(200), maxHealth(200), inventory(20) {
     this->animations[State::Idle] = Animation(idlePath, { 96, 64 }, 9);
     this->animations[State::Walking] = Animation(walkPath, { 96, 64 }, 8);
     this->animations[State::Running] = Animation(runPath, { 96, 64 }, 8);
@@ -123,7 +123,7 @@ void Player::displayHealthBar(
         (-size.x / 2) + heartIcon.getLocalBounds().size.x,
         (-size.y / 2) + heartIcon.getLocalBounds().size.y
     );
-    for (int i = 0; i < this->health / 2; ++i) {
+    for (int i = 0; i < this->health / 20; ++i) {
         heartIcon.setPosition({ startPos.x + (static_cast<float>(i) * 32.f),
                                 startPos.y });
         heartIcon.setScale({ 3.f, 3.f });
@@ -174,4 +174,9 @@ void Player::levelUp() {
 
     this->stats.attack += 2;
     this->stats.defense += 1;
+    this->health = maxHealth;
+
+    if (levelUpListener) {
+        levelUpListener(this->level);
+    }
 }
