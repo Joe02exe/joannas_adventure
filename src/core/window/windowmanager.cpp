@@ -13,7 +13,7 @@ WindowManager::WindowManager(
 )
     : window(sf::VideoMode({ width, height }), title),
       targetAspectRatio(
-          static_cast<float>(height) / static_cast<float>(width)
+          static_cast<float>(width) / static_cast<float>(height)
       ) {
 
     mainView.setSize({ static_cast<float>(width), static_cast<float>(height) });
