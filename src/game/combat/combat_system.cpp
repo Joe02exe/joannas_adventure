@@ -27,15 +27,7 @@ CombatSystem::CombatSystem()
           "assets/buttons/attack_punch_bad.png"
       )) {}
 
-// Explicit instantiations
-template void CombatSystem::processAttack<
-    Player>(float, Entity*, Player*, State&, State&, const Attack&);
-template void CombatSystem::processAttack<
-    Enemy>(float, Entity*, Enemy*, State&, State&, const Attack&);
-template void CombatSystem::updateAttackTimeline<
-    Player>(float, Player*, State&, const Attack&);
-template void
-CombatSystem::updateAttackTimeline<Enemy>(float, Enemy*, State&, const Attack&);
+
 
 void CombatSystem::startCombat(Player& p, Enemy& e) {
     player = &p;
@@ -182,9 +174,9 @@ void CombatSystem::updateAttackMovement(
     }
 }
 
-template <typename Defender>
+template <typename Defender, typename Attacker>
 void CombatSystem::updateAttackTimeline(
-    float dt, Defender* defender, State& defenderState, const Attack& attack
+    float dt, Defender* defender, State& defenderState, const Attack& attack, Attacker* attacker
 ) {
     if (turnTimer < attack.impactTime) {
         if (defenderState != State::Counter) {
@@ -193,9 +185,18 @@ void CombatSystem::updateAttackTimeline(
     } else if (turnTimer < attack.endTime) {
         defenderState = State::Hurt;
         if (!damageDealt) {
-            defender->takeDamage(attack.damage);
+            int defense = 0;
+            int damage = attack.damage;
+
+            if constexpr (std::is_same_v<Defender, Player>) {
+                defense = defender->getStats().defense;
+            } 
+            else {
+                damage += attacker->getStats().attack;
+            }
+            defender->takeDamage(damage);
             damageDealt = true;
-            Logger::info("Defender took damage: " + std::to_string(attack.damage) + " remaining: " + std::to_string(defender->getHealth()));
+            Logger::info("Defender took damage: " + std::to_string(damage) + " remaining: " + std::to_string(defender->getHealth()));
         }
     } else {
         defenderState = State::Idle;
@@ -205,15 +206,15 @@ void CombatSystem::updateAttackTimeline(
     }
 }
 
-template <typename Defender>
+template <typename Defender, typename Attacker>
 void CombatSystem::processAttack(
-    float dt, Entity* attacker, Defender* defender, State& attackerState,
+    float dt, Attacker* attacker, Defender* defender, State& attackerState,
     State& defenderState, const Attack& attack
 ) {
     attackerState = attack.animationState;
 
     updateAttackMovement(dt, attacker, defender->getPosition(), attack);
-    updateAttackTimeline(dt, defender, defenderState, attack);
+    updateAttackTimeline(dt, defender, defenderState, attack, attacker);
 
     turnTimer += dt;
 }
@@ -427,3 +428,20 @@ void CombatSystem::handleInput(sf::Event& event) {
         }
     }
 }
+
+// Explicit instantiations
+template void CombatSystem::processAttack<Enemy, Player>(
+    float, Player*, Enemy*, State&, State&, const Attack&
+);
+
+template void CombatSystem::processAttack<Player, Enemy>(
+    float, Enemy*, Player*, State&, State&, const Attack&
+);
+
+template void CombatSystem::updateAttackTimeline<Enemy, Player>(
+    float, Enemy*, State&, const Attack&, Player*
+);
+
+template void CombatSystem::updateAttackTimeline<Player, Enemy>(
+    float, Player*, State&, const Attack&, Enemy*
+);
