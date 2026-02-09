@@ -70,7 +70,7 @@ TEST_F(PlayerTest, SetHealth) {
 
     player.setHealth(15);
 
-    EXPECT_EQ(player.getHealth(), 185);
+    EXPECT_EQ(player.getHealth(), 15);
 
     player.setHealth(250);
 
