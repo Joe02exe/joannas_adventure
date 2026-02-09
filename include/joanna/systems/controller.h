@@ -33,6 +33,10 @@ class Controller {
 
     );
 
+    bool isMapOverviewActive() const {
+        return showMapOverview;
+    }
+
     sf::View& getPlayerView() const {
         return playerView;
     }
@@ -58,6 +62,9 @@ class Controller {
     bool facingLeft = false;
     bool keyPressed = false;
     bool displayInventory = true;
+
+    bool showMapOverview = false;
+    bool mPressed = false;
 
     int counter = 0;
 };

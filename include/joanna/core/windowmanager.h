@@ -37,6 +37,10 @@ class WindowManager {
         return uiView;
     }
 
+    sf::View& getMapOverviewView() {
+        return mapOverviewView;
+    }
+
     DebugUI getDebugUI() {
         return debug_ui;
     }
@@ -52,6 +56,7 @@ class WindowManager {
     sf::RenderWindow window;
     sf::View mainView;
     sf::View miniMapView;
+    sf::View mapOverviewView;
     sf::View uiView;
     float targetAspectRatio;
     static constexpr float MINI_MAP_SIZE = 0.25f;

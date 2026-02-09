@@ -315,19 +315,29 @@ void Game::renderOverworld(float dt) {
 
     postProc.drawScene(
         [&](sf::RenderTarget& target, const sf::View& view) {
-            // world view
-            target.setView(controller->getPlayerView());
+
+            if (controller->isMapOverviewActive()) {
+                sf::View& mapView = windowManager.getMapOverviewView();
+                // Center the map on the player
+                mapView.setCenter(controller->getPlayer().getPosition());
+                target.setView(mapView);
+            } else {
+                target.setView(controller->getPlayerView());
+            }
+
             renderEngine.render(
                 target, controller->getPlayer(), tileManager, entities,
                 sharedDialogueBox, dt
             );
 
             // minimap
-            target.setView(windowManager.getMiniMapView());
-            renderEngine.render(
-                target, controller->getPlayer(), tileManager, entities,
-                sharedDialogueBox, dt
-            );
+            if (!controller->isMapOverviewActive()) {
+                target.setView(windowManager.getMiniMapView());
+                renderEngine.render(
+                    target, controller->getPlayer(), tileManager, entities,
+                    sharedDialogueBox, dt
+                );
+            }
 
             // ui
             target.setView(windowManager.getUiView());

@@ -65,6 +65,15 @@ bool Controller::getInput(
         }
     }
 
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::M)) {
+        if (!mPressed) {
+            showMapOverview = !showMapOverview;
+            mPressed = true;
+        }
+    } else {
+        mPressed = false;
+    }
+
     // Inventory toggle
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) {
         player.getInventory().selectSlot(0);
