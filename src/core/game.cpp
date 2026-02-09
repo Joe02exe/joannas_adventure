@@ -242,7 +242,7 @@ void Game::updateOverworld(float dt) {
 
     if (controller->getPlayer().getPosition().y < 200.f && controller->getPlayer().getPosition().x > 200.f && controller->getPlayer().getPosition().x < 400.f) {
 
-        if (randomSkeletonPtr == nullptr && (std::rand() % 10000 < 5)) {
+        if (randomSkeletonPtr == nullptr && (std::rand() % 7000 < 5)) {
             auto randomSkeleton = std::make_unique<Enemy>(
                 sf::Vector2f{controller->getPlayer().getPosition().x + 15.f, controller->getPlayer().getPosition().y}, 
                 Enemy::EnemyType::Skeleton
