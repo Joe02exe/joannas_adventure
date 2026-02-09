@@ -19,7 +19,7 @@ TEST_F(PlayerTest, InitialState) {
         {0.f, 0.f}
     );
 
-    EXPECT_EQ(player.getHealth(), 20);
+    EXPECT_EQ(player.getHealth(), 200);
     EXPECT_EQ(player.getInventory().capacity(), 20);
     EXPECT_EQ(player.getPosition(), sf::Vector2f(0.f, 0.f));
 }
@@ -32,13 +32,13 @@ TEST_F(PlayerTest, TakeDamage) {
         {0.f, 0.f}
     );
 
-    EXPECT_EQ(player.getHealth(), 20);
+    EXPECT_EQ(player.getHealth(), 200);
 
     player.takeDamage(5);
 
-    EXPECT_EQ(player.getHealth(), 15);
+    EXPECT_EQ(player.getHealth(), 195);
 
-    player.takeDamage(20);
+    player.takeDamage(200);
 
     EXPECT_EQ(player.getHealth(), 0);
 }
@@ -66,15 +66,15 @@ TEST_F(PlayerTest, SetHealth) {
         {0.f, 0.f}
     );
 
-    EXPECT_EQ(player.getHealth(), 20);
+    EXPECT_EQ(player.getHealth(), 200);
 
     player.setHealth(15);
 
-    EXPECT_EQ(player.getHealth(), 15);
+    EXPECT_EQ(player.getHealth(), 185);
 
     player.setHealth(25);
 
-    EXPECT_EQ(player.getHealth(), 20);
+    EXPECT_EQ(player.getHealth(), 200);
 }
 
 TEST_F(PlayerTest, SetHealthInvalid) {
@@ -85,7 +85,7 @@ TEST_F(PlayerTest, SetHealthInvalid) {
         {0.f, 0.f}
     );
 
-    EXPECT_EQ(player.getHealth(), 20);
+    EXPECT_EQ(player.getHealth(), 200);
 
     player.setHealth(-1);
 
