@@ -102,16 +102,25 @@ class Inventory {
         return idToString;
     }
 
+    bool isItemInvisible(int) const;
+
   private:
     void checkInventoryInvisibleBounds();
+
     std::size_t selectedSlotIndex = 0;
 
     sf::Font font;
     std::vector<StoredItem> items_;
     std::size_t capacity_;
+    std::vector<int> invisibleItemIds = { 3056, 3055 };
     std::unordered_map<int, std::string> idToString = {
-        { 691, "carrot" },     { 3050, "sword" }, { 3056, "piratToken" },
-        { 3055, "counterAttack" }, { 627, "key" },    { 703, "mushroom" },
-        { 1330, "heal" }, { 3113, "pickaxe" },
+        { 691, "carrot" },
+        { 3050, "sword" },
+        { 3056, "piratToken" },    // invisible
+        { 3055, "counterAttack" }, // invisible
+        { 627, "key" },
+        { 703, "mushroom" },
+        { 1330, "heal" },
+        { 3113, "pickaxe" },
     };
 };

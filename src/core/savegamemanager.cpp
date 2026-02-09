@@ -46,6 +46,10 @@ void SaveGameManager::saveGame(const GameState& state, const std::string& index)
     j["player"]["x"] = state.player.x;
     j["player"]["y"] = state.player.y;
     j["player"]["health"] = state.player.health;
+    j["player"]["visitedInteractions"] = json::array();
+    for (const auto& interaction : state.player.visitedInteractions) {
+        j["player"]["visitedInteractions"].push_back(interaction);
+    }
 
     j["player"]["inventory"] = json::array(); // Initialize as array
     for (const auto& item : state.inventory.items) {
@@ -87,6 +91,12 @@ GameState SaveGameManager::loadGame(const std::string& index) const {
     state.player.x = j["player"].value("x", 0.0f);
     state.player.y = j["player"].value("y", 0.0f);
     state.player.health = j["player"].value("health", 100);
+
+    if (j["player"].contains("visitedInteractions")) {
+        for (const auto& iteraction : j["player"]["visitedInteractions"]) {
+            state.player.visitedInteractions.emplace(iteraction);
+        }
+    }
 
     if (j["player"].contains("inventory")) {
         for (const auto& itemJson : j["player"]["inventory"]) {

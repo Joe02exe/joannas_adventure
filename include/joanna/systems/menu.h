@@ -11,6 +11,7 @@ class Menu {
     Controller* controller;
     TileManager* tileManager;
     AudioManager* audioManager;
+    std::list<std::unique_ptr<Entity>>* entities;
 
     sf::Font font;
     sf::Sprite mouseSprite;
@@ -46,7 +47,8 @@ class Menu {
   public:
     Menu(
         WindowManager& windowManager, Controller& controller,
-        TileManager& tileManager, AudioManager& audioManager
+        TileManager& tileManager, AudioManager& audioManager,
+        std::list<std::unique_ptr<Entity>>& entities
     );
     void show(
         RenderEngine& render_engine, TileManager& tileManager,

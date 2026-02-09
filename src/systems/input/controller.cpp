@@ -7,11 +7,11 @@
 #include "joanna/systems/menu.h"
 #include "joanna/utils/logger.h"
 
+#include "joanna/entities/interactables/stone.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <algorithm>
 #include <joanna/entities/npc.h>
-#include "joanna/entities/interactables/stone.h"
 
 Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
     : windowManager(windowManager), audioManager(audioManager),
@@ -147,7 +147,7 @@ bool Controller::getInput(
 
     bool pDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P);
     if (pDown && !keyPressed) {
-        Menu menu(windowManager, *this, tileManager, audioManager);
+        Menu menu(windowManager, *this, tileManager, audioManager, entities);
         menu.show(
             renderEngine, tileManager, entities, sharedDialogueBox, audioManager
         );

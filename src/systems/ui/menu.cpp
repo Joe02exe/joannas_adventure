@@ -8,7 +8,10 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Window.hpp>
+#include <sys/stat.h>
 #include <utility>
+
+#include "joanna/entities/npc.h"
 
 namespace {
 const sf::Color COLOR_TEXT_NORMAL = sf::Color::Black;
@@ -22,10 +25,12 @@ const unsigned int FONT_SIZE_ITEM = 14;
 
 Menu::Menu(
     WindowManager& windowManager, Controller& controller,
-    TileManager& tileManager, AudioManager& audioManager
+    TileManager& tileManager, AudioManager& audioManager,
+    std::list<std::unique_ptr<Entity>>& entities
 )
     : windowManager(&windowManager), controller(&controller),
-      audioManager(&audioManager), tileManager(&tileManager),
+      tileManager(&tileManager), audioManager(&audioManager),
+      entities(&entities),
       mouseSprite(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/cursor.png"
       )) {
@@ -48,7 +53,8 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void Menu::resetToDefaultMenu() {
-    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "About", "Quit" });
+    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "About",
+                 "Quit" });
 }
 
 void Menu::rebuildUI() {
@@ -214,6 +220,7 @@ void Menu::executeSelection() {
         state.player.x = player.getPosition().x;
         state.player.y = player.getPosition().y;
         state.player.health = player.getHealth();
+        state.player.visitedInteractions = player.getVisitedInteractions();
 
         // Save Inventory
         for (const auto& item : player.getInventory().listItems()) {
@@ -234,6 +241,7 @@ void Menu::executeSelection() {
         controller->getPlayer().getInventory().clear();
         controller->getPlayer().setHealth(20);
         controller->getPlayer().setPosition({ 150.f, 400.f });
+        controller->getPlayer().resetInteractions();
         windowManager->setCenter({ 150.f, 400.f });
     } else if (choice == "Load game") {
         loadingInteraction = true;
@@ -247,7 +255,8 @@ void Menu::executeSelection() {
                            "WASD : navigate\n"
                            "Shift : sprint\n"
                            "T : Talk to opponent\n"
-                           "E : Display inventory\n"
+                           "E : Apply items in inventory\n"
+                           "1-9 : Select inventory slot\n"
                            "Space : pickup item\n\n"
                            "Press Escape or Click to close.";
         showAbout = true;
@@ -275,8 +284,41 @@ void Menu::executeSelection() {
             );
             controller->getPlayer().getInventory().loadState(state.inventory);
             controller->getPlayer().setHealth(state.player.health);
+            controller->getPlayer().setInteractions(
+                state.player.visitedInteractions
+            );
             tileManager->loadObjectsFromSaveGame(state.map.items);
             isMenuOpen = false;
+
+            // move entities back to default positions or states if needed
+            bool guard1Reset = state.player.visitedInteractions.count(
+                "assets/player/npc/guard1.png_Bring key"
+            );
+            bool guard2Reset = state.player.visitedInteractions.count(
+                "assets/player/npc/guard2.png_Bring key"
+            );
+            for (const auto& ptr : *entities) {
+                if (ptr) {
+                    // Good practice to check if not null
+                    auto p = ptr.get();
+                    if (auto* npc = dynamic_cast<NPC*>(p)) {
+                        if (npc->getUniqueSpriteId() ==
+                                "assets/player/npc/guard1.png" &&
+                            guard1Reset) {
+                            npc->setPosition(
+                                npc->getPosition() - sf::Vector2f(50.f, 50.f)
+                            );
+                        }
+                        if (npc->getUniqueSpriteId() ==
+                                "assets/player/npc/guard2.png" &&
+                            guard2Reset) {
+                            npc->setPosition(
+                                npc->getPosition() - sf::Vector2f(50.f, 50.f)
+                            );
+                        }
+                    }
+                }
+            }
         } else {
             saveManager.saveGame(stateToSave, slotNumberStr);
             Logger::info("Saved game to slot " + choice);
