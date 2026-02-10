@@ -124,6 +124,7 @@ void Player::displayHealthBar(
     sf::RenderTarget& target, TileManager& tileManager
 ) const {
     auto heartIcon = tileManager.getTextureById(3052);
+    auto halfHeartIcon = tileManager.getTextureById(3054);
     const auto size = target.getView().getSize();
     const sf::Vector2f startPos(
         (-size.x / 2) + heartIcon.getLocalBounds().size.x,

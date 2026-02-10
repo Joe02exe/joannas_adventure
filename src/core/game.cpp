@@ -461,7 +461,7 @@ void Game::renderCombat() {
     postProc.drawScene(
         [&](sf::RenderTarget& target, const sf::View& view) {
             target.setView(combatView);
-            combatSystem.render(target, tileManager);
+            combatSystem.render(target, tileManager, fontRenderer.getFont());
 
             // ui
             target.setView(windowManager.getUiView());
