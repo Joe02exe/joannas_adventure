@@ -124,16 +124,31 @@ void Player::displayHealthBar(
     sf::RenderTarget& target, TileManager& tileManager
 ) const {
     auto heartIcon = tileManager.getTextureById(3052);
+    auto halfHeartIcon = tileManager.getTextureById(3054);
     const auto size = target.getView().getSize();
     const sf::Vector2f startPos(
         (-size.x / 2) + heartIcon.getLocalBounds().size.x,
         (-size.y / 2) + heartIcon.getLocalBounds().size.y
     );
-    for (int i = 0; i < this->health / 20; ++i) {
-        heartIcon.setPosition({ startPos.x + (static_cast<float>(i) * 32.f),
-                                startPos.y });
+    int fullHearts = this->health / 20;
+    bool showHalfHeart = (this->health % 20) >= 10 || (this->health > 0 && fullHearts == 0);
+
+    for (int i = 0; i < fullHearts; ++i) {
+        heartIcon.setPosition({ 
+            startPos.x + (static_cast<float>(i) * 32.f),
+            startPos.y 
+        });
         heartIcon.setScale({ 3.f, 3.f });
         target.draw(heartIcon);
+    }
+
+    if (showHalfHeart) {
+        halfHeartIcon.setPosition({ 
+            startPos.x + (static_cast<float>(fullHearts) * 32.f),
+            startPos.y 
+        });
+        halfHeartIcon.setScale({ 3.f, 3.f });
+        target.draw(halfHeartIcon);
     }
 }
 

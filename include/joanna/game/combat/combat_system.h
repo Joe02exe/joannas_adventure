@@ -18,7 +18,7 @@ class CombatSystem {
     void startCombat(Player& player, Enemy& enemy);
     void endCombat();
     void update(float dt);
-    void render(sf::RenderTarget& target, class TileManager& tileManager);
+    void render(sf::RenderTarget& target, class TileManager& tileManager, const sf::Font& font);
     void handleInput(sf::Event& event);
 
     CombatState getState() const {
@@ -77,5 +77,17 @@ class CombatSystem {
 
     template <typename Defender, typename Attacker>
     void updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack, Attacker* attacker);
-    
+    struct DamageIndicator {
+        sf::Vector2f position;
+        std::string text;
+        sf::Color color;
+        float lifeTime;
+        float maxLifeTime;
+        float speed;
+    };
+
+    std::vector<DamageIndicator> damageTexts;
+    sf::Font damageFont;
+
+    void spawnDamageText(Entity* target, int amount);
 };

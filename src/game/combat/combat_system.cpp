@@ -105,6 +105,17 @@ void CombatSystem::update(float dt) {
         dt, pState, player->getFacing() == Direction::Left, dummyAudio
     );
     enemy->update(dt, eState);
+
+    for (auto it = damageTexts.begin(); it != damageTexts.end(); ) {
+        it->lifeTime -= dt;
+        it->position.y -= it->speed * dt;
+
+        if (it->lifeTime <= 0.f) {
+            it = damageTexts.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void CombatSystem::processApproach(
@@ -194,7 +205,9 @@ void CombatSystem::updateAttackTimeline(
             else {
                 damage += attacker->getStats().attack;
             }
-            defender->takeDamage(damage - defense);
+            int finalDamage = std::max(0, damage - defense);
+            defender->takeDamage(finalDamage);
+            spawnDamageText(defender, finalDamage);
             damageDealt = true;
             Logger::info("Defender took damage: " + std::to_string(damage - defense) + " remaining: " + std::to_string(defender->getHealth()));
         }
@@ -313,7 +326,7 @@ void CombatSystem::processCounter(float dt) {
     }
 }
 
-void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
+void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager, const sf::Font& font) {
 
     // currently set statically... because viewport is set to 900x900
 
@@ -362,6 +375,31 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager) {
         counterButtonSprite.setScale({ 3, 3 });
         counterButtonSprite.setPosition({ 95.f, 330.f });
         target.draw(counterButtonSprite);
+    }
+    if (!damageTexts.empty()) {
+        sf::Text tempText(font);
+        
+        tempText.setCharacterSize(32); 
+        tempText.setOutlineColor(sf::Color::Black);
+        tempText.setOutlineThickness(1.5f);
+        tempText.setStyle(sf::Text::Bold);
+
+        for (const auto& ind : damageTexts) {
+            tempText.setString(ind.text);
+            
+            sf::FloatRect bounds = tempText.getLocalBounds();
+            tempText.setOrigin({ bounds.size.x / 2.f, bounds.size.y / 2.f });
+            
+            tempText.setPosition(ind.position);
+
+            sf::Color c = ind.color;
+            float alphaRatio = ind.lifeTime / ind.maxLifeTime;
+        
+            c.a = static_cast<std::uint8_t>(255 * alphaRatio);
+            
+            tempText.setFillColor(c);
+            target.draw(tempText);
+        }
     }
 }
 
@@ -445,3 +483,24 @@ template void CombatSystem::updateAttackTimeline<Enemy, Player>(
 template void CombatSystem::updateAttackTimeline<Player, Enemy>(
     float, Player*, State&, const Attack&, Enemy*
 );
+
+void CombatSystem::spawnDamageText(Entity* target, int amount) {
+    sf::FloatRect box = target->getBoundingBox();
+    sf::Vector2f scale = target->getScale();
+
+    float visualWidth = box.size.x * scale.x;
+
+    float centerX = box.position.x + (visualWidth / 2.f);
+    float topY = box.position.y;
+
+    DamageIndicator indicator;
+    indicator.position = sf::Vector2f{ centerX, topY + 150.f };
+    
+    indicator.text = std::to_string(amount * -1);
+    indicator.color = sf::Color::White;
+    indicator.lifeTime = 1.0f;
+    indicator.maxLifeTime = 1.0f;
+    indicator.speed = 100.f;
+
+    damageTexts.push_back(indicator);
+}
