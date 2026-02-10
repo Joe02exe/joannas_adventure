@@ -200,7 +200,7 @@
             "priority": 1,
             "text": [
                 "Hello traveler, where do you go?",
-                "Hopefully not to the desert south from here.",
+                "Hopefully not to the desert north from here.",
                 "I was there yesterday to get water from the well. Then suddenly a skeleton emerged from the sand and attacked me!",
                 "It was terrible. There is only one thing I am more afraid of than skeletons... ",
                 "... and that is Giovannino."
@@ -216,6 +216,35 @@
                 "If you find one, I would trade it for a shield which strengthens your defenese.",
                 "Let me know if you are up for that deal!"
             ]
+        },
+        {   
+            "id": "shield_trade",
+            "priority": 2,
+            "text": [
+                "Thanks for the mushroom!"
+            ],
+            "req": {
+                "type": "ITEM_REMOVE",
+                "id": "703",
+                "amount": 1
+            },
+            "reward": {
+                "id": "629",
+                "name": "shield",
+                "amount": 1
+            }
+        },
+        {   
+            "priority": 3,
+            "text": [
+                "I think you gave me the wrong mushroom...",
+                "I feel sick."
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "629",
+                "amount": 1
+            }
         }
     ]
 }
