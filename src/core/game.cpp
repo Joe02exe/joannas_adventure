@@ -74,6 +74,21 @@ void Game::initialize() {
         "assets/buttons/interact_T.png", sharedDialogueBox, "Miner"
     ));
 
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png", "assets/player/npc/guard1_walking.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Swimmer"
+    ));
+
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png", "assets/player/npc/guard1_walking.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Girl1"
+    ));
+
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png", "assets/player/npc/guard1_walking.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Girl2"
+    ));
+
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }));
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }));
 
