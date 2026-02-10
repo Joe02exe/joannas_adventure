@@ -148,9 +148,8 @@ void NPC::update(float dt, Player& player) {
     if (pendingReward.has_value()) {
         if (dialogueBox->getOwner() == this) {
             if (!dialogueBox->isActive() && !dialogueBox->hasMoreLines()) {
-                player.getInventory().addItem(pendingReward.value());
+                player.addItemToInventory(pendingReward.value(),1);
                 pendingReward.reset();
-                std::cout << "Reward granted!" << std::endl;
             }
         } else {
             pendingReward.reset();
