@@ -104,6 +104,12 @@ void Player::draw(sf::RenderTarget& target) const {
 void Player::addItemToInventory(
     const Item& item, const std::uint32_t quantity
 ) {
+    if(item.name == "shield") {
+        this->stats.defense += 3;
+    }
+    else if (item.name == "sword") {
+        this->stats.attack += 3;
+    }
     this->inventory.addItem(item, quantity);
 }
 

@@ -181,5 +181,70 @@
                 "amount": 1
             }
         }
+    ],
+    "Swimmer": [
+        {   
+            "priority": 1,
+            "text": [
+                "Hello traveler, what a nice day for a swim.",
+                "I used to work in the mine east from here...",
+                "... but now the entrance is blocked by rocks.",
+                "Some say that a monster barricaded the entrance to hide its treasure and kills anyone who tries to enter.",
+                "Without the mine this place will fall into poverty and people won't be able to afford food anymore.",
+                "We really need a hero to help us..."
+            ]
+        }
+    ],
+    "Girl1": [
+        {   
+            "priority": 1,
+            "text": [
+                "Hello traveler, where do you go?",
+                "Hopefully not to the desert north from here.",
+                "I was there yesterday to get water from the well. Then suddenly a skeleton emerged from the sand and attacked me!",
+                "It was terrible. There is only one thing I am more afraid of than skeletons... ",
+                "... and that is Giovannino."
+            ]
+        }
+    ],
+    "Girl2": [
+        {   
+            "priority": 1,
+            "text": [
+                "Greetings traveler! I heard you are a skilled fighter.",
+                "Did you know that around here grow red mushrooms, which make you stronger when consumed?",
+                "If you find one, I would trade it for a shield which strengthens your defenese.",
+                "Let me know if you are up for that deal!"
+            ]
+        },
+        {   
+            "id": "shield_trade",
+            "priority": 2,
+            "text": [
+                "Thanks for the mushroom!"
+            ],
+            "req": {
+                "type": "ITEM_REMOVE",
+                "id": "703",
+                "amount": 1
+            },
+            "reward": {
+                "id": "629",
+                "name": "shield",
+                "amount": 1
+            }
+        },
+        {   
+            "priority": 3,
+            "text": [
+                "I think you gave me the wrong mushroom...",
+                "I feel sick."
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "629",
+                "amount": 1
+            }
+        }
     ]
 }
