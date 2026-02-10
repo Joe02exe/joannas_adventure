@@ -173,7 +173,8 @@ bool Controller::getInput(
             return false;
         });
 
-    if (sharedDialogueBox->isActive() && !anyInteractionPoissible) {
+    if (sharedDialogueBox->isActive() && !anyInteractionPoissible &&
+        sharedDialogueBox->getOwner() != nullptr) {
         sharedDialogueBox->hide();
     }
 

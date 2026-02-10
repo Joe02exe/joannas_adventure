@@ -76,10 +76,36 @@ void Game::initialize() {
         sharedDialogueBox, "Miner"
     ));
 
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Swimmer"
+    ));
+
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Girl1"
+    ));
+
+    entities.push_back(std::make_unique<NPC>(
+        sf::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Girl2"
+    ));
+
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }));
     entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }));
 
     entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
+
+    controller->getPlayer().onLevelUp([this](int newLevel) {
+        std::string msg1 = "Level Up! You have reached level " +
+                           std::to_string(newLevel) + ".";
+        std::string msg2 = "Your stats increased: +2 attack and +1 defense.";
+        this->sharedDialogueBox->setDialogue({ msg1, msg2 });
+        this->sharedDialogueBox->show();
+    });
 
     menu = std::make_unique<Menu>(
         windowManager, *controller, tileManager, audioManager, entities
@@ -201,6 +227,12 @@ void Game::updateOverworld(float dt) {
         dt, windowManager.getWindow(), frameCollisions, entities,
         sharedDialogueBox, tileManager, renderEngine
     );
+
+    if (sharedDialogueBox && sharedDialogueBox->isActive() &&
+        sharedDialogueBox->getOwner() == nullptr) {
+        sharedDialogueBox->update(dt, controller->getPlayer().getPosition());
+    }
+
     if (resetClock) {
         clock.restart();
     }
@@ -244,7 +276,8 @@ void Game::updateOverworld(float dt) {
     if (controller->getPlayer().getPosition().y < 200.f &&
         controller->getPlayer().getPosition().x > 200.f &&
         controller->getPlayer().getPosition().x < 400.f) {
-        if (randomSkeletonPtr == nullptr && (std::rand() % 10000 < 5)) {
+
+        if (randomSkeletonPtr == nullptr && (std::rand() % 3000 < 5)) {
             auto randomSkeleton = std::make_unique<Enemy>(
                 sf::Vector2f{ controller->getPlayer().getPosition().x + 15.f,
                               controller->getPlayer().getPosition().y },

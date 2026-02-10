@@ -83,7 +83,6 @@ void NPC::interact(Player& player) {
         if(conditionMet) {
             dialogueBox->setDialogue(entry["text"], this);
             dialogueBox->show();
-            move(entry["move"]);
             if (!uniqueKey.empty()) {
                 player.addInteraction(uniqueKey);
             }
@@ -91,6 +90,7 @@ void NPC::interact(Player& player) {
                 json reward = entry["reward"];
                 pendingReward = Item(reward["id"], reward["name"]);
             }
+            move(entry["move"]);
             return;
         }
     }
@@ -141,16 +141,15 @@ void NPC::update(float dt, Player& player) {
         applyFrame();
     }
 
-    if (dialogueBox && dialogueBox->isActive()) {
+    if (dialogueBox && dialogueBox->isActive() && dialogueBox->getOwner() == this) {
         dialogueBox->update(dt, getPosition());
     }
 
     if (pendingReward.has_value()) {
         if (dialogueBox->getOwner() == this) {
             if (!dialogueBox->isActive() && !dialogueBox->hasMoreLines()) {
-                player.getInventory().addItem(pendingReward.value());
+                player.addItemToInventory(pendingReward.value(),1);
                 pendingReward.reset();
-                std::cout << "Reward granted!" << std::endl;
             }
         } else {
             pendingReward.reset();

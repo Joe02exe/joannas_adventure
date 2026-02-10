@@ -87,7 +87,14 @@ class Player: public Entity {
         visitedInteractions = interactions;
     }
 
+    using LevelUpListener = std::function<void(int)>;
+
+    void onLevelUp(const LevelUpListener& listener) {
+        levelUpListener = listener;
+    }
+
   private:
+    LevelUpListener levelUpListener;
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
     Inventory inventory = Inventory(20);
