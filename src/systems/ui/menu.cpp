@@ -11,6 +11,8 @@
 #include <sys/stat.h>
 #include <utility>
 
+#include "joanna/core/game.h"
+#include "joanna/entities/interactables/stone.h"
 #include "joanna/entities/npc.h"
 
 namespace {
@@ -26,11 +28,11 @@ const unsigned int FONT_SIZE_ITEM = 14;
 Menu::Menu(
     WindowManager& windowManager, Controller& controller,
     TileManager& tileManager, AudioManager& audioManager,
-    std::list<std::unique_ptr<Entity>>& entities
+    std::list<std::unique_ptr<Entity>>& entities, Game& game
 )
     : windowManager(&windowManager), controller(&controller),
       tileManager(&tileManager), audioManager(&audioManager),
-      entities(&entities),
+      entities(&entities), game(&game),
       mouseSprite(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/cursor.png"
       )) {
@@ -243,6 +245,7 @@ void Menu::executeSelection() {
         controller->getPlayer().setPosition({ 150.f, 400.f });
         controller->getPlayer().resetInteractions();
         windowManager->setCenter({ 150.f, 400.f });
+        game->resetEntities();
     } else if (choice == "Load game") {
         loadingInteraction = true;
         setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
@@ -292,31 +295,66 @@ void Menu::executeSelection() {
 
             // move entities back to default positions or states if needed
             bool guard1Reset = state.player.visitedInteractions.count(
-                "assets/player/npc/guard1.png_Bring key"
-            );
+                                   "assets/player/npc/guard1.png_Bring key"
+                               ) != 0u;
             bool guard2Reset = state.player.visitedInteractions.count(
-                "assets/player/npc/guard2.png_Bring key"
-            );
-            for (const auto& ptr : *entities) {
-                if (ptr) {
-                    // Good practice to check if not null
-                    auto p = ptr.get();
-                    if (auto* npc = dynamic_cast<NPC*>(p)) {
-                        if (npc->getUniqueSpriteId() ==
-                                "assets/player/npc/guard1.png" &&
-                            guard1Reset) {
-                            npc->setPosition(
-                                npc->getPosition() - sf::Vector2f(50.f, 50.f)
-                            );
-                        }
-                        if (npc->getUniqueSpriteId() ==
-                                "assets/player/npc/guard2.png" &&
-                            guard2Reset) {
-                            npc->setPosition(
-                                npc->getPosition() - sf::Vector2f(50.f, 50.f)
-                            );
-                        }
+                                   "assets/player/npc/guard2.png_Bring key"
+                               ) != 0u;
+            bool stoneLeftReset =
+                state.player.visitedInteractions.count("left") != 0u;
+            bool stoneRightReset =
+                state.player.visitedInteractions.count("right") != 0u;
+
+            // Use an iterator instead of a range-based for loop
+            for (auto it = entities->begin(); it != entities->end();
+                 /* increment handled inside */) {
+                auto& ptr = *it; // Access the unique_ptr
+
+                if (!ptr) {
+                    ++it;
+                    continue;
+                }
+
+                auto p = ptr.get();
+                bool itemRemoved =
+                    false; // Flag to track if we deleted something
+
+                // --- NPC Logic ---
+                if (auto* npc = dynamic_cast<NPC*>(p)) {
+                    if (npc->getUniqueSpriteId() ==
+                            "assets/player/npc/guard1.png" &&
+                        guard1Reset) {
+                        npc->setPosition(
+                            npc->getPosition() - sf::Vector2f(50.f, 50.f)
+                        );
                     }
+                    if (npc->getUniqueSpriteId() ==
+                            "assets/player/npc/guard2.png" &&
+                        guard2Reset) {
+                        npc->setPosition(
+                            npc->getPosition() - sf::Vector2f(50.f, 50.f)
+                        );
+                    }
+                }
+
+                // --- Stone Logic ---
+                if (auto* stone = dynamic_cast<Stone*>(p)) {
+                    if (stone->getStoneId() == "left" && stoneLeftReset) {
+                        // Remove the stone safely
+                        it = entities->erase(it);
+                        itemRemoved = true;
+                    }
+                    if (stone->getStoneId() == "right" && stoneRightReset) {
+                        // Remove the stone safely
+                        it = entities->erase(it);
+                        itemRemoved = true;
+                    }
+                }
+
+                // Only increment the iterator if we didn't remove anything
+                // (erase() automatically advances 'it' to the next item)
+                if (!itemRemoved) {
+                    ++it;
                 }
             }
         } else {

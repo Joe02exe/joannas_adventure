@@ -6,11 +6,14 @@
 
 #include <SFML/Graphics.hpp>
 
+class Game;
+
 class Menu {
     WindowManager* windowManager;
     Controller* controller;
     TileManager* tileManager;
     AudioManager* audioManager;
+    Game* game;
     std::list<std::unique_ptr<Entity>>* entities;
 
     sf::Font font;
@@ -48,7 +51,7 @@ class Menu {
     Menu(
         WindowManager& windowManager, Controller& controller,
         TileManager& tileManager, AudioManager& audioManager,
-        std::list<std::unique_ptr<Entity>>& entities
+        std::list<std::unique_ptr<Entity>>& entities, Game& game
     );
     void show(
         RenderEngine& render_engine, TileManager& tileManager,

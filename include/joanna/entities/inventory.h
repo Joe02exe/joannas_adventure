@@ -119,6 +119,8 @@ class Inventory {
         { 3056, "piratToken" },    // invisible
         { 3055, "counterAttack" }, // invisible
         { 627, "key" },
+        { 628, "bone" },
+        { 629, "shield" },
         { 703, "mushroom" },
         { 1330, "heal" },
         { 3113, "pickaxe" },

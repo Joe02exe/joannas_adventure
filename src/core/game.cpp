@@ -29,11 +29,54 @@ Game::Game()
 
 void Game::initialize() {
     audioManager.set_current_music(currentMusicId);
-    controller = std::make_unique<Controller>(windowManager, audioManager);
+    controller =
+        std::make_unique<Controller>(windowManager, audioManager, *this);
     std::ifstream file("assets/dialog/dialog.json");
     NPC::jsonData = json::parse(file);
     sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
+    resetEntities();
 
+    controller->getPlayer().onLevelUp([this](int newLevel) {
+        std::string msg1 = "Level Up! You have reached level " +
+                           std::to_string(newLevel) + ".";
+        std::string msg2 = "Your stats increased: +2 attack and +1 defense.";
+        this->sharedDialogueBox->setDialogue({ msg1, msg2 });
+        this->sharedDialogueBox->show();
+    });
+
+    menu = std::make_unique<Menu>(
+        windowManager, *controller, tileManager, audioManager, entities, *this
+    );
+    menu->show(
+        renderEngine, tileManager, entities, sharedDialogueBox, audioManager
+    );
+
+    clock.restart();
+}
+
+void Game::run() {
+    while (windowManager.getWindow().isOpen()) {
+        handleInput();
+
+        float dt = clock.restart().asSeconds();
+        if (dt <= 0.0f) {
+            dt = 0.0001f;
+        }
+
+        update(dt);
+        render(dt);
+    }
+
+    if constexpr (IMGUI_ENABLED) {
+        ImGui::SFML::Shutdown();
+    }
+    ResourceManager<sf::Font>::getInstance()->clear();
+    ResourceManager<sf::Texture>::getInstance()->clear();
+    ResourceManager<sf::SoundBuffer>::getInstance()->clear();
+}
+
+void Game::resetEntities() {
+    entities.clear();
     entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
         "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
@@ -94,48 +137,14 @@ void Game::initialize() {
         sharedDialogueBox, "Girl2"
     ));
 
-    entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }));
-    entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }));
+    entities.push_back(
+        std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }, "left")
+    );
+    entities.push_back(
+        std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }, "right")
+    );
 
     entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
-
-    controller->getPlayer().onLevelUp([this](int newLevel) {
-        std::string msg1 = "Level Up! You have reached level " +
-                           std::to_string(newLevel) + ".";
-        std::string msg2 = "Your stats increased: +2 attack and +1 defense.";
-        this->sharedDialogueBox->setDialogue({ msg1, msg2 });
-        this->sharedDialogueBox->show();
-    });
-
-    menu = std::make_unique<Menu>(
-        windowManager, *controller, tileManager, audioManager, entities
-    );
-    menu->show(
-        renderEngine, tileManager, entities, sharedDialogueBox, audioManager
-    );
-
-    clock.restart();
-}
-
-void Game::run() {
-    while (windowManager.getWindow().isOpen()) {
-        handleInput();
-
-        float dt = clock.restart().asSeconds();
-        if (dt <= 0.0f) {
-            dt = 0.0001f;
-        }
-
-        update(dt);
-        render(dt);
-    }
-
-    if constexpr (IMGUI_ENABLED) {
-        ImGui::SFML::Shutdown();
-    }
-    ResourceManager<sf::Font>::getInstance()->clear();
-    ResourceManager<sf::Texture>::getInstance()->clear();
-    ResourceManager<sf::SoundBuffer>::getInstance()->clear();
 }
 
 void Game::handleInput() {
