@@ -35,10 +35,24 @@ bool Controller::getInput(
     TileManager& tileManager, RenderEngine& renderEngine
 
 ) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::M)) {
+        if (!mPressed) {
+            showMapOverview = !showMapOverview;
+            mPressed = true;
+        }
+    } else {
+        mPressed = false;
+    }
+
     float factor = 30.0f;
 
     State state = State::Idle;
     sf::Vector2f dir{ 0.f, 0.f };
+
+    if (isMapOverviewActive()) {
+        player.update(dt, state, facingLeft, audioManager);
+        return false;
+    }
 
     if (player.getState() != State::Mining) {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
@@ -63,15 +77,6 @@ bool Controller::getInput(
             dir *= 1.5f;
             state = State::Running;
         }
-    }
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::M)) {
-        if (!mPressed) {
-            showMapOverview = !showMapOverview;
-            mPressed = true;
-        }
-    } else {
-        mPressed = false;
     }
 
     // Inventory toggle
