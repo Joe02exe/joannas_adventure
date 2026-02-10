@@ -7,14 +7,17 @@
 #include "joanna/systems/menu.h"
 #include "joanna/utils/logger.h"
 
+#include "joanna/core/game.h"
+#include "joanna/entities/interactables/stone.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <algorithm>
 #include <joanna/entities/npc.h>
-#include "joanna/entities/interactables/stone.h"
 
-Controller::Controller(WindowManager& windowManager, AudioManager& audioManager)
-    : windowManager(windowManager), audioManager(audioManager),
+Controller::Controller(
+    WindowManager& windowManager, AudioManager& audioManager, Game& game
+)
+    : windowManager(windowManager), audioManager(audioManager), game(game),
       player(
           "assets/player/main/idle.png", "assets/player/main/walk.png",
           "assets/player/main/run.png", sf::Vector2f{ 150.f, 400.f }
@@ -33,12 +36,25 @@ bool Controller::getInput(
     std::list<std::unique_ptr<Entity>>& entities,
     const std::shared_ptr<DialogueBox>& sharedDialogueBox,
     TileManager& tileManager, RenderEngine& renderEngine
-
 ) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::M)) {
+        if (!mPressed) {
+            showMapOverview = !showMapOverview;
+            mPressed = true;
+        }
+    } else {
+        mPressed = false;
+    }
+
     float factor = 30.0f;
 
     State state = State::Idle;
     sf::Vector2f dir{ 0.f, 0.f };
+
+    if (isMapOverviewActive()) {
+        player.update(dt, state, facingLeft, audioManager);
+        return false;
+    }
 
     if (player.getState() != State::Mining) {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
@@ -138,7 +154,9 @@ bool Controller::getInput(
 
     bool pDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P);
     if (pDown && !keyPressed) {
-        Menu menu(windowManager, *this, tileManager, audioManager);
+        Menu menu(
+            windowManager, *this, tileManager, audioManager, entities, game
+        );
         menu.show(
             renderEngine, tileManager, entities, sharedDialogueBox, audioManager
         );
@@ -159,7 +177,8 @@ bool Controller::getInput(
             return false;
         });
 
-    if (sharedDialogueBox->isActive() && !anyInteractionPoissible && sharedDialogueBox->getOwner() != nullptr) {
+    if (sharedDialogueBox->isActive() && !anyInteractionPoissible &&
+        sharedDialogueBox->getOwner() != nullptr) {
         sharedDialogueBox->hide();
     }
 
@@ -197,9 +216,13 @@ bool Controller::updateStep(
     }
 
     // Remove destroyed stones
-    entities.remove_if([](const std::unique_ptr<Entity>& e) {
+    entities.remove_if([this](const std::unique_ptr<Entity>& e) {
         if (auto* stone = dynamic_cast<Stone*>(e.get())) {
-            return stone->shouldBeRemoved();
+            auto b = stone->shouldBeRemoved();
+            if (b) {
+                player.addInteraction(stone->getStoneId());
+            }
+            return b;
         }
         return false;
     });

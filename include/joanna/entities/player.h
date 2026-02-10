@@ -22,8 +22,14 @@ class Player: public Entity {
     void
     update(float dt, State& state, bool facingLeft, AudioManager& pManager);
     void startMining();
-    State getState() const { return currentState; }
-    int getCurrentFrame() const { return currentFrame; }
+
+    State getState() const {
+        return currentState;
+    }
+
+    int getCurrentFrame() const {
+        return currentFrame;
+    }
 
     void draw(sf::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
@@ -56,19 +62,43 @@ class Player: public Entity {
 
     void gainExp(int amount);
     void levelUp();
-    int getLevel() const { return level; }
-    int getCurrentExp() const { return currentExp; }
-    int getExpToNextLevel() const { return expToNextLevel; }
+
+    int getLevel() const {
+        return level;
+    }
+
+    int getCurrentExp() const {
+        return currentExp;
+    }
+
+    int getExpToNextLevel() const {
+        return expToNextLevel;
+    }
+
+    std::unordered_set<std::string> getVisitedInteractions() const {
+        return visitedInteractions;
+    }
+
+    void resetInteractions() {
+        visitedInteractions.clear();
+    }
+
+    void setInteractions(const std::unordered_set<std::string>& interactions) {
+        visitedInteractions = interactions;
+    }
 
     using LevelUpListener = std::function<void(int)>;
-    void onLevelUp(LevelUpListener listener) { levelUpListener = listener; }
- 
+
+    void onLevelUp(const LevelUpListener& listener) {
+        levelUpListener = listener;
+    }
+
   private:
     LevelUpListener levelUpListener;
     std::unordered_map<State, Animation> animations;
     State currentState = State::Idle;
     Inventory inventory = Inventory(20);
-    Stats stats = Stats(10,10);
+    Stats stats = Stats(10, 10);
     std::vector<Attack> attacks;
 
     float frameTimer = 0.f;
@@ -78,7 +108,6 @@ class Player: public Entity {
     int level = 1;
     int currentExp = 0;
     int expToNextLevel = 10;
-
 
     void switchState(State newState);
     void applyFrame();

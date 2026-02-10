@@ -54,8 +54,8 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
 
     auto it = std::find_if(
         items_.begin(), items_.end(),
-        [](const StoredItem& itemLambda) {
-            return itemLambda.item.name == "invisible";
+        [this](const StoredItem& itemLambda) {
+            return isItemInvisible(std::stoi(itemLambda.item.id));
         }
     );
 
@@ -277,7 +277,7 @@ void Inventory::drawItems(
         const std::size_t col = i % columns;
         const std::size_t row = i / columns;
 
-        if (vec.at(i).item.name == "invisible") {
+        if (isItemInvisible(std::stoi(vec.at(i).item.id))) {
             continue;
         }
 
@@ -359,7 +359,9 @@ void Inventory::selectPrevious() {
     if (selectedSlotIndex == 0) {
         const auto it = std::find_if(
             items_.begin(), items_.end(),
-            [](const StoredItem& item) { return item.item.name == "invisible"; }
+            [this](const StoredItem& item) {
+                return isItemInvisible(std::stoi(item.item.id));
+            }
         );
         selectedSlotIndex = std::distance(items_.begin(), it) - 1;
     } else {
@@ -381,10 +383,12 @@ std::string Inventory::getSelectedItemId() const {
 }
 
 void Inventory::checkInventoryInvisibleBounds() {
-    const auto it =
-        std::find_if(items_.begin(), items_.end(), [](const StoredItem& item) {
-            return item.item.name == "invisible";
-        });
+    const auto it = std::find_if(
+        items_.begin(), items_.end(),
+        [this](const StoredItem& item) {
+            return isItemInvisible(std::stoi(item.item.id));
+        }
+    );
     if (it != items_.end()) {
         if (const std::size_t index = std::distance(items_.begin(), it);
             selectedSlotIndex >= index) {
@@ -393,4 +397,10 @@ void Inventory::checkInventoryInvisibleBounds() {
             }
         }
     }
+}
+
+bool Inventory::isItemInvisible(const int itemId) const {
+    return std::find(
+               invisibleItemIds.begin(), invisibleItemIds.end(), itemId
+           ) != invisibleItemIds.end();
 }

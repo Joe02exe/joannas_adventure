@@ -29,11 +29,54 @@ Game::Game()
 
 void Game::initialize() {
     audioManager.set_current_music(currentMusicId);
-    controller = std::make_unique<Controller>(windowManager, audioManager);
+    controller =
+        std::make_unique<Controller>(windowManager, audioManager, *this);
     std::ifstream file("assets/dialog/dialog.json");
     NPC::jsonData = json::parse(file);
     sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
+    resetEntities();
 
+    controller->getPlayer().onLevelUp([this](int newLevel) {
+        std::string msg1 = "Level Up! You have reached level " +
+                           std::to_string(newLevel) + ".";
+        std::string msg2 = "Your stats increased: +2 attack and +1 defense.";
+        this->sharedDialogueBox->setDialogue({ msg1, msg2 });
+        this->sharedDialogueBox->show();
+    });
+
+    menu = std::make_unique<Menu>(
+        windowManager, *controller, tileManager, audioManager, entities, *this
+    );
+    menu->show(
+        renderEngine, tileManager, entities, sharedDialogueBox, audioManager
+    );
+
+    clock.restart();
+}
+
+void Game::run() {
+    while (windowManager.getWindow().isOpen()) {
+        handleInput();
+
+        float dt = clock.restart().asSeconds();
+        if (dt <= 0.0f) {
+            dt = 0.0001f;
+        }
+
+        update(dt);
+        render(dt);
+    }
+
+    if constexpr (IMGUI_ENABLED) {
+        ImGui::SFML::Shutdown();
+    }
+    ResourceManager<sf::Font>::getInstance()->clear();
+    ResourceManager<sf::Texture>::getInstance()->clear();
+    ResourceManager<sf::SoundBuffer>::getInstance()->clear();
+}
+
+void Game::resetEntities() {
+    entities.clear();
     entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
         "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
@@ -65,71 +108,43 @@ void Game::initialize() {
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 500.f, 300.f }, "assets/player/npc/boy1.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Boy"
+        sf::Vector2f{ 500.f, 300.f }, "assets/player/npc/boy1.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Boy"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 520.f, 430.f }, "assets/player/npc/miner.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Miner"
+        sf::Vector2f{ 520.f, 430.f }, "assets/player/npc/miner.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Miner"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Swimmer"
+        sf::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Swimmer"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Girl1"
+        sf::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Girl1"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png", "assets/player/npc/guard1_walking.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Girl2"
+        sf::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sharedDialogueBox, "Girl2"
     ));
 
-    entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }));
-    entities.push_back(std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }));
+    entities.push_back(
+        std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }, "left")
+    );
+    entities.push_back(
+        std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }, "right")
+    );
 
     entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
-
-    controller->getPlayer().onLevelUp([this](int newLevel) {
-        std::string msg1 = "Level Up! You have reached level " + std::to_string(newLevel) + ".";
-        std::string msg2 = "Your stats increased: +2 attack and +1 defense.";
-        this->sharedDialogueBox->setDialogue({msg1, msg2});
-        this->sharedDialogueBox->show();
-    });
-
-    menu = std::make_unique<Menu>(
-        windowManager, *controller, tileManager, audioManager
-    );
-    menu->show(
-        renderEngine, tileManager, entities, sharedDialogueBox, audioManager
-    );
-
-    clock.restart();
-}
-
-void Game::run() {
-    while (windowManager.getWindow().isOpen()) {
-        handleInput();
-
-        float dt = clock.restart().asSeconds();
-        if (dt <= 0.0f) {
-            dt = 0.0001f;
-        }
-
-        update(dt);
-        render(dt);
-    }
-
-    if constexpr (IMGUI_ENABLED) {
-        ImGui::SFML::Shutdown();
-    }
-    ResourceManager<sf::Font>::getInstance()->clear();
-    ResourceManager<sf::Texture>::getInstance()->clear();
-    ResourceManager<sf::SoundBuffer>::getInstance()->clear();
 }
 
 void Game::handleInput() {
@@ -222,7 +237,8 @@ void Game::updateOverworld(float dt) {
         sharedDialogueBox, tileManager, renderEngine
     );
 
-    if (sharedDialogueBox && sharedDialogueBox->isActive() && sharedDialogueBox->getOwner() == nullptr) {
+    if (sharedDialogueBox && sharedDialogueBox->isActive() &&
+        sharedDialogueBox->getOwner() == nullptr) {
         sharedDialogueBox->update(dt, controller->getPlayer().getPosition());
     }
 
@@ -242,7 +258,6 @@ void Game::updateOverworld(float dt) {
     if (controller->getPlayer().getInventory().hasItemByName("piratToken") &&
         !controller->getPlayer().getInventory().hasItemByName("counterAttack"
         )) {
-
         if (skeletonPtr == nullptr) {
             auto skeleton = std::make_unique<Enemy>(
                 sf::Vector2f{ 100.f, 110.f }, Enemy::EnemyType::Skeleton
@@ -267,16 +282,19 @@ void Game::updateOverworld(float dt) {
         }
     }
 
-    if (controller->getPlayer().getPosition().y < 200.f && controller->getPlayer().getPosition().x > 200.f && controller->getPlayer().getPosition().x < 400.f) {
+    if (controller->getPlayer().getPosition().y < 200.f &&
+        controller->getPlayer().getPosition().x > 200.f &&
+        controller->getPlayer().getPosition().x < 400.f) {
 
         if (randomSkeletonPtr == nullptr && (std::rand() % 3000 < 5)) {
             auto randomSkeleton = std::make_unique<Enemy>(
-                sf::Vector2f{controller->getPlayer().getPosition().x + 15.f, controller->getPlayer().getPosition().y}, 
+                sf::Vector2f{ controller->getPlayer().getPosition().x + 15.f,
+                              controller->getPlayer().getPosition().y },
                 Enemy::EnemyType::Skeleton
             );
-            
-            randomSkeletonPtr = randomSkeleton.get(); 
-            
+
+            randomSkeletonPtr = randomSkeleton.get();
+
             entities.push_back(std::move(randomSkeleton));
         }
 
@@ -288,16 +306,20 @@ void Game::updateOverworld(float dt) {
                     break;
                 }
             }
-            
+
             if (!stillExists) {
                 randomSkeletonPtr = nullptr;
             }
         }
 
         if (randomSkeletonPtr != nullptr) {
-            if (randomSkeletonPtr->updateOverworld(dt, controller->getPlayer(), tileManager) == COMBAT_TRIGGERED) {
+            if (randomSkeletonPtr->updateOverworld(
+                    dt, controller->getPlayer(), tileManager
+                ) == COMBAT_TRIGGERED) {
                 gameStatus = GameStatus::Combat;
-                combatSystem.startCombat(controller->getPlayer(), *randomSkeletonPtr);
+                combatSystem.startCombat(
+                    controller->getPlayer(), *randomSkeletonPtr
+                );
             }
         }
     }
@@ -318,8 +340,8 @@ void Game::updateCombat(float dt) {
             );
             Logger::info("Skeleton defeated. Counter attack added to inventory."
             );
-        }
-        else if(randomSkeletonPtr != nullptr && randomSkeletonPtr->isDead()){
+        } else if (randomSkeletonPtr != nullptr &&
+                   randomSkeletonPtr->isDead()) {
             controller->getPlayer().getInventory().addItem(Item("628", "Bone"));
         }
 
@@ -375,33 +397,42 @@ void Game::renderOverworld(float dt) {
 
     postProc.drawScene(
         [&](sf::RenderTarget& target, const sf::View& view) {
-            // world view
-            target.setView(controller->getPlayerView());
+            if (controller->isMapOverviewActive()) {
+                sf::View& mapView = windowManager.getMapOverviewView();
+                // Center the map on the player
+                mapView.setCenter(controller->getPlayer().getPosition());
+                target.setView(mapView);
+            } else {
+                target.setView(controller->getPlayerView());
+            }
+
             renderEngine.render(
                 target, controller->getPlayer(), tileManager, entities,
                 sharedDialogueBox, dt
             );
 
             // minimap
-            target.setView(windowManager.getMiniMapView());
-            renderEngine.render(
-                target, controller->getPlayer(), tileManager, entities,
-                sharedDialogueBox, dt
-            );
+            if (!controller->isMapOverviewActive()) {
+                target.setView(windowManager.getMiniMapView());
+                renderEngine.render(
+                    target, controller->getPlayer(), tileManager, entities,
+                    sharedDialogueBox, dt
+                );
 
-            // ui
-            target.setView(windowManager.getUiView());
-            if (controller->renderInventory()) {
-                controller->getPlayer().getInventory().displayInventory(
-                    target, tileManager
+                // ui
+                target.setView(windowManager.getUiView());
+                if (controller->renderInventory()) {
+                    controller->getPlayer().getInventory().displayInventory(
+                        target, tileManager
+                    );
+                }
+                controller->getPlayer().displayHealthBar(target, tileManager);
+                controller->getPlayer().getStats().draw(
+                    target, fontRenderer.getFont(),
+                    controller->getPlayer().getCurrentExp(),
+                    controller->getPlayer().getExpToNextLevel()
                 );
             }
-            controller->getPlayer().displayHealthBar(target, tileManager);
-            controller->getPlayer().getStats().draw(
-                target, fontRenderer.getFont(),
-                controller->getPlayer().getCurrentExp(),
-                controller->getPlayer().getExpToNextLevel()
-            );
         },
         nullptr
     );

@@ -8,7 +8,12 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Window.hpp>
+#include <sys/stat.h>
 #include <utility>
+
+#include "joanna/core/game.h"
+#include "joanna/entities/interactables/stone.h"
+#include "joanna/entities/npc.h"
 
 namespace {
 const sf::Color COLOR_TEXT_NORMAL = sf::Color::Black;
@@ -22,10 +27,12 @@ const unsigned int FONT_SIZE_ITEM = 14;
 
 Menu::Menu(
     WindowManager& windowManager, Controller& controller,
-    TileManager& tileManager, AudioManager& audioManager
+    TileManager& tileManager, AudioManager& audioManager,
+    std::list<std::unique_ptr<Entity>>& entities, Game& game
 )
     : windowManager(&windowManager), controller(&controller),
-      audioManager(&audioManager), tileManager(&tileManager),
+      tileManager(&tileManager), audioManager(&audioManager),
+      entities(&entities), game(&game),
       mouseSprite(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/cursor.png"
       )) {
@@ -48,7 +55,8 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void Menu::resetToDefaultMenu() {
-    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "About", "Quit" });
+    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "About",
+                 "Quit" });
 }
 
 void Menu::rebuildUI() {
@@ -214,6 +222,7 @@ void Menu::executeSelection() {
         state.player.x = player.getPosition().x;
         state.player.y = player.getPosition().y;
         state.player.health = player.getHealth();
+        state.player.visitedInteractions = player.getVisitedInteractions();
 
         // Save Inventory
         for (const auto& item : player.getInventory().listItems()) {
@@ -234,7 +243,9 @@ void Menu::executeSelection() {
         controller->getPlayer().getInventory().clear();
         controller->getPlayer().setHealth(200);
         controller->getPlayer().setPosition({ 150.f, 400.f });
+        controller->getPlayer().resetInteractions();
         windowManager->setCenter({ 150.f, 400.f });
+        game->resetEntities();
     } else if (choice == "Load game") {
         loadingInteraction = true;
         setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
@@ -247,7 +258,8 @@ void Menu::executeSelection() {
                            "WASD : navigate\n"
                            "Shift : sprint\n"
                            "T : Talk to opponent\n"
-                           "E : Display inventory\n"
+                           "E : Apply items in inventory\n"
+                           "1-9 : Select inventory slot\n"
                            "Space : pickup item\n\n"
                            "Press Escape or Click to close.";
         showAbout = true;
@@ -275,8 +287,76 @@ void Menu::executeSelection() {
             );
             controller->getPlayer().getInventory().loadState(state.inventory);
             controller->getPlayer().setHealth(state.player.health);
+            controller->getPlayer().setInteractions(
+                state.player.visitedInteractions
+            );
             tileManager->loadObjectsFromSaveGame(state.map.items);
             isMenuOpen = false;
+
+            // move entities back to default positions or states if needed
+            bool guard1Reset = state.player.visitedInteractions.count(
+                                   "assets/player/npc/guard1.png_Bring key"
+                               ) != 0u;
+            bool guard2Reset = state.player.visitedInteractions.count(
+                                   "assets/player/npc/guard2.png_Bring key"
+                               ) != 0u;
+            bool stoneLeftReset =
+                state.player.visitedInteractions.count("left") != 0u;
+            bool stoneRightReset =
+                state.player.visitedInteractions.count("right") != 0u;
+
+            // Use an iterator instead of a range-based for loop
+            for (auto it = entities->begin(); it != entities->end();
+                 /* increment handled inside */) {
+                auto& ptr = *it; // Access the unique_ptr
+
+                if (!ptr) {
+                    ++it;
+                    continue;
+                }
+
+                auto p = ptr.get();
+                bool itemRemoved =
+                    false; // Flag to track if we deleted something
+
+                // --- NPC Logic ---
+                if (auto* npc = dynamic_cast<NPC*>(p)) {
+                    if (npc->getUniqueSpriteId() ==
+                            "assets/player/npc/guard1.png" &&
+                        guard1Reset) {
+                        npc->setPosition(
+                            npc->getPosition() - sf::Vector2f(50.f, 50.f)
+                        );
+                    }
+                    if (npc->getUniqueSpriteId() ==
+                            "assets/player/npc/guard2.png" &&
+                        guard2Reset) {
+                        npc->setPosition(
+                            npc->getPosition() - sf::Vector2f(50.f, 50.f)
+                        );
+                    }
+                }
+
+                // --- Stone Logic ---
+                if (auto* stone = dynamic_cast<Stone*>(p)) {
+                    if (stone->getStoneId() == "left" && stoneLeftReset) {
+                        // Remove the stone safely
+                        it = entities->erase(it);
+                        itemRemoved = true;
+                    }
+                    if (stone->getStoneId() == "right" && stoneRightReset) {
+                        // Remove the stone safely
+                        it = entities->erase(it);
+                        itemRemoved = true;
+                    }
+                }
+
+                // Only increment the iterator if we didn't remove anything
+                // (erase() automatically advances 'it' to the next item)
+                if (!itemRemoved) {
+                    ++it;
+                }
+            }
         } else {
             saveManager.saveGame(stateToSave, slotNumberStr);
             Logger::info("Saved game to slot " + choice);

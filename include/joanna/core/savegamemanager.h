@@ -2,12 +2,14 @@
 
 #include <filesystem>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 struct PlayerState {
     int health = 100;
     float x = 0.0f;
     float y = 0.0f;
+    std::unordered_set<std::string> visitedInteractions;
 };
 
 struct ItemState {

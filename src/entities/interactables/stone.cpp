@@ -1,11 +1,14 @@
+#include <utility>
+
 #include "joanna/entities/interactables/stone.h"
 
-Stone::Stone(const sf::Vector2f& position)
+Stone::Stone(const sf::Vector2f& position, std::string id)
     : Interactable(
           sf::FloatRect(position, { 16.f, 16.f }),
           "assets/buttons/interact_T.png", "assets/interactables/stone.png",
           sf::FloatRect(position, { 16.f, 16.f }) // Collision box
-      ) {
+      ),
+      id(std::move(id)) {
     // Initial frame
     setFrame(sf::IntRect({ 0, 0 }, { 16, 16 }));
 }

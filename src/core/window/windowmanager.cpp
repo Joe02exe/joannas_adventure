@@ -29,6 +29,11 @@ WindowManager::WindowManager(
     uiView.setCenter({ 0, 0 });
     uiView.setSize({ static_cast<float>(width), static_cast<float>(height) });
 
+    mapOverviewView.setSize({ static_cast<float>(width),
+                              static_cast<float>(height) });
+    mapOverviewView.zoom(.5f);
+    mapOverviewView.setCenter({ 0.f, 0.f });
+
     window.setMouseCursorVisible(false);
 
     // ImGUI
@@ -57,6 +62,7 @@ void WindowManager::handleResizeEvent(sf::Vector2u newSize) {
     mainView.setViewport(mainViewport);
     miniMapView.setViewport(miniViewport);
     uiView.setViewport(mainViewport);
+    mapOverviewView.setViewport(mainViewport);
 }
 
 void WindowManager::pollEvents() {

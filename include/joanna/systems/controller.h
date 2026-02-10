@@ -11,9 +11,13 @@
 #include <SFML/Graphics/View.hpp>
 #include <list>
 
+class Game;
+
 class Controller {
   public:
-    Controller(WindowManager& windowManager, AudioManager& audioManager);
+    Controller(
+        WindowManager& windowManager, AudioManager& audioManager, Game& game
+    );
 
     bool getInput(
         float dt, sf::RenderWindow& window,
@@ -21,7 +25,6 @@ class Controller {
         std::list<std::unique_ptr<Entity>>& entities,
         const std::shared_ptr<DialogueBox>& sharedDialogueBox,
         TileManager& tileManager, RenderEngine& renderEngine
-
     );
 
     bool updateStep(
@@ -32,6 +35,10 @@ class Controller {
         TileManager& tileManager, RenderEngine& renderEngine
 
     );
+
+    bool isMapOverviewActive() const {
+        return showMapOverview;
+    }
 
     sf::View& getPlayerView() const {
         return playerView;
@@ -52,12 +59,16 @@ class Controller {
   private:
     WindowManager& windowManager;
     AudioManager& audioManager;
+    Game& game;
     Player player;
     sf::View& playerView;
     sf::View& miniMapView;
     bool facingLeft = false;
     bool keyPressed = false;
     bool displayInventory = true;
+
+    bool showMapOverview = false;
+    bool mPressed = false;
 
     int counter = 0;
 };
