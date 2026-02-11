@@ -13,6 +13,7 @@
 #include <SFML/Graphics/View.hpp>
 #include <algorithm>
 #include <joanna/entities/npc.h>
+#include <limits>
 
 Controller::Controller(
     WindowManager& windowManager, AudioManager& audioManager, Game& game
@@ -142,13 +143,29 @@ bool Controller::getInput(
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) &&
         !sharedDialogueBox->isActive()) {
+        Interactable* closestInteractable = nullptr;
+        float minDistanceSq = std::numeric_limits<float>::max();
+        sf::Vector2f playerPos = player.getPosition();
+
         for (auto& entity : entities) {
             if (auto* interactable =
                     dynamic_cast<Interactable*>(entity.get())) {
-                if (interactable->canPlayerInteract(player.getPosition())) {
-                    interactable->interact(player);
+                if (interactable->canPlayerInteract(playerPos)) {
+                    sf::Vector2f entityPos = entity->getPosition();
+                    float dx = playerPos.x - entityPos.x;
+                    float dy = playerPos.y - entityPos.y;
+                    float distSq = dx * dx + dy * dy;
+
+                    if (distSq < minDistanceSq) {
+                        minDistanceSq = distSq;
+                        closestInteractable = interactable;
+                    }
                 }
             }
+        }
+
+        if (closestInteractable) {
+            closestInteractable->interact(player);
         }
     }
 

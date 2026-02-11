@@ -196,6 +196,7 @@ void Player::levelUp() {
 
     this->stats.attack += 2;
     this->stats.defense += 1;
+    this->health = maxHealth;
 
     if (levelUpListener) {
         levelUpListener(this->level);

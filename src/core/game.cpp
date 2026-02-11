@@ -151,6 +151,24 @@ void Game::resetEntities() {
     entities.push_back(
         std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }, "chest")
     );
+
+    for (auto& entity : entities) {
+        if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
+            if (npc->getDialogId() == "Guard") {
+                npc->setOnAction([this, npc](const std::string& actionId) {
+                    for (auto& otherEntity : entities) {
+                        if (auto* otherNpc =
+                                dynamic_cast<NPC*>(otherEntity.get())) {
+                            if (otherNpc != npc &&
+                                otherNpc->getDialogId() == "Guard") {
+                                otherNpc->triggerMove(actionId);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
 }
 
 void Game::handleInput() {
@@ -546,6 +564,10 @@ void Game::renderGameOver() {
 void Game::returnToMenu() {
     gameStatus = GameStatus::Overworld;
     resetEntities();
+    controller->getPlayer().setHealth(controller->getPlayer().getMaxHealth());
+    // Reset player position to spawn
+    controller->getPlayer().setPosition({ 150.f, 400.f });
+    controller->getPlayerView().setCenter({ 150.f, 400.f });
     menu->show(
         renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );
