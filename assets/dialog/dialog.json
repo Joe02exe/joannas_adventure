@@ -4,7 +4,7 @@
             "priority": 1,
             "text": [
                 "Ostia, didn't see you there traveler!", 
-                "My name is Giovannino. I live here and am very well respected and liked!",
+                "My name is Giovannino. I am the coolest guy in town!",
                 "I would like to show you around...",
                 "... but someone stole my carrots.",
                 "Can you bring all five back to me?"
@@ -19,7 +19,7 @@
             "req": {
                 "type": "ITEM_REMOVE",
                 "id": "691",
-                "amount": 1
+                "amount": 5
             },
             "reward": {
                 "id": "627",
@@ -123,7 +123,7 @@
             "text": [
                 "Have you met Giovannino?",
                 "He f'ed up our collision system and view port multiple times...",
-                "... so I stole and hid his carrots.",
+                "... so I stole his carrots.",
                 "I have one left, you can have it."
             ],
             "reward": {
@@ -146,7 +146,6 @@
             "text": [
                 "Greetings Traveler, my name is Karl. I am the local miner.",
                 "I was about to begin my mining tour, but then I tripped, because Giovannino bumped into me.",
-                "He really is not liked and respected around here.",
                 "Now my hip is broken and I need 3 bones to replace it.",
                 "Can you get them for me? As a reward I will give you my pickaxe!"
             ]
@@ -186,11 +185,11 @@
         {   
             "priority": 1,
             "text": [
-                "Hello traveler, what a nice day for a swim.",
+                "Hello traveler, what a nice day for a swim...",
                 "I used to work in the mine east from here...",
                 "... but now the entrance is blocked by rocks.",
                 "Some say that a monster barricaded the entrance to hide its treasure and kills anyone who tries to enter.",
-                "Without the mine this place will fall into poverty and people won't be able to afford food anymore.",
+                "Without the mine this place will fall into poverty...",
                 "We really need a hero to help us..."
             ]
         }
@@ -199,9 +198,10 @@
         {   
             "priority": 1,
             "text": [
-                "Hello traveler, where do you go?",
+                "Hello traveler, where are you going?",
                 "Hopefully not to the desert north from here.",
-                "I was there yesterday to get water from the well. Then suddenly a skeleton emerged from the sand and attacked me!",
+                "I was there yesterday to get water from the well...",
+                "...Suddenly a skeleton emerged from the sand and attacked me!",
                 "It was terrible. There is only one thing I am more afraid of than skeletons... ",
                 "... and that is Giovannino."
             ]
@@ -211,9 +211,9 @@
         {   
             "priority": 1,
             "text": [
-                "Greetings traveler! I heard you are a skilled fighter.",
-                "Did you know that around here grow red mushrooms, which make you stronger when consumed?",
-                "If you find one, I would trade it for a shield which strengthens your defenese.",
+                "Greetings traveler! I heard you are a skilled fighter...",
+                "Around here grow red mushrooms...",
+                "If you find one, I would trade it for a shield which strengthens your defenese...",
                 "Let me know if you are up for that deal!"
             ]
         },
