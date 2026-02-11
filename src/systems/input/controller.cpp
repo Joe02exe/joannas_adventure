@@ -152,7 +152,8 @@ bool Controller::getInput(
         }
     }
 
-    bool pDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P);
+    bool pDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P) ||
+                 sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape);
     if (pDown && !keyPressed) {
         Menu menu(
             windowManager, *this, tileManager, audioManager, entities, game

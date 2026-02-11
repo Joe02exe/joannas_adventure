@@ -198,5 +198,16 @@ void DialogueBox::render(sf::RenderTarget& target) {
         target, visibleText, textPosition, 24, sf::Color::Black, 0
     );
 
+    if (!isTyping()) {
+        std::string indicator = "< Space >";
+        sf::Vector2f indicatorPos = bubbleBackground.getPosition() +
+                                    bubbleBackground.getSize() -
+                                    sf::Vector2f(100.0f, 25.0f);
+
+        fontRenderer.drawText(
+            target, indicator, indicatorPos, 16, sf::Color(100, 100, 100), 0
+        );
+    }
+
     target.setView(oldView);
 }

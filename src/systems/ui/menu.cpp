@@ -260,7 +260,8 @@ void Menu::executeSelection() {
                            "T : Talk to opponent\n"
                            "E : Apply items in inventory\n"
                            "1-9 : Select inventory slot\n"
-                           "Space : pickup item\n\n"
+                           "Space : pickup item / dialogue\n"
+                           "P / Escape : Menu\n\n"
                            "Press Escape or Click to close.";
         showAbout = true;
     } else if (choice == "Quit") {
