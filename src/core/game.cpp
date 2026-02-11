@@ -546,6 +546,10 @@ void Game::renderGameOver() {
 void Game::returnToMenu() {
     gameStatus = GameStatus::Overworld;
     resetEntities();
+    controller->getPlayer().setHealth(controller->getPlayer().getMaxHealth());
+    // Reset player position to spawn
+    controller->getPlayer().setPosition({ 150.f, 400.f });
+    controller->getPlayerView().setCenter({ 150.f, 400.f });
     menu->show(
         renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );

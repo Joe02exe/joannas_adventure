@@ -42,6 +42,10 @@ class Player: public Entity {
         return health;
     }
 
+    int getMaxHealth() const {
+        return maxHealth;
+    }
+
     void setHealth(int newHealth);
 
     Inventory& getInventory() {
