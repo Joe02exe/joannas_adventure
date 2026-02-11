@@ -14,8 +14,7 @@ void Chest::interact(Player& player) {
     if (!isOpen) {
         isOpen = true;
         setFrame(sf::IntRect({ 16, 0 }, { 16, 22 }));
-        Logger::info("Chest opened!");
-        // TODO: Give item?
+        player.addItemToInventory(Item("630", "Grade"),1);
     } else {
         Logger::info("Chest is already open.");
     }
