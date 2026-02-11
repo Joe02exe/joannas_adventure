@@ -25,9 +25,9 @@ CombatSystem::CombatSystem()
       )),
       counterButtonBadTexture(ResourceManager<sf::Texture>::getInstance()->get(
           "assets/buttons/attack_punch_bad.png"
-      )) {}
-
-
+      )) {
+    audioManager = AudioManager();
+}
 
 void CombatSystem::startCombat(Player& p, Enemy& e) {
     player = &p;
@@ -106,7 +106,7 @@ void CombatSystem::update(float dt) {
     );
     enemy->update(dt, eState);
 
-    for (auto it = damageTexts.begin(); it != damageTexts.end(); ) {
+    for (auto it = damageTexts.begin(); it != damageTexts.end();) {
         it->lifeTime -= dt;
         it->position.y -= it->speed * dt;
 
@@ -187,7 +187,8 @@ void CombatSystem::updateAttackMovement(
 
 template <typename Defender, typename Attacker>
 void CombatSystem::updateAttackTimeline(
-    float dt, Defender* defender, State& defenderState, const Attack& attack, Attacker* attacker
+    float dt, Defender* defender, State& defenderState, const Attack& attack,
+    Attacker* attacker
 ) {
     if (turnTimer < attack.impactTime) {
         if (defenderState != State::Counter) {
@@ -201,15 +202,18 @@ void CombatSystem::updateAttackTimeline(
 
             if constexpr (std::is_same_v<Defender, Player>) {
                 defense = defender->getStats().defense;
-            } 
-            else {
+            } else {
                 damage += attacker->getStats().attack;
             }
             int finalDamage = std::max(0, damage - defense);
             defender->takeDamage(finalDamage);
             spawnDamageText(defender, finalDamage);
             damageDealt = true;
-            Logger::info("Defender took damage: " + std::to_string(damage - defense) + " remaining: " + std::to_string(defender->getHealth()));
+            audioManager.play_sfx(SfxId::Hit);
+            Logger::info(
+                "Defender took damage: " + std::to_string(damage - defense) +
+                " remaining: " + std::to_string(defender->getHealth())
+            );
         }
     } else {
         defenderState = State::Idle;
@@ -307,7 +311,9 @@ void CombatSystem::processCounter(float dt) {
 
     if (counterSuccess && !damageDealt) {
         enemy->takeDamage(1);
-        Logger::info("Damage dealt: 1, remaining: " + std::to_string(enemy->getHealth()));
+        Logger::info(
+            "Damage dealt: 1, remaining: " + std::to_string(enemy->getHealth())
+        );
         damageDealt = true;
     }
 
@@ -326,7 +332,9 @@ void CombatSystem::processCounter(float dt) {
     }
 }
 
-void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager, const sf::Font& font) {
+void CombatSystem::render(
+    sf::RenderTarget& target, TileManager& tileManager, const sf::Font& font
+) {
 
     // currently set statically... because viewport is set to 900x900
 
@@ -358,7 +366,8 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager, co
     }
 
     if (currentAttack.counterable && currentState == CombatState::EnemyTurn &&
-        (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) && player->getInventory().hasItemByName("counterAttack")) {
+        (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) &&
+        player->getInventory().hasItemByName("counterAttack")) {
         sf::Sprite counterButtonSprite(counterButtonTexture);
 
         if (phase == TurnPhase::Attacking &&
@@ -378,25 +387,25 @@ void CombatSystem::render(sf::RenderTarget& target, TileManager& tileManager, co
     }
     if (!damageTexts.empty()) {
         sf::Text tempText(font);
-        
-        tempText.setCharacterSize(32); 
+
+        tempText.setCharacterSize(32);
         tempText.setOutlineColor(sf::Color::Black);
         tempText.setOutlineThickness(1.5f);
         tempText.setStyle(sf::Text::Bold);
 
         for (const auto& ind : damageTexts) {
             tempText.setString(ind.text);
-            
+
             sf::FloatRect bounds = tempText.getLocalBounds();
             tempText.setOrigin({ bounds.size.x / 2.f, bounds.size.y / 2.f });
-            
+
             tempText.setPosition(ind.position);
 
             sf::Color c = ind.color;
             float alphaRatio = ind.lifeTime / ind.maxLifeTime;
-        
+
             c.a = static_cast<std::uint8_t>(255 * alphaRatio);
-            
+
             tempText.setFillColor(c);
             target.draw(tempText);
         }
@@ -468,21 +477,17 @@ void CombatSystem::handleInput(sf::Event& event) {
 }
 
 // Explicit instantiations
-template void CombatSystem::processAttack<Enemy, Player>(
-    float, Player*, Enemy*, State&, State&, const Attack&
-);
+template void CombatSystem::processAttack<
+    Enemy, Player>(float, Player*, Enemy*, State&, State&, const Attack&);
 
-template void CombatSystem::processAttack<Player, Enemy>(
-    float, Enemy*, Player*, State&, State&, const Attack&
-);
+template void CombatSystem::processAttack<
+    Player, Enemy>(float, Enemy*, Player*, State&, State&, const Attack&);
 
-template void CombatSystem::updateAttackTimeline<Enemy, Player>(
-    float, Enemy*, State&, const Attack&, Player*
-);
+template void CombatSystem::updateAttackTimeline<
+    Enemy, Player>(float, Enemy*, State&, const Attack&, Player*);
 
-template void CombatSystem::updateAttackTimeline<Player, Enemy>(
-    float, Player*, State&, const Attack&, Enemy*
-);
+template void CombatSystem::updateAttackTimeline<
+    Player, Enemy>(float, Player*, State&, const Attack&, Enemy*);
 
 void CombatSystem::spawnDamageText(Entity* target, int amount) {
     sf::FloatRect box = target->getBoundingBox();
@@ -495,7 +500,7 @@ void CombatSystem::spawnDamageText(Entity* target, int amount) {
 
     DamageIndicator indicator;
     indicator.position = sf::Vector2f{ centerX, topY + 150.f };
-    
+
     indicator.text = std::to_string(amount * -1);
     indicator.color = sf::Color::White;
     indicator.lifeTime = 1.0f;

@@ -221,6 +221,7 @@ bool Controller::updateStep(
             auto b = stone->shouldBeRemoved();
             if (b) {
                 player.addInteraction(stone->getStoneId());
+                audioManager.play_sfx(SfxId::Break);
             }
             return b;
         }

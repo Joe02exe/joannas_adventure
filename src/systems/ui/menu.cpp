@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "joanna/core/game.h"
+#include "joanna/entities/interactables/chest.h"
 #include "joanna/entities/interactables/stone.h"
 #include "joanna/entities/npc.h"
 
@@ -273,6 +274,7 @@ void Menu::executeSelection() {
         const SaveGameManager saveManager;
         std::string slotNumberStr = choice.substr(choice.find(' ') + 1);
         if (loadingInteraction) {
+            game->resetEntities();
             SaveGameManager manager;
             GameState state = manager.loadGame(slotNumberStr);
 
@@ -304,6 +306,8 @@ void Menu::executeSelection() {
                 state.player.visitedInteractions.count("left") != 0u;
             bool stoneRightReset =
                 state.player.visitedInteractions.count("right") != 0u;
+            bool chestOpened =
+                state.player.visitedInteractions.count("chestOpened") != 0u;
 
             // Use an iterator instead of a range-based for loop
             for (auto it = entities->begin(); it != entities->end();
@@ -334,6 +338,13 @@ void Menu::executeSelection() {
                         npc->setPosition(
                             npc->getPosition() - sf::Vector2f(50.f, 50.f)
                         );
+                    }
+                }
+
+                // --- Chest Logic ---
+                if (auto* chest = dynamic_cast<Chest*>(p)) {
+                    if (chest->getChestId() == "chest" && chestOpened) {
+                        chest->setFrame(sf::IntRect({ 16, 0 }, { 16, 22 }));
                     }
                 }
 

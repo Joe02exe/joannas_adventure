@@ -11,7 +11,9 @@ enum class SfxId : std::uint8_t {
     Surprise,
     Collect,
     Damage,
-    Click
+    Click,
+    Break,
+    Chest
     // These are not all SFX. More in assets/sfx folder.
 };
 
@@ -42,7 +44,7 @@ class AudioManager {
     [[nodiscard]] std::string get_sfx_path(SfxId sfx_id) const;
     [[nodiscard]] std::string get_music_path(MusicId music_id) const;
 
-    std::array<std::unique_ptr<sf::Sound>, 7> sounds_;
+    std::array<std::unique_ptr<sf::Sound>, 9> sounds_;
     sf::Music current_music_;
 
     float sfx_volume_;
