@@ -8,6 +8,7 @@
 #include "joanna/entities/player.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
+#include "joanna/systems/gameover.h"
 #include "joanna/systems/menu.h"
 #include "joanna/utils/dialogue_box.h"
 #include "joanna/world/tilemanager.h"
@@ -34,13 +35,16 @@ void Game::initialize() {
     std::ifstream file("assets/dialog/dialog.json");
     NPC::jsonData = json::parse(file);
     sharedDialogueBox = std::make_shared<DialogueBox>(fontRenderer);
+
+    gameOverScreen = std::make_unique<GameOver>(windowManager);
+    gameOverScreen->setOnRestart([this]() { this->returnToMenu(); });
+
     resetEntities();
 
     controller->getPlayer().onLevelUp([this](int newLevel) {
-        std::string msg1 = "Level Up! You have reached level " +
-                           std::to_string(newLevel) + ".";
-        std::string msg2 = "Your stats increased: +2 attack and +1 defense.";
-        this->sharedDialogueBox->setDialogue({ msg1, msg2 });
+        std::string msg1 = "You reached level " + std::to_string(newLevel) +
+                           ".\n" + "Attack +2, Defense +1.";
+        this->sharedDialogueBox->setDialogue({ msg1 });
         this->sharedDialogueBox->show();
     });
 
@@ -166,6 +170,8 @@ void Game::handleInput() {
         }
         if (gameStatus == GameStatus::Combat) {
             combatSystem.handleInput(*event);
+        } else if (gameStatus == GameStatus::GameOver) {
+            gameOverScreen->handleInput(*event);
         }
         if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()) {
             if (keyEvent->code == sf::Keyboard::Key::F1) {
@@ -216,6 +222,8 @@ void Game::update(float dt) {
         updateOverworld(dt);
     } else if (gameStatus == GameStatus::Combat) {
         updateCombat(dt);
+    } else if (gameStatus == GameStatus::GameOver) {
+        updateGameOver(dt);
     }
 }
 
@@ -329,6 +337,12 @@ void Game::updateCombat(float dt) {
     combatSystem.update(dt);
     if (combatSystem.battleFinished()) {
         combatSystem.endCombat();
+
+        if (combatSystem.getState() == CombatState::Defeat) {
+            gameStatus = GameStatus::GameOver;
+            return;
+        }
+
         gameStatus = GameStatus::Overworld;
 
         if ((skeletonPtr != nullptr) && skeletonPtr->isDead() && controller &&
@@ -368,6 +382,8 @@ void Game::render(float dt) {
         renderOverworld(dt);
     } else if (gameStatus == GameStatus::Combat) {
         renderCombat();
+    } else if (gameStatus == GameStatus::GameOver) {
+        renderGameOver();
     }
 
     if constexpr (IMGUI_ENABLED) {
@@ -514,5 +530,21 @@ void Game::renderCombat() {
     windowManager.getWindow().setView(fullView);
     postProc.apply(
         windowManager.getWindow(), clock.getElapsedTime().asSeconds()
+    );
+}
+
+void Game::updateGameOver(float dt) {
+    gameOverScreen->update(dt);
+}
+
+void Game::renderGameOver() {
+    gameOverScreen->render();
+}
+
+void Game::returnToMenu() {
+    gameStatus = GameStatus::Overworld;
+    resetEntities();
+    menu->show(
+        renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );
 }
