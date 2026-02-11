@@ -46,6 +46,12 @@ void SaveGameManager::saveGame(const GameState& state, const std::string& index)
     j["player"]["x"] = state.player.x;
     j["player"]["y"] = state.player.y;
     j["player"]["health"] = state.player.health;
+    j["player"]["attack"] = state.player.attack;
+    j["player"]["defense"] = state.player.defense;
+    j["player"]["level"] = state.player.level;
+    j["player"]["currentExp"] = state.player.currentExp;
+    j["player"]["expToNextLevel"] = state.player.expToNextLevel;
+
     j["player"]["visitedInteractions"] = json::array();
     for (const auto& interaction : state.player.visitedInteractions) {
         j["player"]["visitedInteractions"].push_back(interaction);
@@ -91,6 +97,11 @@ GameState SaveGameManager::loadGame(const std::string& index) const {
     state.player.x = j["player"].value("x", 0.0f);
     state.player.y = j["player"].value("y", 0.0f);
     state.player.health = j["player"].value("health", 100);
+    state.player.attack = j["player"].value("attack", 0);
+    state.player.defense = j["player"].value("defense", 0);
+    state.player.level = j["player"].value("level", 1);
+    state.player.currentExp = j["player"].value("currentExp", 0);
+    state.player.expToNextLevel = j["player"].value("expToNextLevel", 0);
 
     if (j["player"].contains("visitedInteractions")) {
         for (const auto& iteraction : j["player"]["visitedInteractions"]) {

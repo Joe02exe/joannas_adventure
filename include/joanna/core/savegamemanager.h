@@ -9,6 +9,11 @@ struct PlayerState {
     int health = 100;
     float x = 0.0f;
     float y = 0.0f;
+    int attack = 0;
+    int defense = 0;
+    int level = 1;
+    int currentExp = 0;
+    int expToNextLevel = 0;
     std::unordered_set<std::string> visitedInteractions;
 };
 

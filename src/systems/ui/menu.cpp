@@ -224,6 +224,11 @@ void Menu::executeSelection() {
         state.player.y = player.getPosition().y;
         state.player.health = player.getHealth();
         state.player.visitedInteractions = player.getVisitedInteractions();
+        state.player.attack = player.getStats().attack;
+        state.player.defense = player.getStats().defense;
+        state.player.level = player.getLevel();
+        state.player.currentExp = player.getCurrentExp();
+        state.player.expToNextLevel = player.getExpToNextLevel();
 
         // Save Inventory
         for (const auto& item : player.getInventory().listItems()) {
@@ -245,6 +250,7 @@ void Menu::executeSelection() {
         controller->getPlayer().setHealth(200);
         controller->getPlayer().setPosition({ 150.f, 400.f });
         controller->getPlayer().resetInteractions();
+        controller->getPlayer().resetStats();
         windowManager->setCenter({ 150.f, 400.f });
         game->resetEntities();
     } else if (choice == "Load game") {
@@ -289,6 +295,15 @@ void Menu::executeSelection() {
             );
             controller->getPlayer().getInventory().loadState(state.inventory);
             controller->getPlayer().setHealth(state.player.health);
+
+            controller->getPlayer().getStats().attack = state.player.attack;
+            controller->getPlayer().getStats().defense = state.player.defense;
+            controller->getPlayer().setLevel(state.player.level);
+            controller->getPlayer().setCurrentExp(state.player.currentExp);
+            controller->getPlayer().setExpToNextLevel(
+                state.player.expToNextLevel
+            );
+
             controller->getPlayer().setInteractions(
                 state.player.visitedInteractions
             );

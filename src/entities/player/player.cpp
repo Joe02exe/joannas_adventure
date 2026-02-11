@@ -59,14 +59,18 @@ void Player::update(
 
         this->frameTimer -= anim.frameTime; // keep leftover time
 
-        if ((this->currentState == State::Dead || this->currentState == State::Counter || this->currentState == State::Mining) &&
+        if ((this->currentState == State::Dead ||
+             this->currentState == State::Counter ||
+             this->currentState == State::Mining) &&
             this->currentFrame == anim.frames.size() - 1) {
             // Do not loop dead, counter, or mining animation
-            if (this->currentState == State::Counter || this->currentState == State::Mining) {
+            if (this->currentState == State::Counter ||
+                this->currentState == State::Mining) {
                 this->switchState(State::Idle);
                 state = State::Idle; // Update external state
                 if (this->currentState == State::Counter) {
-                    std::cout << "Player finished counter animation, switching to Idle.\n";
+                    std::cout << "Player finished counter animation, switching "
+                                 "to Idle.\n";
                 }
             }
         } else {
@@ -104,10 +108,9 @@ void Player::draw(sf::RenderTarget& target) const {
 void Player::addItemToInventory(
     const Item& item, const std::uint32_t quantity
 ) {
-    if(item.name == "shield") {
+    if (item.name == "shield") {
         this->stats.defense += 3;
-    }
-    else if (item.name == "sword") {
+    } else if (item.name == "sword") {
         this->stats.attack += 3;
     }
     this->inventory.addItem(item, quantity);
@@ -131,22 +134,20 @@ void Player::displayHealthBar(
         (-size.y / 2) + heartIcon.getLocalBounds().size.y
     );
     int fullHearts = this->health / 20;
-    bool showHalfHeart = (this->health % 20) >= 10 || (this->health > 0 && fullHearts == 0);
+    bool showHalfHeart =
+        (this->health % 20) >= 10 || (this->health > 0 && fullHearts == 0);
 
     for (int i = 0; i < fullHearts; ++i) {
-        heartIcon.setPosition({ 
-            startPos.x + (static_cast<float>(i) * 32.f),
-            startPos.y 
-        });
+        heartIcon.setPosition({ startPos.x + (static_cast<float>(i) * 32.f),
+                                startPos.y });
         heartIcon.setScale({ 3.f, 3.f });
         target.draw(heartIcon);
     }
 
     if (showHalfHeart) {
-        halfHeartIcon.setPosition({ 
-            startPos.x + (static_cast<float>(fullHearts) * 32.f),
-            startPos.y 
-        });
+        halfHeartIcon.setPosition(
+            { startPos.x + (static_cast<float>(fullHearts) * 32.f), startPos.y }
+        );
         halfHeartIcon.setScale({ 3.f, 3.f });
         target.draw(halfHeartIcon);
     }
@@ -188,7 +189,7 @@ void Player::gainExp(int amount) {
 
 void Player::levelUp() {
     this->currentExp -= this->expToNextLevel;
-    
+
     this->level++;
 
     this->expToNextLevel = static_cast<int>((float)this->expToNextLevel * 1.2f);
@@ -200,4 +201,11 @@ void Player::levelUp() {
     if (levelUpListener) {
         levelUpListener(this->level);
     }
+}
+
+void Player::resetStats() {
+    stats = Stats(10, 10);
+    level = 1;
+    currentExp = 0;
+    expToNextLevel = 10;
 }
