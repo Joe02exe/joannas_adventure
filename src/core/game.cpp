@@ -547,4 +547,5 @@ void Game::returnToMenu() {
     menu->show(
         renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );
+    clock.restart();
 }

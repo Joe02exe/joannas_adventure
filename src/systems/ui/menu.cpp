@@ -481,5 +481,12 @@ void Menu::show(
         render(render_engine, tileManager, entities, dialogueBox);
     }
 
+    // Wait for keys to be released to prevent immediate re-triggering
+    while (windowManager->getWindow().isOpen() &&
+           (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape) ||
+            sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P))) {
+        windowManager->pollEvents();
+    }
+
     windowManager->getWindow().setView(originalView);
 }

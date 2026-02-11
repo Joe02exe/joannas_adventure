@@ -196,7 +196,7 @@ bool Controller::getInput(
     player.setPosition(player.getPosition() + nextMove);
 
     player.update(dt, state, facingLeft, audioManager);
-    keyPressed = spaceDown || eDown;
+    keyPressed = spaceDown || eDown || pDown;
     return false;
 }
 
