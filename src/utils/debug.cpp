@@ -74,6 +74,10 @@ void DebugUI::update(
         player.getInventory().addItem(Item("3113", "pickaxe"));
     }
 
+    if (ImGui::Button("Deal 10 Damage to Player")) {
+        player.takeDamage(10);
+    }
+
     if (gameStatus == GameStatus::Overworld) {
         if (ImGui::Button("Start Combat")) {
             gameStatus = GameStatus::Combat;

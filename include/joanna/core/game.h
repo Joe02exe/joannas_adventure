@@ -8,6 +8,7 @@
 #include "joanna/systems/audiomanager.h"
 #include "joanna/systems/controller.h"
 #include "joanna/systems/font_renderer.h"
+#include "joanna/systems/gameover.h"
 #include "joanna/systems/menu.h"
 #include "joanna/utils/dialogue_box.h"
 #include "joanna/world/tilemanager.h"
@@ -30,8 +31,10 @@ class Game {
 
     void updateOverworld(float dt);
     void updateCombat(float dt);
+    void updateGameOver(float dt);
     void renderOverworld(float dt);
     void renderCombat();
+    void renderGameOver();
 
     static void resize(
         sf::Vector2u size, float targetAspectRatio, sf::View& camera,
@@ -51,7 +54,11 @@ class Game {
     std::unique_ptr<Controller>
         controller; // our controller needs windowManager, so ptr for flexible
                     // init
+
     std::unique_ptr<Menu> menu; // our menu needs references, so ptr
+    std::unique_ptr<GameOver> gameOverScreen;
+
+    void returnToMenu();
 
     MusicId currentMusicId = MusicId::Overworld;
     GameStatus gameStatus = GameStatus::Overworld;

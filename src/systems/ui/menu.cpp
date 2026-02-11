@@ -260,7 +260,8 @@ void Menu::executeSelection() {
                            "T : Talk to opponent\n"
                            "E : Apply items in inventory\n"
                            "1-9 : Select inventory slot\n"
-                           "Space : pickup item\n\n"
+                           "Space : pickup item / dialogue\n"
+                           "P / Escape : Menu\n\n"
                            "Press Escape or Click to close.";
         showAbout = true;
     } else if (choice == "Quit") {
@@ -478,6 +479,13 @@ void Menu::show(
 
         // 2. Render
         render(render_engine, tileManager, entities, dialogueBox);
+    }
+
+    // Wait for keys to be released to prevent immediate re-triggering
+    while (windowManager->getWindow().isOpen() &&
+           (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape) ||
+            sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P))) {
+        windowManager->pollEvents();
     }
 
     windowManager->getWindow().setView(originalView);
