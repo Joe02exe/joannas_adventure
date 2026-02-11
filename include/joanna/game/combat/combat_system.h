@@ -18,7 +18,10 @@ class CombatSystem {
     void startCombat(Player& player, Enemy& enemy);
     void endCombat();
     void update(float dt);
-    void render(sf::RenderTarget& target, class TileManager& tileManager, const sf::Font& font);
+    void render(
+        sf::RenderTarget& target, class TileManager& tileManager,
+        const sf::Font& font
+    );
     void handleInput(sf::Event& event);
 
     CombatState getState() const {
@@ -31,7 +34,16 @@ class CombatSystem {
     Player* player = nullptr;
     Enemy* enemy = nullptr;
 
-    enum class TurnPhase { Input, Approaching, Attacking, Returning, EndTurn, Countering };
+    enum class TurnPhase : std::uint8_t {
+        Input,
+        Approaching,
+        Attacking,
+        Returning,
+        EndTurn,
+        Countering
+    };
+
+    AudioManager audioManager;
 
     EntityState playerState;
     EntityState enemyState;
@@ -66,17 +78,34 @@ class CombatSystem {
 
     void updatePlayerTurn(float dt, State& pState, State& eState);
     void updateEnemyTurn(float dt, State& pState, State& eState);
-    void processApproach(float dt, Entity* actor, sf::Vector2f target, float speed, float threshold, State& actorState);
-    void processReturn(float dt, Entity* actor, sf::Vector2f startPos, float speed, float threshold, State& actorState, Direction moveFacing, Direction endFacing);
-    void updateAttackMovement(float dt, Entity* attacker, const sf::Vector2f& targetPos, const Attack& attack);
+    void processApproach(
+        float dt, Entity* actor, sf::Vector2f target, float speed,
+        float threshold, State& actorState
+    );
+    void processReturn(
+        float dt, Entity* actor, sf::Vector2f startPos, float speed,
+        float threshold, State& actorState, Direction moveFacing,
+        Direction endFacing
+    );
+    void updateAttackMovement(
+        float dt, Entity* attacker, const sf::Vector2f& targetPos,
+        const Attack& attack
+    );
     void e_chooseAttack();
     void processCounter(float dt);
 
     template <typename Defender, typename Attacker>
-    void processAttack(float dt, Attacker* attacker, Defender* defender, State& attackerState, State& defenderState, const Attack& attack);
+    void processAttack(
+        float dt, Attacker* attacker, Defender* defender, State& attackerState,
+        State& defenderState, const Attack& attack
+    );
 
     template <typename Defender, typename Attacker>
-    void updateAttackTimeline(float dt, Defender* defender, State& defenderState, const Attack& attack, Attacker* attacker);
+    void updateAttackTimeline(
+        float dt, Defender* defender, State& defenderState,
+        const Attack& attack, Attacker* attacker
+    );
+
     struct DamageIndicator {
         sf::Vector2f position;
         std::string text;

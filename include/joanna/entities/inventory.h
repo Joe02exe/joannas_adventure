@@ -121,6 +121,7 @@ class Inventory {
         { 627, "key" },
         { 628, "bone" },
         { 629, "shield" },
+        { 630, "grade" },
         { 703, "mushroom" },
         { 1330, "heal" },
         { 3113, "pickaxe" },

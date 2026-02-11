@@ -201,3 +201,10 @@ void Player::levelUp() {
         levelUpListener(this->level);
     }
 }
+
+void Player::resetStats() {
+    stats = Stats(10, 10);
+    level = 1;
+    currentExp = 0;
+    expToNextLevel = 10;
+}

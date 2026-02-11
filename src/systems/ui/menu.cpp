@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "joanna/core/game.h"
+#include "joanna/entities/interactables/chest.h"
 #include "joanna/entities/interactables/stone.h"
 #include "joanna/entities/npc.h"
 
@@ -223,6 +224,11 @@ void Menu::executeSelection() {
         state.player.y = player.getPosition().y;
         state.player.health = player.getHealth();
         state.player.visitedInteractions = player.getVisitedInteractions();
+        state.player.attack = player.getStats().attack;
+        state.player.defense = player.getStats().defense;
+        state.player.level = player.getLevel();
+        state.player.currentExp = player.getCurrentExp();
+        state.player.expToNextLevel = player.getExpToNextLevel();
 
         // Save Inventory
         for (const auto& item : player.getInventory().listItems()) {
@@ -244,6 +250,7 @@ void Menu::executeSelection() {
         controller->getPlayer().setHealth(200);
         controller->getPlayer().setPosition({ 150.f, 400.f });
         controller->getPlayer().resetInteractions();
+        controller->getPlayer().resetStats();
         windowManager->setCenter({ 150.f, 400.f });
         game->resetEntities();
     } else if (choice == "Load game") {
@@ -274,6 +281,7 @@ void Menu::executeSelection() {
         const SaveGameManager saveManager;
         std::string slotNumberStr = choice.substr(choice.find(' ') + 1);
         if (loadingInteraction) {
+            game->resetEntities();
             SaveGameManager manager;
             GameState state = manager.loadGame(slotNumberStr);
 
@@ -288,6 +296,15 @@ void Menu::executeSelection() {
             );
             controller->getPlayer().getInventory().loadState(state.inventory);
             controller->getPlayer().setHealth(state.player.health);
+
+            controller->getPlayer().getStats().attack = state.player.attack;
+            controller->getPlayer().getStats().defense = state.player.defense;
+            controller->getPlayer().setLevel(state.player.level);
+            controller->getPlayer().setCurrentExp(state.player.currentExp);
+            controller->getPlayer().setExpToNextLevel(
+                state.player.expToNextLevel
+            );
+
             controller->getPlayer().setInteractions(
                 state.player.visitedInteractions
             );
@@ -305,6 +322,8 @@ void Menu::executeSelection() {
                 state.player.visitedInteractions.count("left") != 0u;
             bool stoneRightReset =
                 state.player.visitedInteractions.count("right") != 0u;
+            bool chestOpened =
+                state.player.visitedInteractions.count("chestOpened") != 0u;
 
             // Use an iterator instead of a range-based for loop
             for (auto it = entities->begin(); it != entities->end();
@@ -335,6 +354,13 @@ void Menu::executeSelection() {
                         npc->setPosition(
                             npc->getPosition() - sf::Vector2f(50.f, 50.f)
                         );
+                    }
+                }
+
+                // --- Chest Logic ---
+                if (auto* chest = dynamic_cast<Chest*>(p)) {
+                    if (chest->getChestId() == "chest" && chestOpened) {
+                        chest->setFrame(sf::IntRect({ 16, 0 }, { 16, 22 }));
                     }
                 }
 

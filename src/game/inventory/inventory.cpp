@@ -306,8 +306,12 @@ void Inventory::displayInventory(
     const float slotSize = 64.f;
     const float padding = 6.f;
     // Outer background
-    std::size_t itemCount = vec.size();
-    std::size_t rows = (itemCount + columns) / columns;
+    std::size_t itemCount =
+        std::count_if(vec.begin(), vec.end(), [this](const StoredItem& item) {
+            return !isItemInvisible(std::stoi(item.item.id));
+        });
+    std::size_t rows =
+        std::max<std::size_t>(1, (itemCount - 1 + columns) / columns);
     float totalWidth =
         (columns * slotSize) + (padding * (columns - 1)) + (2 * padding);
     float totalHeight = (static_cast<float>(rows) * slotSize) +

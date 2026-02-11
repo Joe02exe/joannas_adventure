@@ -148,7 +148,9 @@ void Game::resetEntities() {
         std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }, "right")
     );
 
-    entities.push_back(std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }));
+    entities.push_back(
+        std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }, "chest")
+    );
 }
 
 void Game::handleInput() {

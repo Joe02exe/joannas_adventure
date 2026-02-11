@@ -7,10 +7,11 @@ AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(30.0f) {
 
     auto* buffer_manager = ResourceManager<sf::SoundBuffer>::getInstance();
 
-    constexpr std::array<SfxId, 7> all_sfx = { SfxId::Hit,     SfxId::Footstep,
+    constexpr std::array<SfxId, 9> all_sfx = { SfxId::Hit,     SfxId::Footstep,
                                                SfxId::Dead,    SfxId::Surprise,
                                                SfxId::Collect, SfxId::Damage,
-                                               SfxId::Click };
+                                               SfxId::Click,   SfxId::Break,
+                                               SfxId::Chest };
 
     for (size_t i = 0; i < all_sfx.size(); ++i) {
         try {
@@ -27,7 +28,7 @@ AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(30.0f) {
 std::string AudioManager::get_sfx_path(SfxId sfx_id) const {
     switch (sfx_id) {
         case SfxId::Hit:
-            return "assets/sfx/hit.wav";
+            return "assets/sfx/hit_.wav";
         case SfxId::Click:
             return "assets/sfx/click.wav";
         case SfxId::Footstep:
@@ -40,6 +41,10 @@ std::string AudioManager::get_sfx_path(SfxId sfx_id) const {
             return "assets/sfx/collect.wav";
         case SfxId::Damage:
             return "assets/sfx/damage.wav";
+        case SfxId::Break:
+            return "assets/sfx/break.wav";
+        case SfxId::Chest:
+            return "assets/sfx/chest.wav";
         default:
             throw std::invalid_argument("Invalid SfxId");
     }
@@ -62,7 +67,7 @@ std::string AudioManager::get_music_path(MusicId music_id) const {
 
 void AudioManager::play_sfx(SfxId sfx_id) {
     auto index = static_cast<size_t>(sfx_id);
-    if (index < 7 && sounds_.at(index)) {
+    if (index < 9 && sounds_.at(index)) {
         sounds_.at(index)->play();
     } else {
         Logger::error("Sound effect not loaded: {}", static_cast<int>(sfx_id));

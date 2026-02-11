@@ -67,12 +67,24 @@ class Player: public Entity {
         return level;
     }
 
+    void setLevel(int newLevel) {
+        level = newLevel;
+    }
+
     int getCurrentExp() const {
         return currentExp;
     }
 
+    void setCurrentExp(int newExp) {
+        currentExp = newExp;
+    }
+
     int getExpToNextLevel() const {
         return expToNextLevel;
+    }
+
+    void setExpToNextLevel(int newExpToNextLevel) {
+        expToNextLevel = newExpToNextLevel;
     }
 
     std::unordered_set<std::string> getVisitedInteractions() const {
@@ -82,6 +94,8 @@ class Player: public Entity {
     void resetInteractions() {
         visitedInteractions.clear();
     }
+
+    void resetStats();
 
     void setInteractions(const std::unordered_set<std::string>& interactions) {
         visitedInteractions = interactions;
