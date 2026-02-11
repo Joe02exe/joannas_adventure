@@ -52,5 +52,19 @@ class NPC: public Interactable {
     std::shared_ptr<DialogueBox> dialogueBox;
     std::string dialogId;
     std::optional<Item> pendingReward;
+    std::optional<json> pendingMove;
+    std::string pendingActionId;
     std::vector<nlohmann::json> sortedDialogue;
+    std::function<void(const std::string&)> onAction;
+
+  public:
+    void setOnAction(std::function<void(const std::string&)> callback) {
+        onAction = std::move(callback);
+    }
+
+    void triggerMove(const std::string& actionId);
+
+    std::string getDialogId() const {
+        return dialogId;
+    }
 };

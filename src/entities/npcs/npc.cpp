@@ -6,10 +6,8 @@ json NPC::jsonData;
 
 NPC::NPC(
     const sf::Vector2f& startPos, const std::string& npcIdlePath,
-    const std::string& npcWalkingPath,
-    const std::string& buttonTexturePath,
-    std::shared_ptr<DialogueBox> dialogueBox,
-    std::string dialogId
+    const std::string& npcWalkingPath, const std::string& buttonTexturePath,
+    std::shared_ptr<DialogueBox> dialogueBox, std::string dialogId
 )
     : Interactable(
           sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
@@ -17,18 +15,15 @@ NPC::NPC(
           sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 10 }),
           Direction::Left
       ),
-      dialogueBox(dialogueBox),
-      dialogId(dialogId) {
+      dialogueBox(dialogueBox), dialogId(dialogId) {
     this->uniqueSpriteId = npcIdlePath;
     animations[State::Idle] = Animation(npcIdlePath, { 96, 64 }, 8);
     animations[State::Walking] = Animation(npcWalkingPath, { 96, 64 }, 8);
     auto rawList = jsonData[dialogId];
-    
-    std::sort(rawList.begin(), rawList.end(), 
-        [](const json& a, const json& b) {
-            return a["priority"] > b["priority"];
-        }
-    );
+
+    std::sort(rawList.begin(), rawList.end(), [](const json& a, const json& b) {
+        return a["priority"] > b["priority"];
+    });
 
     this->sortedDialogue = rawList;
 }
@@ -39,10 +34,13 @@ void NPC::setDialogue(const std::vector<std::string>& messages) {
     }
 }
 
-std::string createKey(const nlohmann::json& entry, const Player& player, const std::string& uniqueSpriteId) {
+std::string createKey(
+    const nlohmann::json& entry, const Player& player,
+    const std::string& uniqueSpriteId
+) {
     std::string result = "";
     if (entry.contains("id")) {
-        result = uniqueSpriteId + "_" + std::string(entry["id"]); 
+        result = uniqueSpriteId + "_" + std::string(entry["id"]);
         if (player.hasInteraction(result)) {
             result = "alreadySeen";
         }
@@ -52,7 +50,7 @@ std::string createKey(const nlohmann::json& entry, const Player& player, const s
 
 bool checkRequirements(nlohmann::json& entry, Player& player) {
     bool conditionMet = true;
-    if(entry.contains("req") && !entry["req"].is_null()) {
+    if (entry.contains("req") && !entry["req"].is_null()) {
         json req = entry["req"];
         std::string type = req["type"];
         if (type.find("ITEM") != std::string::npos) {
@@ -60,11 +58,9 @@ bool checkRequirements(nlohmann::json& entry, Player& player) {
             int amount = req["amount"];
             if (player.getInventory().getQuantity(itemId) < amount) {
                 conditionMet = false;
-            }
-            else if(type == "ITEM_REMOVE") {
+            } else if (type == "ITEM_REMOVE") {
                 player.getInventory().removeItem(itemId, amount);
             }
-
         }
     }
 
@@ -72,7 +68,7 @@ bool checkRequirements(nlohmann::json& entry, Player& player) {
 }
 
 void NPC::interact(Player& player) {
-    for(auto& entry : sortedDialogue){
+    for (auto& entry : sortedDialogue) {
         std::string uniqueKey = createKey(entry, player, this->uniqueSpriteId);
         if (uniqueKey == "alreadySeen") {
             continue;
@@ -80,17 +76,26 @@ void NPC::interact(Player& player) {
 
         bool conditionMet = checkRequirements(entry, player);
 
-        if(conditionMet) {
+        if (conditionMet) {
             dialogueBox->setDialogue(entry["text"], this);
             dialogueBox->show();
             if (!uniqueKey.empty()) {
                 player.addInteraction(uniqueKey);
             }
-            if(!entry["reward"].is_null()) {
+            if (!entry["reward"].is_null()) {
                 json reward = entry["reward"];
                 pendingReward = Item(reward["id"], reward["name"]);
             }
-            move(entry["move"]);
+            if (!entry["reward"].is_null()) {
+                json reward = entry["reward"];
+                pendingReward = Item(reward["id"], reward["name"]);
+            }
+            if (!entry["move"].is_null()) {
+                pendingMove = entry["move"];
+                if (entry.contains("id")) {
+                    pendingActionId = entry["id"];
+                }
+            }
             return;
         }
     }
@@ -105,7 +110,7 @@ void NPC::update(float dt, Player& player) {
         }
 
         sf::Vector2f target = movementQueue.front();
-        
+
         sf::Vector2f currentPos = getPosition();
         sf::Vector2f diff = target - currentPos;
         float dist = std::hypot(diff.x, diff.y);
@@ -113,22 +118,22 @@ void NPC::update(float dt, Player& player) {
         if (dist < 2.0f) {
             setPosition(target);
             movementQueue.pop_front();
-        } 
-        else {
+        } else {
             sf::Vector2f dir = diff / dist;
             sf::Vector2f velocity = dir * moveSpeed * dt;
-            
+
             setPosition(currentPos + velocity);
             switchState(State::Walking);
 
-            if (velocity.x > 0) setFacing(Direction::Right);
-            else if (velocity.x < 0) setFacing(Direction::Left);
+            if (velocity.x > 0)
+                setFacing(Direction::Right);
+            else if (velocity.x < 0)
+                setFacing(Direction::Left);
         }
-    }
-    else {
-        const Direction direction = this->getPosition().x < player.getPosition().x
-                                        ? Direction::Right
-                                        : Direction::Left;
+    } else {
+        const Direction direction =
+            this->getPosition().x < player.getPosition().x ? Direction::Right
+                                                           : Direction::Left;
         setFacing(direction);
         switchState(State::Idle);
     }
@@ -141,18 +146,45 @@ void NPC::update(float dt, Player& player) {
         applyFrame();
     }
 
-    if (dialogueBox && dialogueBox->isActive() && dialogueBox->getOwner() == this) {
+    if (dialogueBox && dialogueBox->isActive() &&
+        dialogueBox->getOwner() == this) {
         dialogueBox->update(dt, getPosition());
     }
 
     if (pendingReward.has_value()) {
         if (dialogueBox->getOwner() == this) {
             if (!dialogueBox->isActive() && !dialogueBox->hasMoreLines()) {
-                player.addItemToInventory(pendingReward.value(),1);
+                player.addItemToInventory(pendingReward.value(), 1);
                 pendingReward.reset();
             }
         } else {
             pendingReward.reset();
+        }
+    }
+
+    if (pendingMove.has_value()) {
+        if (dialogueBox->getOwner() == this) {
+            if (!dialogueBox->isActive() && !dialogueBox->hasMoreLines()) {
+                move(pendingMove.value());
+                pendingMove.reset();
+                if (!pendingActionId.empty()) {
+                    if (onAction) {
+                        onAction(pendingActionId);
+                    }
+                    pendingActionId.clear();
+                }
+            }
+        }
+    }
+}
+
+void NPC::triggerMove(const std::string& actionId) {
+    for (auto& entry : sortedDialogue) {
+        if (entry.contains("id") && entry["id"] == actionId) {
+            if (entry.contains("move") && !entry["move"].is_null()) {
+                move(entry["move"]);
+            }
+            return;
         }
     }
 }
@@ -162,9 +194,9 @@ void NPC::applyFrame() {
     setFrame(anim.frames[currentFrame]);
 }
 
-
 void NPC::move(const json& moveData) {
-    if (!moveData.is_array()) return;
+    if (!moveData.is_array())
+        return;
     sf::Vector2f futurePos = getPosition();
 
     for (const auto& step : moveData) {
