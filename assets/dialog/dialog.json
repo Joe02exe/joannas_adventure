@@ -19,7 +19,7 @@
             "req": {
                 "type": "ITEM_REMOVE",
                 "id": "691",
-                "amount": 1
+                "amount": 5
             },
             "reward": {
                 "id": "627",
@@ -35,6 +35,18 @@
             "req": {
                 "type": "ITEM",
                 "id": "627",
+                "amount": 1
+            }
+        },
+        {
+            "priority": 4,
+            "text": [
+                "Thank you traveler for helping the village!",
+                "I would have done it myself, but i had swimming lessons."
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "630",
                 "amount": 1
             }
         }
@@ -63,6 +75,17 @@
             "req": {
                 "type": "ITEM",
                 "id": "3055",
+                "amount": 1
+            }
+        },
+        {
+            "priority": 3,
+            "text": [
+                "I lost my crew and almost my life. You really think I care that you saved a random village?"
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "630",
                 "amount": 1
             }
         }
@@ -131,6 +154,19 @@
                 "name": "carrot",
                 "amount": 1
             }
+        },
+        {
+            "priority": 3,
+            "text": [
+                "You saved the village...",
+                "... but also gave Giovannino his carrots back.",
+                "I don't know how to feel about you."
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "630",
+                "amount": 1
+            }
         }
     ],
     "Miner": [
@@ -180,6 +216,18 @@
                 "name": "pickaxe",
                 "amount": 1
             }
+        },
+        {
+            "priority": 5,
+            "text": [
+                "I see you fulfilled your task and got a reward for it.",
+                "You really deserve nothing less than this!"
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "630",
+                "amount": 1
+            }
         }
     ],
     "Swimmer": [
@@ -193,6 +241,19 @@
                 "Without the mine this place will fall into poverty and people won't be able to afford food anymore.",
                 "We really need a hero to help us..."
             ]
+        },
+        {
+            "priority": 2,
+            "text": [
+                "You defeated the Goblin?",
+                "Great, now I have to work again...",
+                "Ah, I mean, thank you!"
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "630",
+                "amount": 1
+            }
         }
     ],
     "Girl1": [
@@ -205,6 +266,17 @@
                 "It was terrible. There is only one thing I am more afraid of than skeletons... ",
                 "... and that is Giovannino."
             ]
+        },
+        {
+            "priority": 3,
+            "text": [
+                "Thanks for saving us!"
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "630",
+                "amount": 1
+            }
         }
     ],
     "Girl2": [
@@ -243,6 +315,17 @@
             "req": {
                 "type": "ITEM",
                 "id": "629",
+                "amount": 1
+            }
+        },
+        {
+            "priority": 4,
+            "text": [
+                "Thanks for saving the village!"
+            ],
+            "req": {
+                "type": "ITEM",
+                "id": "630",
                 "amount": 1
             }
         }
