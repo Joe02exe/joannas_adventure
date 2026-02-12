@@ -162,6 +162,13 @@ void Game::resetEntities() {
                             if (otherNpc != npc &&
                                 otherNpc->getDialogId() == "Guard") {
                                 otherNpc->triggerMove(actionId);
+                                if (this->controller) {
+                                    this->controller->getPlayer()
+                                        .addInteraction(
+                                            otherNpc->getUniqueSpriteId() +
+                                            "_" + actionId
+                                        );
+                                }
                             }
                         }
                     }

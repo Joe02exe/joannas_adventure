@@ -3,7 +3,7 @@
         {
             "priority": 1,
             "text": [
-                "Ostia, didn't see you there traveler!", 
+                "Ostia, didn't see you there Joanna!", 
                 "My name is Giovannino. I am the coolest guy in town!",
                 "I would like to show you around...",
                 "... but someone stole my carrots.",
@@ -41,7 +41,7 @@
         {
             "priority": 4,
             "text": [
-                "Thank you traveler for helping the village!",
+                "Thank you Joanna for helping the village!",
                 "I would have done it myself, but i had swimming lessons."
             ],
             "req": {
@@ -57,7 +57,7 @@
             "text": [
                 "Hi Joanna... :(",
                 "The desert took my crew... a skeleton did the rest...",
-                "I barely survived, but I learned how to strike back and survived...",
+                "I barely survived, but I learned how to strike back...",
                 "Stay sharp... it attacks when you least expect it..."
             ],
             "reward": {
@@ -180,7 +180,7 @@
             "id": "First dialog",
             "priority": 2,
             "text": [
-                "Greetings Traveler, my name is Karl. I am the local miner.",
+                "Greetings Joanna, my name is Karl. I am the local miner.",
                 "I was about to begin my mining tour, but then I tripped, because Giovannino bumped into me.",
                 "Now my hip is broken and I need 3 bones to replace it.",
                 "Can you get them for me? As a reward I will give you my pickaxe!"
@@ -233,7 +233,7 @@
         {   
             "priority": 1,
             "text": [
-                "Hello traveler, what a nice day for a swim...",
+                "Hi Joanna, what a nice day for a swim...",
                 "I used to work in the mine east from here...",
                 "... but now the entrance is blocked by rocks.",
                 "Some say that a monster barricaded the entrance to hide its treasure and kills anyone who tries to enter.",
@@ -259,7 +259,7 @@
         {   
             "priority": 1,
             "text": [
-                "Hello traveler, where are you going?",
+                "Hello Joanna, where are you going?",
                 "Hopefully not to the desert north from here.",
                 "I was there yesterday to get water from the well...",
                 "...Suddenly a skeleton emerged from the sand and attacked me!",
@@ -283,7 +283,7 @@
         {   
             "priority": 1,
             "text": [
-                "Greetings traveler! I heard you are a skilled fighter...",
+                "Greetings Joanna! I heard you are a skilled fighter...",
                 "Around here grow red mushrooms...",
                 "If you find one, I would trade it for a shield which strengthens your defenese...",
                 "Let me know if you are up for that deal!"

@@ -13,6 +13,10 @@ class Chest: public Interactable {
         return id;
     }
 
+    bool isChestOpen() const {
+        return isOpen;
+    }
+
   private:
     bool isOpen = false;
     std::string id;
