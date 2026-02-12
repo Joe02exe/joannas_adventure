@@ -10,7 +10,6 @@ public:
 
     DialogueBox(FontRenderer& fontRenderer);
 
-    // Dialogue management
     void setDialogue(const std::vector<std::string>& messages, const void* owner = nullptr);
     void addDialogueLine(const std::string& message);
     void show();
@@ -29,7 +28,6 @@ public:
 
 private:
     void updateTypewriter(float dt);
-    void updateBubbleGeometry(const sf::Vector2f& targetPosition);
     std::string wrapText(const std::string& text, float maxWidth);
 
     FontRenderer fontRenderer;
@@ -45,4 +43,7 @@ private:
     sf::ConvexShape bubblePointer;
     sf::Vector2f textPosition;
     const void* owner = nullptr;
+    static constexpr float BUBBLE_WIDTH = 370.0f;
+    static constexpr float TYPE_SPEED = 0.05f;
+    float currentTextHeight = 0.0f;
 };

@@ -4,18 +4,10 @@
 DialogueBox::DialogueBox(FontRenderer& fontRenderer)
     : fontRenderer(fontRenderer) {
 
-    // Setup bubble background
     bubbleBackground.setFillColor(sf::Color(255, 255, 255, 240));
     bubbleBackground.setOutlineColor(sf::Color(50, 50, 50));
     bubbleBackground.setOutlineThickness(2.0f);
 
-    // Setup pointer triangle
-    // if (config.showPointer) {
-    ////    bubblePointer.setPointCount(3);
-    //  bubblePointer.setFillColor(config.backgroundColor);
-    //  bubblePointer.setOutlineColor(config.outlineColor);
-    //  bubblePointer.setOutlineThickness(config.outlineThickness);
-    //}
 }
 
 static const float TEXT_MAX_WIDTH = 240.0f - (15.0f * 2);
@@ -50,9 +42,9 @@ void DialogueBox::hide() {
 }
 
 void DialogueBox::clear() {
-    active = false;
-    while (!dialogueQueue.empty())
+    while (!dialogueQueue.empty()) {
         dialogueQueue.pop();
+    }
     currentDialogue.clear();
     visibleText.clear();
     visibleCharCount = 0;
@@ -70,6 +62,11 @@ void DialogueBox::nextLine() {
 
         currentDialogue = wrapText(rawMessage, TEXT_MAX_WIDTH);
 
+        sf::Text measuringText(fontRenderer.getFont(), currentDialogue);
+        measuringText.setCharacterSize(16);
+        
+        currentTextHeight = measuringText.getLocalBounds().size.y;
+
         visibleCharCount = 0;
         displayTime = 0.0f;
     } else {
@@ -79,7 +76,7 @@ void DialogueBox::nextLine() {
 
 void DialogueBox::skipTypewriter() {
     visibleCharCount = currentDialogue.length();
-    displayTime = currentDialogue.length() * 0.05f;
+    displayTime = currentDialogue.length() * TYPE_SPEED;
 }
 
 std::string DialogueBox::wrapText(const std::string& text, float maxWidth) {
@@ -133,7 +130,7 @@ void DialogueBox::updateTypewriter(float dt) {
 
     displayTime += dt;
 
-    size_t targetCharCount = static_cast<size_t>(displayTime / 0.05f);
+    size_t targetCharCount = static_cast<size_t>(displayTime / TYPE_SPEED);
 
     if (targetCharCount > currentDialogue.length()) {
         visibleCharCount = currentDialogue.length();
@@ -144,29 +141,11 @@ void DialogueBox::updateTypewriter(float dt) {
     visibleText = currentDialogue.substr(0, visibleCharCount);
 }
 
-void DialogueBox::updateBubbleGeometry(const sf::Vector2f& targetPosition) {
-    float screenWidth = 800.0f;
-    float screenHeight = 600.0f;
-
-    // Calculate text bounds
-    sf::Text tempText(fontRenderer.getFont(), visibleText);
-    tempText.setCharacterSize(16);
-    sf::FloatRect textBounds = tempText.getLocalBounds();
-    float bubbleHeight = textBounds.size.y + 30.0f;
-
-    bubbleBackground.setSize(sf::Vector2f(370.0f, bubbleHeight * 2));
-    bubbleBackground.setPosition({ screenWidth / 2.0f - 125.0f,
-                                   screenHeight - bubbleHeight - 20.0f });
-
-    textPosition = bubbleBackground.getPosition() + sf::Vector2f(8.0f, 25.0f);
-}
-
 void DialogueBox::update(float dt, const sf::Vector2f& targetPosition) {
     if (!active)
         return;
 
     updateTypewriter(dt);
-    // Geometry update moved to render for dynamic resolution support
 }
 
 void DialogueBox::render(sf::RenderTarget& target) {
@@ -178,16 +157,10 @@ void DialogueBox::render(sf::RenderTarget& target) {
     target.setView(target.getDefaultView());
     sf::Vector2f viewSize = target.getDefaultView().getSize();
 
-    // Recalculate geometry dynamically
-    sf::Text tempText(fontRenderer.getFont(), visibleText);
-    tempText.setCharacterSize(16);
-    sf::FloatRect textBounds = tempText.getLocalBounds();
-    float bubbleHeight = textBounds.size.y + 30.0f; // Minimal height padding
+    float bubbleHeight = currentTextHeight + 30.0f;
+    bubbleBackground.setSize(sf::Vector2f(BUBBLE_WIDTH, bubbleHeight * 2.0f));
 
-    bubbleBackground.setSize(sf::Vector2f(370.0f, bubbleHeight * 2.0f));
-
-    // Center horizontally, position at bottom with padding
-    bubbleBackground.setPosition({ (viewSize.x - 370.0f) / 2.0f,
+    bubbleBackground.setPosition({ (viewSize.x - BUBBLE_WIDTH) / 2.0f,
                                    (viewSize.y / 1.4f) -
                                        bubbleBackground.getSize().y - 20.0f });
 
