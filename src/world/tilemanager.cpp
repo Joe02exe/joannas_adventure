@@ -6,6 +6,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <algorithm>
+#include <cmath>
 #include <random>
 #include <string>
 
@@ -262,7 +263,9 @@ void TileManager::processLayer(const std::string& layerName) {
             { drawingRect.x, drawingRect.y },
             { drawingRect.width, drawingRect.height }
         );
-        info.position = sf::Vector2f(position.x, position.y);
+
+        // Round position to integers to prevent sub-pixel bleeding gaps
+        info.position = sf::Vector2f(std::round(position.x), std::round(position.y));
 
         if (layerName == "decorations" || layerName == "decoration_overlay") {
             sf::FloatRect pixelRect = calculatePixelRect(
@@ -309,6 +312,7 @@ void TileManager::loadTexture(const std::string& imagePath) {
         Logger::error("Failed to load texture: {}", path.generic_string());
         return;
     }
+    tex->setSmooth(false);
 
     m_textures[imagePath] = std::move(tex);
 }
