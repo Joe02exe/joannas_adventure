@@ -56,8 +56,17 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void Menu::resetToDefaultMenu() {
-    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "About",
-                 "Quit" });
+    std::vector<std::string> opts;
+    opts.push_back("Joanna's Adventure");
+    if (canResume) {
+        opts.push_back("Resume");
+    }
+    opts.push_back("New game");
+    opts.push_back("Load game");
+    opts.push_back("Save");
+    opts.push_back("About");
+    opts.push_back("Quit");
+    setOptions(opts);
 }
 
 void Menu::rebuildUI() {
@@ -215,7 +224,9 @@ void Menu::executeSelection() {
     // breaks if menu order changes. For now, sticking to the index logic from
     // your original code but checking safety.
 
-    if (choice == "Save") {
+    if (choice == "Resume") {
+        isMenuOpen = false;
+    } else if (choice == "Save") {
         loadingInteraction = false;
         auto& player = controller->getPlayer();
 

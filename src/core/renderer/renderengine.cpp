@@ -1,4 +1,5 @@
 #include "joanna/core/renderengine.h"
+#include "joanna/entities/interactables/chest.h"
 #include "joanna/entities/interactables/stone.h"
 
 RenderEngine::RenderEngine() = default;
@@ -96,6 +97,10 @@ void RenderEngine::render(
                 continue;
             }
             if (interactable->canPlayerInteract(player.getPosition())) {
+                if (dynamic_cast<Chest*>(entity.get()) != nullptr &&
+                    dynamic_cast<Chest*>(entity.get())->isChestOpen()) {
+                    continue;
+                }
                 interactable->renderButton(target);
             }
         }

@@ -50,6 +50,7 @@ void DialogueBox::hide() {
 }
 
 void DialogueBox::clear() {
+    active = false;
     while (!dialogueQueue.empty())
         dialogueQueue.pop();
     currentDialogue.clear();
