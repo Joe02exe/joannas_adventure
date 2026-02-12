@@ -1,4 +1,5 @@
 #include "joanna/core/renderengine.h"
+#include "joanna/entities/interactables/chest.h"
 #include "joanna/entities/interactables/stone.h"
 
 RenderEngine::RenderEngine() = default;
@@ -20,6 +21,8 @@ void RenderEngine::render(
             sf::Sprite sprite(*it->second);
             sprite.setTextureRect(tile.textureRect);
             sprite.setPosition(tile.position);
+            // fix subpixel bleeding by adding an epsilon
+            sprite.setScale(sf::Vector2f(1.005f, 1.005f));
             target.draw(sprite);
         }
     };
@@ -96,6 +99,10 @@ void RenderEngine::render(
                 continue;
             }
             if (interactable->canPlayerInteract(player.getPosition())) {
+                if (dynamic_cast<Chest*>(entity.get()) != nullptr &&
+                    dynamic_cast<Chest*>(entity.get())->isChestOpen()) {
+                    continue;
+                }
                 interactable->renderButton(target);
             }
         }

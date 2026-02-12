@@ -152,27 +152,21 @@ void NPC::update(float dt, Player& player) {
     }
 
     if (pendingReward.has_value()) {
-        if (dialogueBox->getOwner() == this) {
-            if (!dialogueBox->isActive() && !dialogueBox->hasMoreLines()) {
-                player.addItemToInventory(pendingReward.value(), 1);
-                pendingReward.reset();
-            }
-        } else {
+        if (dialogueBox->getOwner() != this || !dialogueBox->isActive()) {
+            player.addItemToInventory(pendingReward.value(), 1);
             pendingReward.reset();
         }
     }
 
     if (pendingMove.has_value()) {
-        if (dialogueBox->getOwner() == this) {
-            if (!dialogueBox->isActive() && !dialogueBox->hasMoreLines()) {
-                move(pendingMove.value());
-                pendingMove.reset();
-                if (!pendingActionId.empty()) {
-                    if (onAction) {
-                        onAction(pendingActionId);
-                    }
-                    pendingActionId.clear();
+        if (dialogueBox->getOwner() != this || !dialogueBox->isActive()) {
+            move(pendingMove.value());
+            pendingMove.reset();
+            if (!pendingActionId.empty()) {
+                if (onAction) {
+                    onAction(pendingActionId);
                 }
+                pendingActionId.clear();
             }
         }
     }

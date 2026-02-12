@@ -10,6 +10,7 @@
 #include <SFML/Window/Window.hpp>
 #include <sys/stat.h>
 #include <utility>
+#include <cmath>
 
 #include "joanna/core/game.h"
 #include "joanna/entities/interactables/chest.h"
@@ -21,9 +22,9 @@ const sf::Color COLOR_TEXT_NORMAL = sf::Color::Black;
 const sf::Color COLOR_TEXT_SELECTED =
     sf::Color(50, 200, 50); // Greenish highlight
 const sf::Color COLOR_BG_NORMAL = sf::Color(50, 50, 50, 200);
-const float MENU_SPACING = 7.5f;
-const unsigned int FONT_SIZE_TITLE = 14;
-const unsigned int FONT_SIZE_ITEM = 14;
+const float MENU_SPACING = 20.f;
+const unsigned int FONT_SIZE_TITLE = 60;
+const unsigned int FONT_SIZE_ITEM = 40;
 } // namespace
 
 Menu::Menu(
@@ -38,6 +39,7 @@ Menu::Menu(
           "assets/buttons/cursor.png"
       )) {
     mouseSprite.setOrigin({ 0.f, 0.f });
+    mouseSprite.setScale({ 3.f, 3.f });
 
     font = ResourceManager<sf::Font>::getInstance()->get(
         "assets/font/minecraft.ttf"
@@ -56,8 +58,17 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void Menu::resetToDefaultMenu() {
-    setOptions({ "Joanna's Adventure", "New game", "Load game", "Save", "About",
-                 "Quit" });
+    std::vector<std::string> opts;
+    opts.push_back("Joanna's Adventure");
+    if (canResume) {
+        opts.push_back("Resume");
+    }
+    opts.push_back("New game");
+    opts.push_back("Load game");
+    opts.push_back("Save");
+    opts.push_back("About");
+    opts.push_back("Quit");
+    setOptions(opts);
 }
 
 void Menu::rebuildUI() {
@@ -76,7 +87,7 @@ void Menu::rebuildUI() {
     }
     totalHeight -= MENU_SPACING; // Remove trailing spacing
 
-    const sf::View& view = windowManager->getMainView();
+    const sf::View& view = windowManager->getUiView();
     float startY = view.getCenter().y - (totalHeight / 2.f);
     float currentY = startY;
 
@@ -88,10 +99,9 @@ void Menu::rebuildUI() {
         sf::Text text(font);
         text.setString(options[i]);
         text.setCharacterSize(charSize);
-        text.setFillColor(COLOR_TEXT_NORMAL
-        ); // We handle highlight in render/update now
+        text.setFillColor(COLOR_TEXT_NORMAL);
         text.setStyle(sf::Text::Regular);
-        text.setOutlineThickness(1.5f);
+        text.setOutlineThickness(2.0f);
         text.setOutlineColor(sf::Color::White);
         text.setLetterSpacing(2.f);
 
@@ -99,18 +109,7 @@ void Menu::rebuildUI() {
         sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin({ bounds.size.x / 2.f, 0.f });
         text.setPosition({ view.getCenter().x, std::floor(currentY) });
-
-        // Background Setup
-        sf::RectangleShape background;
-        background.setSize({ bounds.size.x + 10.f, bounds.size.y + 6.f });
-        background.setFillColor(COLOR_BG_NORMAL);
-        background.setOrigin({ bounds.size.x / 2.f, 0.f });
-        background.setPosition({ view.getCenter().x - 5.f,
-                                 std::floor(currentY) });
-
         menuTexts.push_back(std::move(text));
-        menuBackgrounds.push_back(std::move(background));
-
         currentY += static_cast<float>(charSize) + MENU_SPACING;
     }
 }
@@ -118,7 +117,7 @@ void Menu::rebuildUI() {
 sf::Vector2f Menu::getMouseWorldPos() const {
     auto& window = windowManager->getWindow();
     const sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
-    return window.mapPixelToCoords(pixelPos, windowManager->getMainView());
+    return window.mapPixelToCoords(pixelPos, windowManager->getUiView());
 }
 
 void Menu::handleHover(const sf::Vector2f& mousePos) {
@@ -215,7 +214,9 @@ void Menu::executeSelection() {
     // breaks if menu order changes. For now, sticking to the index logic from
     // your original code but checking safety.
 
-    if (choice == "Save") {
+    if (choice == "Resume") {
+        isMenuOpen = false;
+    } else if (choice == "Save") {
         loadingInteraction = false;
         auto& player = controller->getPlayer();
 
@@ -451,6 +452,7 @@ void Menu::render(
     );
 
     // 2. Draw Menu UI
+    windowManager->setView(windowManager->getUiView());
     renderMenuOptions(window);
 
     // 3. Draw Overlay
@@ -488,30 +490,23 @@ void Menu::renderMenuOptions(sf::RenderTarget& target) {
 }
 
 void Menu::renderAboutOverlay(sf::RenderTarget& target) {
-    const sf::Vector2f center = windowManager->getMainView().getCenter();
+    const sf::View& view = windowManager->getUiView();
+    const sf::Vector2f center = view.getCenter();
 
     sf::Text textObj(font);
     textObj.setString(aboutTextContent);
-    textObj.setCharacterSize(8);
+    textObj.setCharacterSize(30);
     textObj.setFillColor(sf::Color::White);
     textObj.setLetterSpacing(1.f);
     textObj.setLineSpacing(1.2f);
 
     sf::FloatRect textBounds = textObj.getLocalBounds();
-    constexpr float padding = 6.f;
+    constexpr float padding = 20.f;
     sf::Vector2f boxSize(
         (textBounds.size.x + padding) * 2.f, (textBounds.size.y + padding) * 2.f
     );
 
-    // Center the text logic
-    // Note: The origin math in your original code was a bit specific to the
-    // font/bounds. Standard centering:
-    // textObj.setOrigin({ textBounds.size.y / 2.f, textBounds.size.x / 2.f });
-    // textObj.setOrigin({ 0,0 });
-    // textObj.setPosition(center);
-
-    const sf::View& view = windowManager->getMainView();
-    float startY = view.getCenter().y - (boxSize.x / 2.f) + 75.f;
+    float startY = view.getCenter().y - (boxSize.x / 2.f) + 100.f;
     textObj.setOrigin({ textBounds.size.x / 2.f, 0.f });
     textObj.setPosition({ view.getCenter().x, startY });
 
@@ -521,7 +516,7 @@ void Menu::renderAboutOverlay(sf::RenderTarget& target) {
     box.setPosition(center);
     box.setFillColor(sf::Color(20, 20, 30, 220));
     box.setOutlineColor(sf::Color(200, 200, 200, 180));
-    box.setOutlineThickness(1.f);
+    box.setOutlineThickness(2.f);
 
     target.draw(box);
     target.draw(textObj);

@@ -179,6 +179,7 @@ bool Controller::getInput(
         Menu menu(
             windowManager, *this, tileManager, audioManager, entities, game
         );
+        menu.setCanResume(true);
         menu.show(
             renderEngine, tileManager, entities, sharedDialogueBox, audioManager
         );

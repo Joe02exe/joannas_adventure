@@ -162,6 +162,13 @@ void Game::resetEntities() {
                             if (otherNpc != npc &&
                                 otherNpc->getDialogId() == "Guard") {
                                 otherNpc->triggerMove(actionId);
+                                if (this->controller) {
+                                    this->controller->getPlayer()
+                                        .addInteraction(
+                                            otherNpc->getUniqueSpriteId() +
+                                            "_" + actionId
+                                        );
+                                }
                             }
                         }
                     }
@@ -214,7 +221,9 @@ void Game::update(float dt) {
     };
 
     MusicId targetMusic = MusicId::Overworld;
-    if (gameStatus == GameStatus::Combat) {
+    if (gameStatus == GameStatus::GameOver) {
+        targetMusic = MusicId::GameOver;
+    } else if (gameStatus == GameStatus::Combat) {
         targetMusic = MusicId::Combat;
     } else {
         if (controller) {
@@ -310,11 +319,15 @@ void Game::updateOverworld(float dt) {
         }
     }
 
+    if (skeletonSpawnTimer > 0.0f) {
+        skeletonSpawnTimer -= dt;
+    }
+
     if (controller->getPlayer().getPosition().y < 200.f &&
         controller->getPlayer().getPosition().x > 200.f &&
         controller->getPlayer().getPosition().x < 400.f) {
 
-        if (randomSkeletonPtr == nullptr && (std::rand() % 3000 < 5)) {
+        if (randomSkeletonPtr == nullptr && skeletonSpawnTimer <= 0.f && (std::rand() % 3000 < 5)) {
             auto randomSkeleton = std::make_unique<Enemy>(
                 sf::Vector2f{ controller->getPlayer().getPosition().x + 15.f,
                               controller->getPlayer().getPosition().y },
@@ -337,6 +350,7 @@ void Game::updateOverworld(float dt) {
 
             if (!stillExists) {
                 randomSkeletonPtr = nullptr;
+                skeletonSpawnTimer = 10.0f;
             }
         }
 

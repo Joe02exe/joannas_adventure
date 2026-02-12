@@ -74,4 +74,5 @@ class Game {
 
     // Config
     static constexpr float FIXED_TIMESTEP = 0.016f;
+    float skeletonSpawnTimer = 0.0f;
 };

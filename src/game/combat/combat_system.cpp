@@ -310,7 +310,8 @@ void CombatSystem::processCounter(float dt) {
     turnTimer += dt;
 
     if (counterSuccess && !damageDealt) {
-        enemy->takeDamage(1);
+        enemy->takeDamage(10);
+        spawnDamageText(enemy, 10);
         Logger::info(
             "Damage dealt: 1, remaining: " + std::to_string(enemy->getHealth())
         );
