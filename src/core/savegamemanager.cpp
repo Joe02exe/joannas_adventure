@@ -1,8 +1,11 @@
 #include "joanna/core/savegamemanager.h"
 
 #include "nlohmann/json.hpp"
+#include <chrono>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 
 using json = nlohmann::json;
 
@@ -128,4 +131,34 @@ GameState SaveGameManager::loadGame(const std::string& index) const {
         }
     }
     return state;
+}
+
+std::string SaveGameManager::getSaveInfo(const std::string& index) const {
+    auto path = getSaveFilePath(index);
+
+    if (!std::filesystem::exists(path)) {
+        return "Empty";
+    }
+
+    try {
+        // Get last write time
+        auto ftime = std::filesystem::last_write_time(path);
+
+        // Convert to time_t (C++17/20 compatible conversion)
+        // This conversion handles the difference between filesystem clock and
+        // system clock
+        const auto systemTime =
+            std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                ftime - std::filesystem::file_time_type::clock::now() +
+                std::chrono::system_clock::now()
+            );
+        std::time_t cftime = std::chrono::system_clock::to_time_t(systemTime);
+
+        // Format the time (e.g., "YYYY-MM-DD HH:MM")
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&cftime), "%Y-%m-%d %H:%M");
+        return ss.str();
+    } catch (...) {
+        return "Unknown"; // Fallback if permission/conversion fails
+    }
 }

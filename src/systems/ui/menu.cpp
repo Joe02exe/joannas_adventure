@@ -241,8 +241,25 @@ void Menu::executeSelection() {
         }
         stateToSave = state;
 
-        // Update menu to show slots (Example of sub-menu logic)
-        setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
+        SaveGameManager manager;
+        std::vector<std::string> slotOptions;
+        slotOptions.push_back(options[0]); // Keep the title
+
+        // Generate strings for Slot 1, 2, 3
+        for (int i = 1; i <= 3; ++i) {
+            std::string idx = std::to_string(i);
+            std::string info = manager.getSaveInfo(idx);
+            // Result: "Slot 1 - Empty" or "Slot 1 - 2023-10-25 14:30"
+            std::string optionStr = "Slot ";
+            optionStr += idx;
+            optionStr += " - ";
+            optionStr += info;
+
+            slotOptions.push_back(optionStr);
+        }
+        slotOptions.emplace_back("Back");
+
+        setOptions(slotOptions);
     } else if (choice == "New game") {
         isMenuOpen = false; // Start new game
         tileManager->reloadObjectsFromTileson();
@@ -255,7 +272,22 @@ void Menu::executeSelection() {
         game->resetEntities();
     } else if (choice == "Load game") {
         loadingInteraction = true;
-        setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
+        SaveGameManager manager;
+        std::vector<std::string> slotOptions;
+        slotOptions.emplace_back(options[0]);
+
+        for (int i = 1; i <= 3; ++i) {
+            std::string idx = std::to_string(i);
+            std::string info = manager.getSaveInfo(idx);
+            std::string optionStr = "Slot ";
+            optionStr += idx;
+            optionStr += " - ";
+            optionStr += info;
+
+            slotOptions.push_back(optionStr);
+        }
+        slotOptions.emplace_back("Back");
+        setOptions(slotOptions);
     } else if (choice == "Options") {
         // Placeholder
     } else if (choice == "About") {
@@ -277,13 +309,22 @@ void Menu::executeSelection() {
     } else if (choice == "Back") {
         resetToDefaultMenu();
     } else if (choice.find("Slot") != std::string::npos) {
-        Logger::info("Selected Save Slot: " + choice);
+        std::stringstream ss(choice);
+        std::string temp, slotNumStr;
+        ss >> temp;       // reads "Slot"
+        ss >> slotNumStr; // reads "1" (stops at space before "-")
+
+        Logger::info("Selected Save Slot ID: " + slotNumStr);
         const SaveGameManager saveManager;
-        std::string slotNumberStr = choice.substr(choice.find(' ') + 1);
         if (loadingInteraction) {
-            game->resetEntities();
             SaveGameManager manager;
-            GameState state = manager.loadGame(slotNumberStr);
+            game->resetEntities();
+            if (choice.find("Empty") != std::string::npos) {
+                Logger::info("Cannot load empty slot.");
+                return; // Do nothing if they click an empty slot while loading
+            }
+
+            GameState state = manager.loadGame(slotNumStr);
 
             controller->getPlayer().setPosition(
                 sf::Vector2f(state.player.x, state.player.y)
@@ -385,7 +426,7 @@ void Menu::executeSelection() {
                 }
             }
         } else {
-            saveManager.saveGame(stateToSave, slotNumberStr);
+            saveManager.saveGame(stateToSave, slotNumStr);
             Logger::info("Saved game to slot " + choice);
         }
         // Maybe go back to main menu after selecting slot?
