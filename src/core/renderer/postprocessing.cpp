@@ -15,7 +15,7 @@ PostProcessing::PostProcessing(unsigned int width, unsigned int height)
     m_shader.setUniform("scanlines_count", 10.f);
     m_shader.setUniform("scanlines_intensity", 0.05f);
     m_shader.setUniform("flicker_speed", 30.f);
-    m_shader.setUniform("flicker_intensity", 0.025f);
+    m_shader.setUniform("flicker_intensity", 0.00f);
     m_shader.setUniform("color_offset", 0.5f);
     m_shader.setUniform(
         "texture_size",
