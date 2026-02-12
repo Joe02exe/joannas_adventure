@@ -435,8 +435,6 @@ void Game::renderOverworld(float dt) {
         [&](sf::RenderTarget& target, const sf::View& view) {
             if (controller->isMapOverviewActive()) {
                 sf::View& mapView = windowManager.getMapOverviewView();
-                // Center the map on the player
-                mapView.setCenter(controller->getPlayer().getPosition());
                 target.setView(mapView);
             } else {
                 target.setView(controller->getPlayerView());
