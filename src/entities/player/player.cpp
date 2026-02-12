@@ -160,11 +160,7 @@ bool Player::applyItem(const std::string& itemId) {
         return true;
     }
     if (itemId == "703") {
-        for (auto& item : this->attacks) {
-            if (item.name == "Attack") {
-                item.damage += 5;
-            }
-        }
+        this->stats.attack += 3;
         this->inventory.removeItem(itemId, 1);
         return true;
     }
