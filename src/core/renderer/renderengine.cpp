@@ -21,6 +21,8 @@ void RenderEngine::render(
             sf::Sprite sprite(*it->second);
             sprite.setTextureRect(tile.textureRect);
             sprite.setPosition(tile.position);
+            // fix subpixel bleeding by adding an epsilon
+            sprite.setScale(sf::Vector2f(1.005f, 1.005f));
             target.draw(sprite);
         }
     };

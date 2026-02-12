@@ -10,7 +10,7 @@ DialogueBox::DialogueBox(FontRenderer& fontRenderer)
 
 }
 
-static const float TEXT_MAX_WIDTH = 240.0f - (15.0f * 2);
+static const float TEXT_MAX_WIDTH = 200.0f;
 
 void DialogueBox::setDialogue(
     const std::vector<std::string>& messages, const void* owner
@@ -164,7 +164,7 @@ void DialogueBox::render(sf::RenderTarget& target) {
                                    (viewSize.y / 1.4f) -
                                        bubbleBackground.getSize().y - 20.0f });
 
-    textPosition = bubbleBackground.getPosition() + sf::Vector2f(8.0f, 25.0f);
+    textPosition = bubbleBackground.getPosition() + sf::Vector2f(15.0f, 25.0f);
 
     target.draw(bubbleBackground);
 
