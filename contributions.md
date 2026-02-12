@@ -13,7 +13,23 @@
 - Some other sprites (Shield, Key, half heart, BIG CACTUS, Bone, Final Treasure)
 
 **Leonhard Kohl Lörting**:
-
+- Sound Effects & Music, Audio Manager:
+    - Self composed music and sound effects using 8-bit synthesizer.
+    - src/systems/audio/audiomanager.cpp & .h (all lines)
+- Rendering & Post-Processing:
+    - Post-processing CRT shader for pixelated retro look.
+    - assets/shader/crt_shader.frag (all lines)
+    - src/core/renderer/postprocessing.cpp & .h (all lines)
+    - Basic font rendering system for UI text.
+    - src/systems/ui/font_renderer.cpp &.h (all lines)
+- UI:
+    - Stats visual rendering.
+    - src/entities/components/stats.cpp (draw function)
+    - Small main menu overhaul, improving visual appeal.
+    - src/systems/ui/menu.cpp
+- Direction in finding usable asset pack, general planning.
+- Testing in terms of analyzing UI clarity and player communication.
+  
 **Johannes Hans Karl Schneider**:
 - Combat System: 
     - src/game/combat/combat_system.cpp (0-200, 230-470)
