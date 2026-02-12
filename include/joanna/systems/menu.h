@@ -60,4 +60,12 @@ class Menu {
         AudioManager& audioManager
     );
     void setOptions(const std::vector<std::string>& newOptions);
+
+    void setCanResume(bool enable) {
+        canResume = enable;
+        resetToDefaultMenu();
+    }
+
+  private:
+    bool canResume = false;
 };
