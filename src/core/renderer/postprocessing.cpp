@@ -29,22 +29,17 @@ void PostProcessing::drawScene(
 ) {
     m_sceneTexture.clear(sf::Color::Black);
 
-    // Save the current view (the default one for the RenderTexture)
     sf::View oldView = m_sceneTexture.getView();
 
-    // Set the provided view if given
     if (customView != nullptr) {
         m_sceneTexture.setView(*customView);
     } else {
         m_sceneTexture.setView(oldView);
     }
 
-    // Draw with the given function (passing the view for flexibility)
     drawFunc(m_sceneTexture, m_sceneTexture.getView());
 
-    // Restore the old view
     m_sceneTexture.setView(oldView);
-
     m_sceneTexture.display();
 }
 
