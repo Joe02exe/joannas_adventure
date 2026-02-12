@@ -221,7 +221,9 @@ void Game::update(float dt) {
     };
 
     MusicId targetMusic = MusicId::Overworld;
-    if (gameStatus == GameStatus::Combat) {
+    if (gameStatus == GameStatus::GameOver) {
+        targetMusic = MusicId::GameOver;
+    } else if (gameStatus == GameStatus::Combat) {
         targetMusic = MusicId::Combat;
     } else {
         if (controller) {

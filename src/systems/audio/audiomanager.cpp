@@ -60,6 +60,8 @@ std::string AudioManager::get_music_path(MusicId music_id) const {
             return "assets/music/beach.ogg";
         case MusicId::Combat:
             return "assets/music/combat.ogg";
+        case MusicId::GameOver:
+            return "assets/music/game_over.ogg";
         default:
             throw std::invalid_argument("Invalid MusicId");
     }
