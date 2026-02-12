@@ -8,17 +8,9 @@ DialogueBox::DialogueBox(FontRenderer& fontRenderer)
     bubbleBackground.setFillColor(sf::Color(255, 255, 255, 240));
     bubbleBackground.setOutlineColor(sf::Color(50, 50, 50));
     bubbleBackground.setOutlineThickness(2.0f);
-
-    // Setup pointer triangle
-    // if (config.showPointer) {
-    ////    bubblePointer.setPointCount(3);
-    //  bubblePointer.setFillColor(config.backgroundColor);
-    //  bubblePointer.setOutlineColor(config.outlineColor);
-    //  bubblePointer.setOutlineThickness(config.outlineThickness);
-    //}
 }
 
-static const float TEXT_MAX_WIDTH = 240.0f - (15.0f * 2);
+static const float TEXT_MAX_WIDTH = 200.0f;
 
 void DialogueBox::setDialogue(
     const std::vector<std::string>& messages, const void* owner
@@ -79,7 +71,7 @@ void DialogueBox::nextLine() {
 
 void DialogueBox::skipTypewriter() {
     visibleCharCount = currentDialogue.length();
-    displayTime = currentDialogue.length() * 0.05f;
+    displayTime = currentDialogue.length() * 0.02f;
 }
 
 std::string DialogueBox::wrapText(const std::string& text, float maxWidth) {
@@ -133,7 +125,7 @@ void DialogueBox::updateTypewriter(float dt) {
 
     displayTime += dt;
 
-    size_t targetCharCount = static_cast<size_t>(displayTime / 0.05f);
+    size_t targetCharCount = static_cast<size_t>(displayTime / 0.02f);
 
     if (targetCharCount > currentDialogue.length()) {
         visibleCharCount = currentDialogue.length();
@@ -191,7 +183,7 @@ void DialogueBox::render(sf::RenderTarget& target) {
                                    (viewSize.y / 1.4f) -
                                        bubbleBackground.getSize().y - 20.0f });
 
-    textPosition = bubbleBackground.getPosition() + sf::Vector2f(8.0f, 25.0f);
+    textPosition = bubbleBackground.getPosition() + sf::Vector2f(15.0f, 25.0f);
 
     target.draw(bubbleBackground);
 
