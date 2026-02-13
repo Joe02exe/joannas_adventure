@@ -23,6 +23,10 @@ class Game {
     void run();
     void resetEntities();
 
+    void resetEnemyPointer() {
+        enemyPtr = nullptr;
+    }
+
   private:
     void initialize();
     void handleInput();

@@ -17,6 +17,8 @@ class Chest: public Interactable {
         return isOpen;
     }
 
+    void setChestOpen(bool open);
+
   private:
     bool isOpen = false;
     std::string id;
