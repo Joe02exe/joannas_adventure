@@ -473,6 +473,11 @@ void Menu::render(
         window, controller->getPlayer(), tileManager, entities, dialogueBox, 0.f
     );
 
+    // draw black screen with alpha channel
+    sf::RectangleShape blackScreen(sf::Vector2f(window.getSize()));
+    blackScreen.setFillColor(sf::Color(0, 0, 0, 153));
+    window.draw(blackScreen);
+
     // 2. Draw Menu UI
     windowManager->setView(windowManager->getUiView());
     renderMenuOptions(window);
