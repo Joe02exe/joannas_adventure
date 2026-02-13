@@ -4,6 +4,8 @@
 
 For a whole playthrough of the game you can click this [link](https://youtu.be/MBDc1ot5lMY).
 
+Additionally we created a all-in-one `.exe`-file and have it ready on this [fileshare-link](https://fileshare.uibk.ac.at/smart-link/3c4e16e6-7981-4951-b5d3-390f811131bf/)
+
 ## Setup
 
 ### Pull & Update vcpkg submodule
