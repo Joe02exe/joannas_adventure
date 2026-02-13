@@ -1,6 +1,8 @@
 # Advanced CPP Project
 
-## Team
+## Playthrough
+
+For a whole playthrough of the game you can click this [link](https://youtu.be/MBDc1ot5lMY).
 
 ## Setup
 
