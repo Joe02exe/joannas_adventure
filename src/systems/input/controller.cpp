@@ -41,6 +41,8 @@ bool Controller::getInput(
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::M)) {
         if (!mPressed) {
             showMapOverview = !showMapOverview;
+            sf::View& mapView = windowManager.getMapOverviewView();
+            mapView.setCenter(this->getPlayer().getPosition());
             mPressed = true;
         }
     } else {
@@ -51,11 +53,6 @@ bool Controller::getInput(
 
     State state = State::Idle;
     sf::Vector2f dir{ 0.f, 0.f };
-
-    if (isMapOverviewActive()) {
-        player.update(dt, state, facingLeft, audioManager);
-        return false;
-    }
 
     if (player.getState() != State::Mining) {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
@@ -80,6 +77,13 @@ bool Controller::getInput(
             dir *= 1.5f;
             state = State::Running;
         }
+    }
+
+    if (isMapOverviewActive()) {
+        windowManager.getMapOverviewView().move(dir);
+        auto idleState = State::Idle;
+        player.update(dt, idleState, true, audioManager);
+        return false;
     }
 
     // Inventory toggle

@@ -25,3 +25,12 @@ void Chest::interact(Player& player) {
         Logger::info("Chest is already open.");
     }
 }
+
+void Chest::setChestOpen(const bool open) {
+    isOpen = open;
+    if (isOpen) {
+        setFrame(sf::IntRect({ 16, 0 }, { 16, 22 }));
+    } else {
+        setFrame(sf::IntRect({ 0, 0 }, { 16, 22 }));
+    }
+}

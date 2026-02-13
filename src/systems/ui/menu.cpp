@@ -59,15 +59,15 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 
 void Menu::resetToDefaultMenu() {
     std::vector<std::string> opts;
-    opts.push_back("Joanna's Adventure");
+    opts.emplace_back("Joanna's Adventure");
     if (canResume) {
-        opts.push_back("Resume");
+        opts.emplace_back("Resume");
     }
-    opts.push_back("New game");
-    opts.push_back("Load game");
-    opts.push_back("Save");
-    opts.push_back("About");
-    opts.push_back("Quit");
+    opts.emplace_back("New game");
+    opts.emplace_back("Load game");
+    opts.emplace_back("Save");
+    opts.emplace_back("About");
+    opts.emplace_back("Quit");
     setOptions(opts);
 }
 
@@ -75,8 +75,9 @@ void Menu::rebuildUI() {
     menuTexts.clear();
     menuBackgrounds.clear();
 
-    if (options.empty())
+    if (options.empty()) {
         return;
+    }
 
     // 1. Calculate Total Height to center vertically
     float totalHeight = 0.f;
@@ -121,8 +122,9 @@ sf::Vector2f Menu::getMouseWorldPos() const {
 }
 
 void Menu::handleHover(const sf::Vector2f& mousePos) {
-    if (showAbout)
+    if (showAbout) {
         return;
+    }
 
     // Start at 1 to skip Title
     for (size_t i = 1; i < menuTexts.size(); ++i) {
@@ -137,6 +139,11 @@ void Menu::handleHover(const sf::Vector2f& mousePos) {
 
 void Menu::handleInput(sf::Window& window) {
     while (const std::optional<sf::Event> event = window.pollEvent()) {
+
+        if (!isMenuOpen) {
+            break;
+        }
+
         if (event->is<sf::Event::Closed>()) {
             window.close();
             isMenuOpen = false;
@@ -192,18 +199,22 @@ void Menu::handleInput(sf::Window& window) {
 void Menu::updateSelection(int direction) {
     int newIndex = selectedIndex + direction;
     // Constrain between 1 (Skip title) and size-1
-    if (newIndex < 1)
+    if (newIndex < 1) {
         newIndex = 1;
-    if (newIndex >= static_cast<int>(menuTexts.size()))
+    }
+    if (newIndex >= static_cast<int>(menuTexts.size())) {
         newIndex = static_cast<int>(menuTexts.size()) - 1;
+    }
 
     selectedIndex = newIndex;
 }
 
 void Menu::executeSelection() {
     // Safeguard
-    if (selectedIndex < 0 || selectedIndex >= static_cast<int>(options.size()))
+    if (selectedIndex < 0 ||
+        selectedIndex >= static_cast<int>(options.size())) {
         return;
+    }
 
     std::string choice = options[selectedIndex];
     Logger::info("Menu selected: " + choice);
@@ -242,8 +253,25 @@ void Menu::executeSelection() {
         }
         stateToSave = state;
 
-        // Update menu to show slots (Example of sub-menu logic)
-        setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
+        SaveGameManager manager;
+        std::vector<std::string> slotOptions;
+        slotOptions.push_back(options[0]); // Keep the title
+
+        // Generate strings for Slot 1, 2, 3
+        for (int i = 1; i <= 3; ++i) {
+            std::string idx = std::to_string(i);
+            std::string info = manager.getSaveInfo(idx);
+            // Result: "Slot 1 - Empty" or "Slot 1 - 2023-10-25 14:30"
+            std::string optionStr = "Slot ";
+            optionStr += idx;
+            optionStr += " - ";
+            optionStr += info;
+
+            slotOptions.push_back(optionStr);
+        }
+        slotOptions.emplace_back("Back");
+
+        setOptions(slotOptions);
     } else if (choice == "New game") {
         isMenuOpen = false; // Start new game
         tileManager->reloadObjectsFromTileson();
@@ -256,7 +284,22 @@ void Menu::executeSelection() {
         game->resetEntities();
     } else if (choice == "Load game") {
         loadingInteraction = true;
-        setOptions({ options[0], "Slot 1", "Slot 2", "Slot 3", "Back" });
+        SaveGameManager manager;
+        std::vector<std::string> slotOptions;
+        slotOptions.emplace_back(options[0]);
+
+        for (int i = 1; i <= 3; ++i) {
+            std::string idx = std::to_string(i);
+            std::string info = manager.getSaveInfo(idx);
+            std::string optionStr = "Slot ";
+            optionStr += idx;
+            optionStr += " - ";
+            optionStr += info;
+
+            slotOptions.push_back(optionStr);
+        }
+        slotOptions.emplace_back("Back");
+        setOptions(slotOptions);
     } else if (choice == "Options") {
         // Placeholder
     } else if (choice == "About") {
@@ -278,13 +321,22 @@ void Menu::executeSelection() {
     } else if (choice == "Back") {
         resetToDefaultMenu();
     } else if (choice.find("Slot") != std::string::npos) {
-        Logger::info("Selected Save Slot: " + choice);
+        std::stringstream ss(choice);
+        std::string temp, slotNumStr;
+        ss >> temp;       // reads "Slot"
+        ss >> slotNumStr; // reads "1" (stops at space before "-")
+
+        Logger::info("Selected Save Slot ID: " + slotNumStr);
         const SaveGameManager saveManager;
-        std::string slotNumberStr = choice.substr(choice.find(' ') + 1);
         if (loadingInteraction) {
-            game->resetEntities();
             SaveGameManager manager;
-            GameState state = manager.loadGame(slotNumberStr);
+            game->resetEntities();
+            if (choice.find("Empty") != std::string::npos) {
+                Logger::info("Cannot load empty slot.");
+                return; // Do nothing if they click an empty slot while loading
+            }
+
+            GameState state = manager.loadGame(slotNumStr);
 
             controller->getPlayer().setPosition(
                 sf::Vector2f(state.player.x, state.player.y)
@@ -325,6 +377,8 @@ void Menu::executeSelection() {
                 state.player.visitedInteractions.count("right") != 0u;
             bool chestOpened =
                 state.player.visitedInteractions.count("chestOpened") != 0u;
+            bool goblinDead =
+                state.player.visitedInteractions.count("goblinDead") != 0u;
 
             // Use an iterator instead of a range-based for loop
             for (auto it = entities->begin(); it != entities->end();
@@ -361,20 +415,29 @@ void Menu::executeSelection() {
                 // --- Chest Logic ---
                 if (auto* chest = dynamic_cast<Chest*>(p)) {
                     if (chest->getChestId() == "chest" && chestOpened) {
-                        chest->setFrame(sf::IntRect({ 16, 0 }, { 16, 22 }));
+                        chest->setChestOpen(true);
                     }
                 }
 
                 // --- Stone Logic ---
                 if (auto* stone = dynamic_cast<Stone*>(p)) {
-                    if (stone->getStoneId() == "left" && stoneLeftReset) {
-                        // Remove the stone safely
+                    if ((stone->getStoneId() == "left" && stoneLeftReset) ||
+                        (stone->getStoneId() == "right" && stoneRightReset)) {
                         it = entities->erase(it);
                         itemRemoved = true;
                     }
-                    if (stone->getStoneId() == "right" && stoneRightReset) {
-                        // Remove the stone safely
+                }
+
+                if (itemRemoved) {
+                    continue;
+                }
+                // --- Goblin Logic ---
+                if (auto* enemy = dynamic_cast<Enemy*>(p)) {
+                    if (enemy->getType() == Enemy::EnemyType::Goblin &&
+                        goblinDead) {
+                        // Remove the goblin safely
                         it = entities->erase(it);
+                        game->resetEnemyPointer();
                         itemRemoved = true;
                     }
                 }
@@ -386,7 +449,7 @@ void Menu::executeSelection() {
                 }
             }
         } else {
-            saveManager.saveGame(stateToSave, slotNumberStr);
+            saveManager.saveGame(stateToSave, slotNumStr);
             Logger::info("Saved game to slot " + choice);
         }
         // Maybe go back to main menu after selecting slot?

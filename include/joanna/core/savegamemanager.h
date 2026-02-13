@@ -48,6 +48,7 @@ class SaveGameManager {
     SaveGameManager();
 
     void saveGame(const GameState& state, const std::string& index) const;
+    [[nodiscard]] std::string getSaveInfo(const std::string& index) const;
     [[nodiscard]] GameState loadGame(const std::string& index) const;
     [[nodiscard]] bool saveExists(const std::string& index) const;
 
