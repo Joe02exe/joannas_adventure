@@ -2,6 +2,21 @@
 
 **Martin Berktold**:
 
+- Menu
+  - src/systems/ui/menu.cpp
+  - include/joanna/systems/menu.h
+- Savegame Manager
+  - src/core/savegamemanager.cpp 
+  - include/joanna/core/savegamemanager.h
+- Inventory System
+  - src/game/inventory/inventory.cpp
+  - include/joanna/entities/inventory.h
+- Window Manager
+- Logger
+- Resource Manager
+- ImGUI
+- CI pipeline
+
 **Philipp Dablander**:
 - NPCs - src/entities/npcs/npc.cpp, include/joanna/entities/npc.h, assets/dialog/dialog.json, assets/player/npc
 - Dialogue box - src/systems/ui/dialogue_box.cpp, include/joanna/utils/dialogue_box.h
