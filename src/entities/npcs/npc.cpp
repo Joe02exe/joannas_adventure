@@ -181,6 +181,7 @@ void NPC::triggerMove(const std::string& actionId) {
 
 void NPC::applyFrame() {
     const auto& anim = animations[currentState];
+    setTexture(anim.texture);
     setFrame(anim.frames[currentFrame]);
 }
 

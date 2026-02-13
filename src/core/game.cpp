@@ -107,7 +107,7 @@ void Game::resetEntities() {
 
     entities.push_back(std::make_unique<NPC>(
         sf::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        "assets/player/npc/guard2_walking.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Guard"
     ));
 
