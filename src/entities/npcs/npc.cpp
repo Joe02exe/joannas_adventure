@@ -55,7 +55,7 @@ bool checkRequirements(nlohmann::json& entry, Player& player) {
         std::string type = req["type"];
         if (type.find("ITEM") != std::string::npos) {
             std::string itemId = req["id"];
-            int amount = req["amount"];
+            unsigned int amount = req["amount"];
             if (player.getInventory().getQuantity(itemId) < amount) {
                 conditionMet = false;
             } else if (type == "ITEM_REMOVE") {

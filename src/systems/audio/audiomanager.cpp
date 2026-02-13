@@ -88,7 +88,7 @@ void AudioManager::set_current_music(MusicId music_id) {
         current_music_.setVolume(music_volume_);
         current_music_.setLooping(true);
         current_music_.play();
-    } catch (const sf::Exception& e) {
+    } catch (const sf::Exception&) {
         Logger::error("Failed to load music: {}", get_music_path(music_id));
     }
 }

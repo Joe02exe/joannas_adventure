@@ -381,7 +381,7 @@ std::string Inventory::getSelectedItemId() const {
     try {
         auto item = listItems().at(getSelectedSlotIndex());
         return item.item.id;
-    } catch (const std::out_of_range& e) {
+    } catch (const std::out_of_range&) {
         return "";
     }
 }
