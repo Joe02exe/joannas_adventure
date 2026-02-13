@@ -43,7 +43,7 @@ void Game::initialize() {
 
     controller->getPlayer().onLevelUp([this](int newLevel) {
         std::string msg1 = "You reached level " + std::to_string(newLevel) +
-                           ".\n" + "Attack +2, Defense +1.";
+                           ".\n" + "Attack +2, Defense +1 and health restored";
         this->sharedDialogueBox->setDialogue({ msg1 });
         this->sharedDialogueBox->show();
     });

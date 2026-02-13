@@ -155,7 +155,7 @@ void Player::displayHealthBar(
 
 bool Player::applyItem(const std::string& itemId) {
     if (itemId == "1330") {
-        this->health += 5;
+        this->health += 50;
         this->inventory.removeItem(itemId, 1);
         return true;
     }
