@@ -74,17 +74,17 @@ class Inventory {
 
     void drawItemName(
         sf::RenderTarget& target, float slotSize, sf::Vector2f slotPos,
-        StoredItem& st
+        const StoredItem& st
     ) const;
 
     void drawItemQuantity(
         sf::RenderTarget& target, float slotSize, sf::Vector2f slotPos,
-        StoredItem& st
+        const StoredItem& st
     ) const;
 
     void drawItemSprite(
         sf::RenderTarget& target, TileManager& tileManager, float slotSize,
-        sf::Vector2f slotPos, StoredItem& st
+        sf::Vector2f slotPos, const StoredItem& st
     ) const;
 
     void drawItems(

@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 struct PlayerState {
     int health = 100;
@@ -42,6 +43,13 @@ struct GameState {
     InventoryState inventory;
     MapState map;
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PlayerState, x, y, health, attack, defense, level, currentExp, expToNextLevel, visitedInteractions)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemState, id, quantity)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InventoryState, items)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ObjectState, id, gid, x, y)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MapState, items)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GameState, player, inventory, map)
 
 class SaveGameManager {
   public:
