@@ -60,23 +60,39 @@ std::string createKey(
     return result;
 }
 
-bool checkRequirements(nlohmann::json& entry, Player& player) {
-    bool conditionMet = true;
-    if (entry.contains("req") && !entry["req"].is_null()) {
-        json req = entry["req"];
-        std::string type = req["type"];
-        if (type.find("ITEM") != std::string::npos) {
-            std::string itemId = req["id"];
-            int amount = req["amount"];
-            if (player.getInventory().getQuantity(itemId) < amount) {
-                conditionMet = false;
-            } else if (type == "ITEM_REMOVE") {
-                player.getInventory().removeItem(itemId, amount);
-            }
+bool canFulfillRequirements(const nlohmann::json& entry, Player& player) {
+    if (!entry.contains("req") || entry["req"].is_null()) {
+        return true;
+    }
+
+    const auto& req = entry["req"];
+    std::string type = req["type"];
+
+    if (type.find("ITEM") != std::string::npos) {
+        std::string itemId = req["id"];
+        int amount = req["amount"];
+
+        if (player.getInventory().getQuantity(itemId) < amount) {
+            return false;
         }
     }
 
-    return conditionMet;
+    return true;
+}
+
+void payRequirementCost(const nlohmann::json& entry, Player& player) {
+    if (!entry.contains("req") || entry["req"].is_null()) {
+        return;
+    }
+
+    const auto& req = entry["req"];
+    std::string type = req["type"];
+
+    if (type == "ITEM_REMOVE") {
+        std::string itemId = req["id"];
+        int amount = req["amount"];
+        player.getInventory().removeItem(itemId, amount);
+    }
 }
 
 void NPC::interact(Player& player) {
@@ -86,9 +102,8 @@ void NPC::interact(Player& player) {
             continue;
         }
 
-        bool conditionMet = checkRequirements(entry, player);
-
-        if (conditionMet) {
+        if (canFulfillRequirements(entry, player)) {
+            payRequirementCost(entry, player);
             dialogueBox->setDialogue(entry["text"], this);
             dialogueBox->show();
             if (!uniqueKey.empty()) {
