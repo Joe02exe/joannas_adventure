@@ -86,10 +86,6 @@ void NPC::interact(Player& player) {
                 json reward = entry["reward"];
                 pendingReward = Item(reward["id"], reward["name"]);
             }
-            if (!entry["reward"].is_null()) {
-                json reward = entry["reward"];
-                pendingReward = Item(reward["id"], reward["name"]);
-            }
             if (!entry["move"].is_null()) {
                 pendingMove = entry["move"];
                 if (entry.contains("id")) {
