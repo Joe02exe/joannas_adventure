@@ -12,9 +12,13 @@ SaveGameManager::SaveGameManager() : m_gameName("Joanna") {
 
 std::filesystem::path SaveGameManager::getSaveDirectory() const {
 #ifdef _WIN32
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata)
-        return std::filesystem::path(appdata) / m_gameName;
+    char* appdata = nullptr;
+    size_t len = 0;
+    if (_dupenv_s(&appdata, &len, "APPDATA") == 0 && appdata) {
+        std::filesystem::path path(appdata);
+        free(appdata);
+        return path / m_gameName;
+    }
 #endif
 #ifdef __APPLE__
     const char* home = std::getenv("HOME");
@@ -88,7 +92,7 @@ GameState SaveGameManager::loadGame(const std::string& index) const {
     json j;
     try {
         file >> j;
-    } catch (const json::parse_error& e) {
+    } catch (const json::parse_error&) {
         return {};
     }
 
