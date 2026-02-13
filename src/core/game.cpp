@@ -82,8 +82,7 @@ void Game::run() {
 void Game::resetEntities() {
     entities.clear();
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Joe"
     ));
 
@@ -94,8 +93,7 @@ void Game::resetEntities() {
     entities.push_back(std::move(enemy));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Pirat"
     ));
 
@@ -112,32 +110,27 @@ void Game::resetEntities() {
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 500.f, 300.f }, "assets/player/npc/boy1.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sf::Vector2f{ 500.f, 300.f }, "assets/player/npc/boy1.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Boy"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 520.f, 430.f }, "assets/player/npc/miner.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sf::Vector2f{ 520.f, 430.f }, "assets/player/npc/miner.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Miner"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sf::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Swimmer"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sf::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Girl1"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        sf::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Girl2"
     ));
 

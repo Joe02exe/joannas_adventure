@@ -18,7 +18,11 @@ NPC::NPC(
       dialogueBox(dialogueBox), dialogId(dialogId) {
     this->uniqueSpriteId = npcIdlePath;
     animations[State::Idle] = Animation(npcIdlePath, { 96, 64 }, 8);
-    animations[State::Walking] = Animation(npcWalkingPath, { 96, 64 }, 8);
+    if (!npcWalkingPath.empty()) {
+        animations[State::Walking] = Animation(npcWalkingPath, { 96, 64 }, 8);
+    } else {
+        animations[State::Walking] = animations[State::Idle];
+    }
     auto rawList = jsonData[dialogId];
 
     std::sort(rawList.begin(), rawList.end(), [](const json& a, const json& b) {
@@ -27,6 +31,14 @@ NPC::NPC(
 
     this->sortedDialogue = rawList;
 }
+
+NPC::NPC(
+        const sf::Vector2f& startPos, 
+        const std::string& npcIdlePath,
+        const std::string& buttonTexturePath,
+        std::shared_ptr<DialogueBox> dialogueBox, 
+        std::string dialogId
+    ) : NPC(startPos, npcIdlePath, "", buttonTexturePath, dialogueBox, dialogId) {}
 
 void NPC::setDialogue(const std::vector<std::string>& messages) {
     if (dialogueBox) {
