@@ -1,5 +1,6 @@
 #include "joanna/core/savegamemanager.h"
 
+#include "joanna/utils/logger.h"
 #include "nlohmann/json.hpp"
 #include <chrono>
 #include <cstdlib>
@@ -15,9 +16,13 @@ SaveGameManager::SaveGameManager() : m_gameName("Joanna") {
 
 std::filesystem::path SaveGameManager::getSaveDirectory() const {
 #ifdef _WIN32
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata)
-        return std::filesystem::path(appdata) / m_gameName;
+    char* appdata = nullptr;
+    size_t len = 0;
+    if (_dupenv_s(&appdata, &len, "APPDATA") == 0 && appdata) {
+        std::filesystem::path path(appdata);
+        free(appdata);
+        return path / m_gameName;
+    }
 #endif
 #ifdef __APPLE__
     const char* home = std::getenv("HOME");
@@ -44,115 +49,53 @@ bool SaveGameManager::saveExists(const std::string& index) const {
 
 void SaveGameManager::saveGame(const GameState& state, const std::string& index)
     const {
-    json j;
+    try {
+        const json j = state;
 
-    j["player"]["x"] = state.player.x;
-    j["player"]["y"] = state.player.y;
-    j["player"]["health"] = state.player.health;
-    j["player"]["attack"] = state.player.attack;
-    j["player"]["defense"] = state.player.defense;
-    j["player"]["level"] = state.player.level;
-    j["player"]["currentExp"] = state.player.currentExp;
-    j["player"]["expToNextLevel"] = state.player.expToNextLevel;
-
-    j["player"]["visitedInteractions"] = json::array();
-    for (const auto& interaction : state.player.visitedInteractions) {
-        j["player"]["visitedInteractions"].push_back(interaction);
-    }
-
-    j["player"]["inventory"] = json::array(); // Initialize as array
-    for (const auto& item : state.inventory.items) {
-        j["player"]["inventory"].push_back({ { "id", item.id },
-                                             { "quantity", item.quantity } });
-    }
-
-    for (const auto& item : state.map.items) {
-        j["map"]["objects"].push_back({ { "id", item.id },
-                                        { "gid", item.gid },
-                                        { "x", item.x },
-                                        { "y", item.y } });
-    }
-
-    std::ofstream file(getSaveFilePath(index));
-    if (file) {
-        file << j.dump(4); // pretty print with indent 4
+        if (std::ofstream file(getSaveFilePath(index)); file.is_open()) {
+            file << j.dump(4);
+        }
+    } catch (const std::exception& e) {
+        Logger::error("Failed to save game to slot {}: {}", index, e.what());
     }
 }
 
 GameState SaveGameManager::loadGame(const std::string& index) const {
+    const std::filesystem::path path = getSaveFilePath(index);
 
-    std::ifstream file(getSaveFilePath(index));
-    // Handle the case where the file doesn't exist yet
-    if (!file.is_open()) {
-        // Return a default/empty state or throw an exception
+    if (!std::filesystem::exists(path)) {
         return {};
     }
 
-    json j;
     try {
+        std::ifstream file(path);
+        json j;
         file >> j;
-    } catch (const json::parse_error& e) {
+
+        return j.get<GameState>();
+
+    } catch (const std::exception& e) {
         return {};
     }
-
-    GameState state;
-
-    state.player.x = j["player"].value("x", 0.0f);
-    state.player.y = j["player"].value("y", 0.0f);
-    state.player.health = j["player"].value("health", 100);
-    state.player.attack = j["player"].value("attack", 0);
-    state.player.defense = j["player"].value("defense", 0);
-    state.player.level = j["player"].value("level", 1);
-    state.player.currentExp = j["player"].value("currentExp", 0);
-    state.player.expToNextLevel = j["player"].value("expToNextLevel", 0);
-
-    if (j["player"].contains("visitedInteractions")) {
-        for (const auto& iteraction : j["player"]["visitedInteractions"]) {
-            state.player.visitedInteractions.emplace(iteraction);
-        }
-    }
-
-    if (j["player"].contains("inventory")) {
-        for (const auto& itemJson : j["player"]["inventory"]) {
-            ItemState newItem;
-            newItem.id = itemJson["id"];
-            newItem.quantity = itemJson["quantity"];
-            state.inventory.items.push_back(newItem);
-        }
-    }
-    if (j["map"].contains("objects")) {
-        for (const auto& objJson : j["map"]["objects"]) {
-            ObjectState newObj{};
-            newObj.id = objJson["id"];
-            newObj.gid = objJson["gid"];
-            newObj.x = objJson["x"];
-            newObj.y = objJson["y"];
-            state.map.items.push_back(newObj);
-        }
-    }
-    return state;
 }
 
 std::string SaveGameManager::getSaveInfo(const std::string& index) const {
-    auto path = getSaveFilePath(index);
+    const auto path = getSaveFilePath(index);
 
     if (!std::filesystem::exists(path)) {
         return "Empty";
     }
 
     try {
-        // Get last write time
-        auto ftime = std::filesystem::last_write_time(path);
+        // last update time of the file
+        const auto ftime = std::filesystem::last_write_time(path);
 
-        // Convert to time_t (C++17/20 compatible conversion)
-        // This conversion handles the difference between filesystem clock and
-        // system clock
         const auto systemTime =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                 ftime - std::filesystem::file_time_type::clock::now() +
                 std::chrono::system_clock::now()
             );
-        std::time_t cftime = std::chrono::system_clock::to_time_t(systemTime);
+        const std::time_t cftime = std::chrono::system_clock::to_time_t(systemTime);
 
         // Format the time (e.g., "YYYY-MM-DD HH:MM")
         std::stringstream ss;

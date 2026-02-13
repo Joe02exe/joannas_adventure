@@ -9,7 +9,6 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Window.hpp>
 #include <cmath>
-#include <sys/stat.h>
 #include <utility>
 
 #include "joanna/core/game.h"
@@ -18,13 +17,13 @@
 #include "joanna/entities/npc.h"
 
 namespace {
-const sf::Color COLOR_TEXT_NORMAL = sf::Color::Black;
-const sf::Color COLOR_TEXT_SELECTED =
+constexpr sf::Color COLOR_TEXT_NORMAL = sf::Color::Black;
+constexpr sf::Color COLOR_TEXT_SELECTED =
     sf::Color(50, 200, 50); // Greenish highlight
-const sf::Color COLOR_BG_NORMAL = sf::Color(50, 50, 50, 200);
-const float MENU_SPACING = 20.f;
-const unsigned int FONT_SIZE_TITLE = 60;
-const unsigned int FONT_SIZE_ITEM = 40;
+constexpr sf::Color COLOR_BG_NORMAL = sf::Color(50, 50, 50, 200);
+constexpr float MENU_SPACING = 20.f;
+constexpr unsigned int FONT_SIZE_TITLE = 60;
+constexpr unsigned int FONT_SIZE_ITEM = 40;
 } // namespace
 
 Menu::Menu(
@@ -35,9 +34,11 @@ Menu::Menu(
     : windowManager(&windowManager), controller(&controller),
       tileManager(&tileManager), audioManager(&audioManager),
       entities(&entities), game(&game),
-      mouseSprite(ResourceManager<sf::Texture>::getInstance()->get(
-          "assets/buttons/cursor.png"
-      )) {
+      mouseSprite(
+          ResourceManager<sf::Texture>::getInstance()->get(
+              "assets/buttons/cursor.png"
+          )
+      ) {
     mouseSprite.setOrigin({ 0.f, 0.f });
     mouseSprite.setScale({ 3.f, 3.f });
 
@@ -82,23 +83,24 @@ void Menu::rebuildUI() {
     // 1. Calculate Total Height to center vertically
     float totalHeight = 0.f;
     for (size_t i = 0; i < options.size(); ++i) {
-        float size = (i == 0) ? static_cast<float>(FONT_SIZE_TITLE)
-                              : static_cast<float>(FONT_SIZE_ITEM);
+        const float size = (i == 0) ? static_cast<float>(FONT_SIZE_TITLE)
+                                    : static_cast<float>(FONT_SIZE_ITEM);
         totalHeight += size + MENU_SPACING;
     }
     totalHeight -= MENU_SPACING; // Remove trailing spacing
 
     const sf::View& view = windowManager->getUiView();
-    float startY = view.getCenter().y - (totalHeight / 2.f);
+    const float startY = view.getCenter().y - (totalHeight / 2.f);
     float currentY = startY;
 
     // 2. Build Objects
     for (size_t i = 0; i < options.size(); ++i) {
-        unsigned int charSize = (i == 0) ? FONT_SIZE_TITLE : FONT_SIZE_ITEM;
+        const unsigned int charSize =
+            (i == 0) ? FONT_SIZE_TITLE : FONT_SIZE_ITEM;
 
         // Text Setup
         sf::Text text(font);
-        text.setString(options[i]);
+        text.setString(options.at(i));
         text.setCharacterSize(charSize);
         text.setFillColor(COLOR_TEXT_NORMAL);
         text.setStyle(sf::Text::Regular);
@@ -107,7 +109,7 @@ void Menu::rebuildUI() {
         text.setLetterSpacing(2.f);
 
         // Center Horizontally
-        sf::FloatRect bounds = text.getLocalBounds();
+        const sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin({ bounds.size.x / 2.f, 0.f });
         text.setPosition({ view.getCenter().x, std::floor(currentY) });
         menuTexts.push_back(std::move(text));
@@ -128,7 +130,7 @@ void Menu::handleHover(const sf::Vector2f& mousePos) {
 
     // Start at 1 to skip Title
     for (size_t i = 1; i < menuTexts.size(); ++i) {
-        if (menuTexts[i].getGlobalBounds().contains(mousePos)) {
+        if (menuTexts.at(i).getGlobalBounds().contains(mousePos)) {
             if (static_cast<int>(i) != selectedIndex) {
                 selectedIndex = static_cast<int>(i);
             }
@@ -151,7 +153,7 @@ void Menu::handleInput(sf::Window& window) {
 
         if (const auto* resized = event->getIf<sf::Event::Resized>()) {
             windowManager->handleResizeEvent(resized->size);
-            rebuildUI(); // Re-center items after resize
+            rebuildUI();
         }
 
         // --- About Overlay Inputs ---
@@ -209,6 +211,156 @@ void Menu::updateSelection(int direction) {
     selectedIndex = newIndex;
 }
 
+GameState Menu::createGameState(Player& player) {
+    GameState state;
+    state.player.x = player.getPosition().x;
+    state.player.y = player.getPosition().y;
+    state.player.health = player.getHealth();
+    state.player.visitedInteractions = player.getVisitedInteractions();
+    state.player.attack = player.getStats().attack;
+    state.player.defense = player.getStats().defense;
+    state.player.level = player.getLevel();
+    state.player.currentExp = player.getCurrentExp();
+    state.player.expToNextLevel = player.getExpToNextLevel();
+
+    // Save Inventory
+    for (const auto& item : player.getInventory().listItems()) {
+        state.inventory.items.push_back({ item.item.id, item.quantity });
+    }
+
+    for (const auto& object : tileManager->getRenderObjects()) {
+        state.map.items.push_back(
+            { object.id, object.gid, object.position.x, object.position.y }
+        );
+    }
+    return state;
+}
+
+void Menu::resetNewGame() const {
+    tileManager->reloadObjectsFromTileson();
+    controller->getPlayer().getInventory().clear();
+    controller->getPlayer().setHealth(200);
+    controller->getPlayer().setPosition({ 150.f, 400.f });
+    controller->getPlayer().resetInteractions();
+    controller->getPlayer().resetStats();
+    windowManager->setCenter({ 150.f, 400.f });
+    game->resetEntities();
+}
+
+void Menu::loadEntityStates(const GameState& state) {
+    // move entities back to default positions or states if needed
+    const bool guard1Reset = state.player.visitedInteractions.count(
+                                 "assets/player/npc/guard1.png_Bring key"
+                             ) != 0u;
+    const bool guard2Reset = state.player.visitedInteractions.count(
+                                 "assets/player/npc/guard2.png_Bring key"
+                             ) != 0u;
+    const bool stoneLeftReset =
+        state.player.visitedInteractions.count("left") != 0u;
+    const bool stoneRightReset =
+        state.player.visitedInteractions.count("right") != 0u;
+    const bool chestOpened =
+        state.player.visitedInteractions.count("chestOpened") != 0u;
+    const bool goblinDead =
+        state.player.visitedInteractions.count("goblinDead") != 0u;
+
+    for (auto it = entities->begin(); it != entities->end();) {
+        auto& ptr = *it;
+
+        if (!ptr) {
+            ++it;
+            continue;
+        }
+
+        auto* p = ptr.get();
+        bool itemRemoved = false;
+
+        // --- NPC Logic ---
+        if (auto* npc = dynamic_cast<NPC*>(p)) {
+            if (npc->getUniqueSpriteId() == "assets/player/npc/guard1.png" &&
+                guard1Reset) {
+                npc->setPosition(npc->getPosition() - sf::Vector2f(50.f, 50.f));
+            }
+            if (npc->getUniqueSpriteId() == "assets/player/npc/guard2.png" &&
+                guard2Reset) {
+                npc->setPosition(npc->getPosition() - sf::Vector2f(50.f, 50.f));
+            }
+        }
+
+        // --- Chest Logic ---
+        if (auto* chest = dynamic_cast<Chest*>(p)) {
+            if (chest->getChestId() == "chest" && chestOpened) {
+                chest->setChestOpen(true);
+            }
+        }
+
+        // --- Stone Logic ---
+        if (const auto* stone = dynamic_cast<Stone*>(p)) {
+            if ((stone->getStoneId() == "left" && stoneLeftReset) ||
+                (stone->getStoneId() == "right" && stoneRightReset)) {
+                it = entities->erase(it);
+                itemRemoved = true;
+            }
+        }
+
+        if (itemRemoved) {
+            continue;
+        }
+
+        // --- Goblin Logic ---
+        if (const auto* enemy = dynamic_cast<Enemy*>(p)) {
+            if (enemy->getType() == Enemy::EnemyType::Goblin && goblinDead) {
+                // Remove the goblin safely
+                it = entities->erase(it);
+                game->resetEnemyPointer();
+                itemRemoved = true;
+            }
+        }
+
+        if (!itemRemoved) {
+            ++it;
+        }
+    }
+}
+
+bool Menu::loadGameState(
+    const std::string& choice, const std::string& slotNumStr
+) {
+    const SaveGameManager manager;
+    game->resetEntities();
+    if (choice.find("Empty") != std::string::npos) {
+        Logger::info("Cannot load empty slot.");
+        return true;
+    }
+
+    GameState state = manager.loadGame(slotNumStr);
+
+    controller->getPlayer().setPosition(
+        sf::Vector2f(state.player.x, state.player.y)
+    );
+    controller->getPlayerView().setCenter(
+        sf::Vector2f(state.player.x, state.player.y)
+    );
+    controller->getMiniMapView().setCenter(
+        sf::Vector2f(state.player.x, state.player.y)
+    );
+    controller->getPlayer().getInventory().loadState(state.inventory);
+    controller->getPlayer().setHealth(state.player.health);
+
+    controller->getPlayer().getStats().attack = state.player.attack;
+    controller->getPlayer().getStats().defense = state.player.defense;
+    controller->getPlayer().setLevel(state.player.level);
+    controller->getPlayer().setCurrentExp(state.player.currentExp);
+    controller->getPlayer().setExpToNextLevel(state.player.expToNextLevel);
+
+    controller->getPlayer().setInteractions(state.player.visitedInteractions);
+    tileManager->loadObjectsFromSaveGame(state.map.items);
+    isMenuOpen = false;
+
+    loadEntityStates(state);
+    return false;
+}
+
 void Menu::executeSelection() {
     // Safeguard
     if (selectedIndex < 0 ||
@@ -216,14 +368,8 @@ void Menu::executeSelection() {
         return;
     }
 
-    std::string choice = options[selectedIndex];
+    std::string choice = options.at(selectedIndex);
     Logger::info("Menu selected: " + choice);
-
-    // Map string options to actions.
-    // Note: A switch/case on string is not valid in C++, so we use if/else or
-    // map logic. Alternatively, rely on the index (1=Play, 2=Save), but that
-    // breaks if menu order changes. For now, sticking to the index logic from
-    // your original code but checking safety.
 
     if (choice == "Resume") {
         isMenuOpen = false;
@@ -231,37 +377,15 @@ void Menu::executeSelection() {
         loadingInteraction = false;
         auto& player = controller->getPlayer();
 
-        GameState state;
-        state.player.x = player.getPosition().x;
-        state.player.y = player.getPosition().y;
-        state.player.health = player.getHealth();
-        state.player.visitedInteractions = player.getVisitedInteractions();
-        state.player.attack = player.getStats().attack;
-        state.player.defense = player.getStats().defense;
-        state.player.level = player.getLevel();
-        state.player.currentExp = player.getCurrentExp();
-        state.player.expToNextLevel = player.getExpToNextLevel();
+        stateToSave = createGameState(player);
 
-        // Save Inventory
-        for (const auto& item : player.getInventory().listItems()) {
-            state.inventory.items.push_back({ item.item.id, item.quantity });
-        }
-
-        for (const auto& object : tileManager->getRenderObjects()) {
-            state.map.items.push_back({ object.id, object.gid,
-                                        object.position.x, object.position.y });
-        }
-        stateToSave = state;
-
-        SaveGameManager manager;
         std::vector<std::string> slotOptions;
-        slotOptions.push_back(options[0]); // Keep the title
+        slotOptions.push_back(options.at(0));
 
-        // Generate strings for Slot 1, 2, 3
         for (int i = 1; i <= 3; ++i) {
+            SaveGameManager manager;
             std::string idx = std::to_string(i);
             std::string info = manager.getSaveInfo(idx);
-            // Result: "Slot 1 - Empty" or "Slot 1 - 2023-10-25 14:30"
             std::string optionStr = "Slot ";
             optionStr += idx;
             optionStr += " - ";
@@ -273,22 +397,15 @@ void Menu::executeSelection() {
 
         setOptions(slotOptions);
     } else if (choice == "New game") {
-        isMenuOpen = false; // Start new game
-        tileManager->reloadObjectsFromTileson();
-        controller->getPlayer().getInventory().clear();
-        controller->getPlayer().setHealth(200);
-        controller->getPlayer().setPosition({ 150.f, 400.f });
-        controller->getPlayer().resetInteractions();
-        controller->getPlayer().resetStats();
-        windowManager->setCenter({ 150.f, 400.f });
-        game->resetEntities();
+        resetNewGame();
+        isMenuOpen = false;
     } else if (choice == "Load game") {
         loadingInteraction = true;
-        SaveGameManager manager;
         std::vector<std::string> slotOptions;
-        slotOptions.emplace_back(options[0]);
+        slotOptions.emplace_back(options.at(0));
 
         for (int i = 1; i <= 3; ++i) {
+            SaveGameManager manager;
             std::string idx = std::to_string(i);
             std::string info = manager.getSaveInfo(idx);
             std::string optionStr = "Slot ";
@@ -300,8 +417,6 @@ void Menu::executeSelection() {
         }
         slotOptions.emplace_back("Back");
         setOptions(slotOptions);
-    } else if (choice == "Options") {
-        // Placeholder
     } else if (choice == "About") {
         aboutTextContent = "Joanna's Adventure\n\n"
                            "A small RPG game.\n\n"
@@ -322,133 +437,18 @@ void Menu::executeSelection() {
         resetToDefaultMenu();
     } else if (choice.find("Slot") != std::string::npos) {
         std::stringstream ss(choice);
-        std::string temp, slotNumStr;
-        ss >> temp;       // reads "Slot"
-        ss >> slotNumStr; // reads "1" (stops at space before "-")
+        std::string temp;
+        std::string slotNumStr;
+        ss >> temp;
+        ss >> slotNumStr;
 
         Logger::info("Selected Save Slot ID: " + slotNumStr);
-        const SaveGameManager saveManager;
         if (loadingInteraction) {
-            SaveGameManager manager;
-            game->resetEntities();
-            if (choice.find("Empty") != std::string::npos) {
-                Logger::info("Cannot load empty slot.");
-                return; // Do nothing if they click an empty slot while loading
-            }
-
-            GameState state = manager.loadGame(slotNumStr);
-
-            controller->getPlayer().setPosition(
-                sf::Vector2f(state.player.x, state.player.y)
-            );
-            controller->getPlayerView().setCenter(
-                sf::Vector2f(state.player.x, state.player.y)
-            );
-            controller->getMiniMapView().setCenter(
-                sf::Vector2f(state.player.x, state.player.y)
-            );
-            controller->getPlayer().getInventory().loadState(state.inventory);
-            controller->getPlayer().setHealth(state.player.health);
-
-            controller->getPlayer().getStats().attack = state.player.attack;
-            controller->getPlayer().getStats().defense = state.player.defense;
-            controller->getPlayer().setLevel(state.player.level);
-            controller->getPlayer().setCurrentExp(state.player.currentExp);
-            controller->getPlayer().setExpToNextLevel(
-                state.player.expToNextLevel
-            );
-
-            controller->getPlayer().setInteractions(
-                state.player.visitedInteractions
-            );
-            tileManager->loadObjectsFromSaveGame(state.map.items);
-            isMenuOpen = false;
-
-            // move entities back to default positions or states if needed
-            bool guard1Reset = state.player.visitedInteractions.count(
-                                   "assets/player/npc/guard1.png_Bring key"
-                               ) != 0u;
-            bool guard2Reset = state.player.visitedInteractions.count(
-                                   "assets/player/npc/guard2.png_Bring key"
-                               ) != 0u;
-            bool stoneLeftReset =
-                state.player.visitedInteractions.count("left") != 0u;
-            bool stoneRightReset =
-                state.player.visitedInteractions.count("right") != 0u;
-            bool chestOpened =
-                state.player.visitedInteractions.count("chestOpened") != 0u;
-            bool goblinDead =
-                state.player.visitedInteractions.count("goblinDead") != 0u;
-
-            // Use an iterator instead of a range-based for loop
-            for (auto it = entities->begin(); it != entities->end();
-                 /* increment handled inside */) {
-                auto& ptr = *it; // Access the unique_ptr
-
-                if (!ptr) {
-                    ++it;
-                    continue;
-                }
-
-                auto p = ptr.get();
-                bool itemRemoved =
-                    false; // Flag to track if we deleted something
-
-                // --- NPC Logic ---
-                if (auto* npc = dynamic_cast<NPC*>(p)) {
-                    if (npc->getUniqueSpriteId() ==
-                            "assets/player/npc/guard1.png" &&
-                        guard1Reset) {
-                        npc->setPosition(
-                            npc->getPosition() - sf::Vector2f(50.f, 50.f)
-                        );
-                    }
-                    if (npc->getUniqueSpriteId() ==
-                            "assets/player/npc/guard2.png" &&
-                        guard2Reset) {
-                        npc->setPosition(
-                            npc->getPosition() - sf::Vector2f(50.f, 50.f)
-                        );
-                    }
-                }
-
-                // --- Chest Logic ---
-                if (auto* chest = dynamic_cast<Chest*>(p)) {
-                    if (chest->getChestId() == "chest" && chestOpened) {
-                        chest->setChestOpen(true);
-                    }
-                }
-
-                // --- Stone Logic ---
-                if (auto* stone = dynamic_cast<Stone*>(p)) {
-                    if ((stone->getStoneId() == "left" && stoneLeftReset) ||
-                        (stone->getStoneId() == "right" && stoneRightReset)) {
-                        it = entities->erase(it);
-                        itemRemoved = true;
-                    }
-                }
-
-                if (itemRemoved) {
-                    continue;
-                }
-                // --- Goblin Logic ---
-                if (auto* enemy = dynamic_cast<Enemy*>(p)) {
-                    if (enemy->getType() == Enemy::EnemyType::Goblin &&
-                        goblinDead) {
-                        // Remove the goblin safely
-                        it = entities->erase(it);
-                        game->resetEnemyPointer();
-                        itemRemoved = true;
-                    }
-                }
-
-                // Only increment the iterator if we didn't remove anything
-                // (erase() automatically advances 'it' to the next item)
-                if (!itemRemoved) {
-                    ++it;
-                }
+            if (loadGameState(choice, slotNumStr)) {
+                return;
             }
         } else {
+            const SaveGameManager saveManager;
             saveManager.saveGame(stateToSave, slotNumStr);
             Logger::info("Saved game to slot " + choice);
         }
@@ -465,7 +465,7 @@ void Menu::render(
 
     auto& window = windowManager->getWindow();
 
-    // 1. Draw Game World (as background)
+    // background
     windowManager->setView(windowManager->getMainView());
     window.clear();
 
@@ -473,21 +473,21 @@ void Menu::render(
         window, controller->getPlayer(), tileManager, entities, dialogueBox, 0.f
     );
 
-    // draw black screen with alpha channel
+    // draw background
     sf::RectangleShape blackScreen(sf::Vector2f(window.getSize()));
     blackScreen.setFillColor(sf::Color(0, 0, 0, 153));
     window.draw(blackScreen);
 
-    // 2. Draw Menu UI
+    // draw menu options
     windowManager->setView(windowManager->getUiView());
     renderMenuOptions(window);
 
-    // 3. Draw Overlay
+    // draw overlay if about is selected
     if (showAbout) {
         renderAboutOverlay(window);
     }
 
-    // 4. Draw Cursor
+    // draw mouse cursor
     window.draw(mouseSprite);
 
     window.display();
@@ -497,26 +497,26 @@ void Menu::renderMenuOptions(sf::RenderTarget& target) {
     for (size_t i = 0; i < menuTexts.size(); ++i) {
         // Visual Logic: Highlight selected item
         if (static_cast<int>(i) == selectedIndex && !showAbout) {
-            menuTexts[i].setFillColor(COLOR_TEXT_SELECTED);
-            menuTexts[i].setString(
-                "> " + options[i] + " <"
+            menuTexts.at(i).setFillColor(COLOR_TEXT_SELECTED);
+            menuTexts.at(i).setString(
+                "> " + options.at(i) + " <"
             ); // Optional stylistic choice
             // Re-center if the string length changed
-            sf::FloatRect bounds = menuTexts[i].getLocalBounds();
-            menuTexts[i].setOrigin({ bounds.size.x / 2.f, 0.f });
+            const sf::FloatRect bounds = menuTexts.at(i).getLocalBounds();
+            menuTexts.at(i).setOrigin({ bounds.size.x / 2.f, 0.f });
         } else {
-            menuTexts[i].setFillColor(COLOR_TEXT_NORMAL);
-            menuTexts[i].setString(options[i]);
+            menuTexts.at(i).setFillColor(COLOR_TEXT_NORMAL);
+            menuTexts.at(i).setString(options.at(i));
             // Re-center
-            sf::FloatRect bounds = menuTexts[i].getLocalBounds();
-            menuTexts[i].setOrigin({ bounds.size.x / 2.f, 0.f });
+            const sf::FloatRect bounds = menuTexts.at(i).getLocalBounds();
+            menuTexts.at(i).setOrigin({ bounds.size.x / 2.f, 0.f });
         }
 
-        target.draw(menuTexts[i]);
+        target.draw(menuTexts.at(i));
     }
 }
 
-void Menu::renderAboutOverlay(sf::RenderTarget& target) {
+void Menu::renderAboutOverlay(sf::RenderTarget& target) const {
     const sf::View& view = windowManager->getUiView();
     const sf::Vector2f center = view.getCenter();
 
@@ -527,9 +527,9 @@ void Menu::renderAboutOverlay(sf::RenderTarget& target) {
     textObj.setLetterSpacing(1.f);
     textObj.setLineSpacing(1.2f);
 
-    sf::FloatRect textBounds = textObj.getLocalBounds();
+    const sf::FloatRect textBounds = textObj.getLocalBounds();
     constexpr float padding = 20.f;
-    sf::Vector2f boxSize(
+    const sf::Vector2f boxSize(
         (textBounds.size.x + padding) * 2.f, (textBounds.size.y + padding) * 2.f
     );
 
@@ -549,6 +549,9 @@ void Menu::renderAboutOverlay(sf::RenderTarget& target) {
     target.draw(textObj);
 }
 
+/**
+ * Show Menu and wait for input of user
+ */
 void Menu::show(
     RenderEngine& render_engine, TileManager& tileManager,
     std::list<std::unique_ptr<Entity>>& entities,

@@ -34,6 +34,10 @@ class Menu {
 
     void handleInput(sf::Window& window);
     void updateSelection(int direction); // -1 for up, 1 for down
+    GameState createGameState(Player& player);
+    void resetNewGame() const;
+    void loadEntityStates(const GameState& state);
+    bool loadGameState(const std::string& choice, const std::string& slotNumStr);
     void executeSelection();
     void render(
         RenderEngine& render_engine, TileManager& tileManager,
@@ -41,7 +45,7 @@ class Menu {
         const std::shared_ptr<DialogueBox>& dialogueBox
     );
     void renderMenuOptions(sf::RenderTarget& target);
-    void renderAboutOverlay(sf::RenderTarget& target);
+    void renderAboutOverlay(sf::RenderTarget& target) const;
     void rebuildUI();
     sf::Vector2f getMouseWorldPos() const;
     void handleHover(const sf::Vector2f& mousePos);
