@@ -18,7 +18,11 @@ NPC::NPC(
       dialogueBox(dialogueBox), dialogId(dialogId) {
     this->uniqueSpriteId = npcIdlePath;
     animations[State::Idle] = Animation(npcIdlePath, { 96, 64 }, 8);
-    animations[State::Walking] = Animation(npcWalkingPath, { 96, 64 }, 8);
+    if (!npcWalkingPath.empty()) {
+        animations[State::Walking] = Animation(npcWalkingPath, { 96, 64 }, 8);
+    } else {
+        animations[State::Walking] = animations[State::Idle];
+    }
     auto rawList = jsonData[dialogId];
 
     std::sort(rawList.begin(), rawList.end(), [](const json& a, const json& b) {
@@ -27,6 +31,14 @@ NPC::NPC(
 
     this->sortedDialogue = rawList;
 }
+
+NPC::NPC(
+        const sf::Vector2f& startPos, 
+        const std::string& npcIdlePath,
+        const std::string& buttonTexturePath,
+        std::shared_ptr<DialogueBox> dialogueBox, 
+        std::string dialogId
+    ) : NPC(startPos, npcIdlePath, "", buttonTexturePath, dialogueBox, dialogId) {}
 
 void NPC::setDialogue(const std::vector<std::string>& messages) {
     if (dialogueBox) {
@@ -48,23 +60,39 @@ std::string createKey(
     return result;
 }
 
-bool checkRequirements(nlohmann::json& entry, Player& player) {
-    bool conditionMet = true;
-    if (entry.contains("req") && !entry["req"].is_null()) {
-        json req = entry["req"];
-        std::string type = req["type"];
-        if (type.find("ITEM") != std::string::npos) {
-            std::string itemId = req["id"];
-            unsigned int amount = req["amount"];
-            if (player.getInventory().getQuantity(itemId) < amount) {
-                conditionMet = false;
-            } else if (type == "ITEM_REMOVE") {
-                player.getInventory().removeItem(itemId, amount);
-            }
+bool canFulfillRequirements(const nlohmann::json& entry, Player& player) {
+    if (!entry.contains("req") || entry["req"].is_null()) {
+        return true;
+    }
+
+    const auto& req = entry["req"];
+    std::string type = req["type"];
+
+    if (type.find("ITEM") != std::string::npos) {
+        std::string itemId = req["id"];
+        int amount = req["amount"];
+
+        if (player.getInventory().getQuantity(itemId) < amount) {
+            return false;
         }
     }
 
-    return conditionMet;
+    return true;
+}
+
+void payRequirementCost(const nlohmann::json& entry, Player& player) {
+    if (!entry.contains("req") || entry["req"].is_null()) {
+        return;
+    }
+
+    const auto& req = entry["req"];
+    std::string type = req["type"];
+
+    if (type == "ITEM_REMOVE") {
+        std::string itemId = req["id"];
+        int amount = req["amount"];
+        player.getInventory().removeItem(itemId, amount);
+    }
 }
 
 void NPC::interact(Player& player) {
@@ -74,17 +102,12 @@ void NPC::interact(Player& player) {
             continue;
         }
 
-        bool conditionMet = checkRequirements(entry, player);
-
-        if (conditionMet) {
+        if (canFulfillRequirements(entry, player)) {
+            payRequirementCost(entry, player);
             dialogueBox->setDialogue(entry["text"], this);
             dialogueBox->show();
             if (!uniqueKey.empty()) {
                 player.addInteraction(uniqueKey);
-            }
-            if (!entry["reward"].is_null()) {
-                json reward = entry["reward"];
-                pendingReward = Item(reward["id"], reward["name"]);
             }
             if (!entry["reward"].is_null()) {
                 json reward = entry["reward"];
@@ -185,6 +208,7 @@ void NPC::triggerMove(const std::string& actionId) {
 
 void NPC::applyFrame() {
     const auto& anim = animations[currentState];
+    setTexture(anim.texture);
     setFrame(anim.frames[currentFrame]);
 }
 

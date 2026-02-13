@@ -20,6 +20,10 @@ class NPC: public Interactable {
         const std::string& npcWalkingPath, const std::string& buttonTexturePath,
         std::shared_ptr<DialogueBox> dialogueBox, std::string dialogId);
 
+    NPC(const sf::Vector2f& startPos, const std::string& npcIdlePath, 
+        const std::string& buttonTexturePath,
+        std::shared_ptr<DialogueBox> dialogueBox, std::string dialogId);
+
     void interact(Player& player) override;
 
     void update(float dt, Player& player);

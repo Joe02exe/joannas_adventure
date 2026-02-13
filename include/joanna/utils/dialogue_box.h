@@ -30,7 +30,7 @@ private:
     void updateTypewriter(float dt);
     std::string wrapText(const std::string& text, float maxWidth);
 
-    FontRenderer fontRenderer;
+    FontRenderer& fontRenderer;
 
     bool active = false;
     std::queue<std::string> dialogueQueue;

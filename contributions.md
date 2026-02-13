@@ -20,14 +20,24 @@
 - CI pipeline / Pre-Commit -> Ensure all tests are run and code is linted on every comit
 
 **Philipp Dablander**:
-- NPCs - src/entities/npcs/npc.cpp, include/joanna/entities/npc.h, assets/dialog/dialog.json, assets/player/npc
-- Dialogue box - src/systems/ui/dialogue_box.cpp, include/joanna/utils/dialogue_box.h
-- Stats - src/entities/components/stats.cpp, include/joanna/entities/stats.h, src/entities/player/player.cpp:178-206, Stats influencing combat
+- NPCs: 
+    - src/entities/npcs/npc.cpp (0-167, 194-230)
+    - include/joanna/entities/npc.h (everything, except the three public functions)
+    - assets/dialog/dialog.json
+    - assets/player/npc (all sprites)
+- Dialogue box:
+    - src/systems/ui/dialogue_box.cpp (all lines)
+    - include/joanna/utils/dialogue_box.h (all lines)
+- Stats:
+    - src/entities/components/stats.cpp (everything except draw function)
+    - include/joanna/entities/stats.h (all lines)
+    - Sword, shield and mushroom influence stats: src/entities/player/player.cpp (111-115, 162), 
+    - Stats influencing combat (Adjustments in src/game/combat/combat_system.cpp to extract stats from the player)
+    - Leveling up: src/entities/player/player.cpp (178-207), src/core/game.cpp (44-49) + LevelUpListener in inlcude/joanna/entities/player.h
 - Section 2 (Desert)
 - Damage indicator
 - Random spawning skeletons
-- Items influencing stats (Sword, Shield)
-- Some other sprites (Shield, Key, half heart, BIG CACTUS, Bone, Final Treasure)
+- Some other sprites (Shield, Key, Half Heart, BIG CACTUS, Bone, Final Treasure)
 
 **Leonhard Kohl Lörting**:
 - Sound Effects & Music, Audio Manager:
