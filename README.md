@@ -78,6 +78,9 @@ sudo apt install \
 
 Before building, make sure you have a C++ compiler installed. You can use [Clang](https://releases.llvm.org/download.html), [GCC](https://gcc.gnu.org/install/) or [MSVC](https://code.visualstudio.com/docs/cpp/config-msvc) and follow their setup guide.
 
+> **📝 Note on Building for Windows (Ninja + MSVC)**
+> To successfully configure and build this project using Ninja, you must run your CMake commands from the **x64 Native Tools Command Prompt for VS 2022**. Standard Windows Command Prompt or PowerShell will fail because they do not have the MSVC C++ compiler (`cl.exe`) loaded into their environment path by default.
+
 ```bash
 mkdir build && cd build
 ```
