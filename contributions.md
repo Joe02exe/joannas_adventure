@@ -8,14 +8,16 @@
 - Savegame Manager
   - src/core/savegamemanager.cpp 
   - include/joanna/core/savegamemanager.h
+  - and including savegane related code in different parts
 - Inventory System
   - src/game/inventory/inventory.cpp
   - include/joanna/entities/inventory.h
-- Window Manager
-- Logger
-- Resource Manager
-- ImGUI
-- CI pipeline
+  - Including the unit tests for the inventory system
+- Window Manager -> Handling window creation, resizing events and different views and viewports.
+- Logger -> Enable / Disable logging in a centralized way, with different log levels (info, warning, error).
+- Resource Manager -> Centralized management of game resources (textures, sounds, fonts) to avoid redundant loading and ensure proper cleanup.
+- ImGUI -> Integrating ImGUI for debugging purposes, adding items to inventory, display game state information
+- CI pipeline / Pre-Commit -> Ensure all tests are run and code is linted on every comit
 
 **Philipp Dablander**:
 - NPCs - src/entities/npcs/npc.cpp, include/joanna/entities/npc.h, assets/dialog/dialog.json, assets/player/npc
