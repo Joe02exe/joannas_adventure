@@ -1,4 +1,5 @@
 # Advanced CPP Project
+![joanna](joanna.png)
 
 ## Playthrough
 
