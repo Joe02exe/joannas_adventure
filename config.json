@@ -1,0 +1,6 @@
+{
+    "label": "Joannas Adventure",
+    "icon": "icon.png",
+    "launch": "launch.sh",
+    "description": "An advanced C++ action RPG ported strictly for your Miyoo."
+}

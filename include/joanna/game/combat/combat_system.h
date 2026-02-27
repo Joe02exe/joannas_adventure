@@ -1,13 +1,13 @@
 #pragma once
 
 #include "joanna/core/combattypes.h"
+#include "joanna/core/graphics.h"
 #include "joanna/entities/enemy.h"
 #include "joanna/entities/player.h"
-#include <SFML/Graphics.hpp>
 
 struct EntityState {
-    sf::Vector2f position;
-    sf::Vector2f scale;
+    jo::Vector2f position;
+    jo::Vector2f scale;
     Direction facing;
 };
 
@@ -19,10 +19,10 @@ class CombatSystem {
     void endCombat();
     void update(float dt);
     void render(
-        sf::RenderTarget& target, class TileManager& tileManager,
-        const sf::Font& font
+        jo::RenderTarget& target, class TileManager& tileManager,
+        const jo::Font& font
     );
-    void handleInput(sf::Event& event);
+    void handleInput(jo::Event& event);
 
     CombatState getState() const {
         return currentState;
@@ -48,16 +48,16 @@ class CombatSystem {
     EntityState playerState;
     EntityState enemyState;
 
-    sf::Texture caveBackground;
-    sf::Texture beachBackground;
-    sf::Texture* currentBackground = nullptr;
+    const jo::Texture* caveBackground;
+    const jo::Texture* beachBackground;
+    const jo::Texture* currentBackground = nullptr;
 
-    sf::Texture attackButtonTexture;
-    sf::Texture attackButtonRollTexture;
+    const jo::Texture* attackButtonTexture;
+    const jo::Texture* attackButtonRollTexture;
 
-    sf::Texture counterButtonTexture;
-    sf::Texture counterButtonGoodTexture;
-    sf::Texture counterButtonBadTexture;
+    const jo::Texture* counterButtonTexture;
+    const jo::Texture* counterButtonGoodTexture;
+    const jo::Texture* counterButtonBadTexture;
 
     CombatState currentState = CombatState::PlayerTurn;
     TurnPhase phase = TurnPhase::Input;
@@ -65,8 +65,8 @@ class CombatSystem {
     float turnTimer = 0.0f;
     float victoryTimer = 0.0f;
 
-    sf::Vector2f startPos;
-    sf::Vector2f targetPos;
+    jo::Vector2f startPos;
+    jo::Vector2f targetPos;
     Attack currentAttack;
 
     State pState = State::Idle;
@@ -79,16 +79,16 @@ class CombatSystem {
     void updatePlayerTurn(float dt, State& pState, State& eState);
     void updateEnemyTurn(float dt, State& pState, State& eState);
     void processApproach(
-        float dt, Entity* actor, sf::Vector2f target, float speed,
+        float dt, Entity* actor, jo::Vector2f target, float speed,
         float threshold, State& actorState
     );
     void processReturn(
-        float dt, Entity* actor, sf::Vector2f startPos, float speed,
+        float dt, Entity* actor, jo::Vector2f startPos, float speed,
         float threshold, State& actorState, Direction moveFacing,
         Direction endFacing
     );
     void updateAttackMovement(
-        float dt, Entity* attacker, const sf::Vector2f& targetPos,
+        float dt, Entity* attacker, const jo::Vector2f& targetPos,
         const Attack& attack
     );
     void e_chooseAttack();
@@ -107,16 +107,16 @@ class CombatSystem {
     );
 
     struct DamageIndicator {
-        sf::Vector2f position;
+        jo::Vector2f position;
         std::string text;
-        sf::Color color;
+        jo::Color color;
         float lifeTime;
         float maxLifeTime;
         float speed;
     };
 
     std::vector<DamageIndicator> damageTexts;
-    sf::Font damageFont;
+    jo::Font damageFont;
 
     void spawnDamageText(Entity* target, int amount);
 };

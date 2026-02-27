@@ -5,7 +5,7 @@
 
 class Chest: public Interactable {
   public:
-    Chest(const sf::Vector2f& position, std::string id);
+    Chest(const jo::Vector2f& position, std::string id);
 
     void interact(Player& player) override;
 

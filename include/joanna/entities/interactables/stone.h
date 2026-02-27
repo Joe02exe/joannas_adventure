@@ -4,7 +4,7 @@
 
 class Stone: public Interactable {
   public:
-    Stone(const sf::Vector2f& position, std::string id);
+    Stone(const jo::Vector2f& position, std::string id);
 
     void interact(Player& player) override;
     void update(float dt, Player& player);

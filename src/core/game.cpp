@@ -13,18 +13,26 @@
 #include "joanna/utils/dialogue_box.h"
 #include "joanna/world/tilemanager.h"
 
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "joanna/systems/audiomanager.h"
+#include "joanna/core/graphics.h"
 #include "joanna/utils/resourcemanager.h"
-
-#include <SFML/System/Vector2.hpp>
 #include <fstream>
+#include <spdlog/spdlog.h>
+#if IMGUI_ENABLED
 #include <imgui-SFML.h>
+#include <imgui.h>
+#endif
 
+#ifdef MIYOO_BUILD
+Game::Game()
+    : windowManager(640, 480, "Joanna's Adventure"),
+      tileManager(windowManager.getWindow()), postProc(640, 480),
+      fontRenderer("assets/font/Pixellari.ttf") {
+#else
 Game::Game()
     : windowManager(900, 900, "Joanna's Adventure"),
       tileManager(windowManager.getWindow()), postProc(900, 900),
       fontRenderer("assets/font/Pixellari.ttf") {
+#endif
     initialize();
 }
 
@@ -55,10 +63,16 @@ void Game::initialize() {
         renderEngine, tileManager, entities, sharedDialogueBox, audioManager
     );
 
+    spdlog::info("Game::initialize - Restarting clock before run");
     clock.restart();
+    spdlog::info("Game::initialize - Complete.");
 }
 
 void Game::run() {
+    spdlog::info("Game::run - Entering main loop");
+    int frameCount = 0;
+    float fpsTimer = 0.f;
+
     while (windowManager.getWindow().isOpen()) {
         handleInput();
 
@@ -66,85 +80,106 @@ void Game::run() {
         if (dt <= 0.0f) {
             dt = 0.0001f;
         }
+        // Cap dt to avoid spiral of death on lag spikes
+        if (dt > 0.1f)
+            dt = 0.1f;
 
         update(dt);
         render(dt);
-    }
 
-    if constexpr (IMGUI_ENABLED) {
-        ImGui::SFML::Shutdown();
+        // FPS logging: log once per second instead of every frame
+        ++frameCount;
+        fpsTimer += dt;
+        if (fpsTimer >= 1.0f) {
+            float fps = static_cast<float>(frameCount) / fpsTimer;
+            spdlog::info(
+                "[PERF] FPS={:.1f}  dt_avg={:.2f}ms", fps,
+                (fpsTimer / frameCount) * 1000.f
+            );
+            frameCount = 0;
+            fpsTimer = 0.f;
+        }
     }
-    ResourceManager<sf::Font>::getInstance()->clear();
-    ResourceManager<sf::Texture>::getInstance()->clear();
-    ResourceManager<sf::SoundBuffer>::getInstance()->clear();
+    spdlog::info("Game::run - Exited main loop");
+
+#if IMGUI_ENABLED
+    ImGui::SFML::Shutdown();
+#endif
+    ResourceManager<jo::Font>::getInstance()->clear();
+    ResourceManager<jo::Texture>::getInstance()->clear();
+    ResourceManager<jo::SoundBuffer>::getInstance()->clear();
 }
 
 void Game::resetEntities() {
+    spdlog::info("Game::resetEntities - Clearing entities");
     entities.clear();
+    spdlog::info("Game::resetEntities - Pushing NPCs");
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png", "assets/buttons/interact_T.png",
-        sharedDialogueBox, "Joe"
+        jo::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Joe"
     ));
 
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
-        sf::Vector2f{ 710.f, 200.f }, Enemy::EnemyType::Goblin
+        jo::Vector2f{ 710.f, 200.f }, Enemy::EnemyType::Goblin
     );
     enemyPtr = dynamic_cast<Enemy*>(enemy.get());
     entities.push_back(std::move(enemy));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png", "assets/buttons/interact_T.png",
-        sharedDialogueBox, "Pirat"
+        jo::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Pirat"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png",
+        jo::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png",
         "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Guard"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png",
+        jo::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png",
         "assets/player/npc/guard2_walking.png", "assets/buttons/interact_T.png",
         sharedDialogueBox, "Guard"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 500.f, 300.f }, "assets/player/npc/boy1.png", "assets/buttons/interact_T.png",
-        sharedDialogueBox, "Boy"
+        jo::Vector2f{ 500.f, 300.f }, "assets/player/npc/boy1.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Boy"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 520.f, 430.f }, "assets/player/npc/miner.png", "assets/buttons/interact_T.png",
-        sharedDialogueBox, "Miner"
+        jo::Vector2f{ 520.f, 430.f }, "assets/player/npc/miner.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Miner"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png", "assets/buttons/interact_T.png",
-        sharedDialogueBox, "Swimmer"
+        jo::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Swimmer"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png", "assets/buttons/interact_T.png",
-        sharedDialogueBox, "Girl1"
+        jo::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Girl1"
     ));
 
     entities.push_back(std::make_unique<NPC>(
-        sf::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png", "assets/buttons/interact_T.png",
-        sharedDialogueBox, "Girl2"
+        jo::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png",
+        "assets/buttons/interact_T.png", sharedDialogueBox, "Girl2"
     ));
 
+    spdlog::info("Game::resetEntities - Pushing interactables");
     entities.push_back(
-        std::make_unique<Stone>(sf::Vector2f{ 527.f, 400.f }, "left")
+        std::make_unique<Stone>(jo::Vector2f{ 527.f, 400.f }, "left")
     );
     entities.push_back(
-        std::make_unique<Stone>(sf::Vector2f{ 545.f, 400.f }, "right")
+        std::make_unique<Stone>(jo::Vector2f{ 545.f, 400.f }, "right")
     );
 
     entities.push_back(
-        std::make_unique<Chest>(sf::Vector2f{ 652.f, 56.f }, "chest")
+        std::make_unique<Chest>(jo::Vector2f{ 652.f, 56.f }, "chest")
     );
 
+    spdlog::info("Game::resetEntities - Wiring Guard callbacks");
     for (auto& entity : entities) {
         if (auto* npc = dynamic_cast<NPC*>(entity.get())) {
             if (npc->getDialogId() == "Guard") {
@@ -172,15 +207,15 @@ void Game::resetEntities() {
 }
 
 void Game::handleInput() {
-    sf::RenderWindow& window = windowManager.getWindow();
+    jo::RenderWindow& window = windowManager.getWindow();
     while (auto event = window.pollEvent()) {
-        if constexpr (IMGUI_ENABLED) {
-            windowManager.getDebugUI().processEvent(window, *event);
-        }
-        if (const auto* closed = event->getIf<sf::Event::Closed>()) {
+#if IMGUI_ENABLED
+        windowManager.getDebugUI().processEvent(window, *event);
+#endif
+        if (const auto* closed = event->getIf<jo::Event::Closed>()) {
             window.close();
         }
-        if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+        if (const auto* resized = event->getIf<jo::Event::Resized>()) {
             Game::resize(
                 { resized->size.x, resized->size.y }, 1.0f,
                 windowManager.getMainView(), window, postProc
@@ -193,8 +228,8 @@ void Game::handleInput() {
         } else if (gameStatus == GameStatus::GameOver) {
             gameOverScreen->handleInput(*event);
         }
-        if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()) {
-            if (keyEvent->code == sf::Keyboard::Key::F1) {
+        if (const auto* keyEvent = event->getIf<jo::Event::KeyPressed>()) {
+            if (keyEvent->code == jo::Keyboard::Key::F1) {
                 windowManager.getDebugUI().toggle();
             }
         }
@@ -203,7 +238,7 @@ void Game::handleInput() {
 
 void Game::update(float dt) {
     // Music logic
-    const auto getRegionMusic = [](const sf::Vector2f& pos) -> MusicId {
+    const auto getRegionMusic = [](const jo::Vector2f& pos) -> MusicId {
         if (pos.x > 540.f) {
             return MusicId::Underworld;
         }
@@ -229,16 +264,16 @@ void Game::update(float dt) {
         audioManager.set_current_music(currentMusicId);
     }
 
-    if constexpr (IMGUI_ENABLED) {
-        sf::RenderWindow& window = windowManager.getWindow();
-        ImGui::SFML::Update(window, sf::seconds(dt));
-        if (controller && (enemyPtr != nullptr)) {
-            windowManager.getDebugUI().update(
-                dt, window, controller->getPlayer(), gameStatus, combatSystem,
-                *enemyPtr, *controller
-            );
-        }
+#if IMGUI_ENABLED
+    jo::RenderWindow& window = windowManager.getWindow();
+    ImGui::SFML::Update(window, jo::seconds(dt));
+    if (controller && (enemyPtr != nullptr)) {
+        windowManager.getDebugUI().update(
+            dt, window, controller->getPlayer(), gameStatus, combatSystem,
+            *enemyPtr, *controller
+        );
     }
+#endif
 
     if (gameStatus == GameStatus::Overworld) {
         updateOverworld(dt);
@@ -254,16 +289,42 @@ void Game::updateOverworld(float dt) {
         return;
     }
 
-    std::vector<sf::FloatRect> frameCollisions =
-        tileManager.getCollisionRects();
+    // Static tile collisions never change — rebuild only once, then reuse.
+    if (m_tileCollisionsDirty) {
+        m_cachedTileCollisions = tileManager.getCollisionRects();
+        m_tileCollisionsDirty = false;
+    }
+
+    // Gather all possible collisions
+    std::vector<jo::FloatRect> frameCollisions;
+    frameCollisions.reserve(m_cachedTileCollisions.size() + entities.size());
+    frameCollisions.insert(
+        frameCollisions.end(), m_cachedTileCollisions.begin(),
+        m_cachedTileCollisions.end()
+    );
     for (const auto& entity : entities) {
         if (auto box = entity->getCollisionBox()) {
             frameCollisions.push_back(*box);
         }
     }
 
+    // Optimization: Only check collisions for things near the player (within
+    // 200 pixels)
+    jo::Vector2f playerPos = controller->getPlayer().getPosition();
+    float proximityLimit = 200.f;
+    // Filter in-place: partition into nearby first (keeps allocation)
+    std::vector<jo::FloatRect> nearCollisions;
+    nearCollisions.reserve(64);
+    for (const auto& rect : frameCollisions) {
+        float dx = rect.position.x + rect.size.x / 2.f - playerPos.x;
+        float dy = rect.position.y + rect.size.y / 2.f - playerPos.y;
+        if (std::abs(dx) < proximityLimit && std::abs(dy) < proximityLimit) {
+            nearCollisions.push_back(rect);
+        }
+    }
+
     bool resetClock = controller->updateStep(
-        dt, windowManager.getWindow(), frameCollisions, entities,
+        dt, windowManager.getWindow(), nearCollisions, entities,
         sharedDialogueBox, tileManager, renderEngine
     );
 
@@ -291,7 +352,7 @@ void Game::updateOverworld(float dt) {
         )) {
         if (skeletonPtr == nullptr) {
             auto skeleton = std::make_unique<Enemy>(
-                sf::Vector2f{ 100.f, 110.f }, Enemy::EnemyType::Skeleton
+                jo::Vector2f{ 100.f, 110.f }, Enemy::EnemyType::Skeleton
             );
             skeletonPtr = skeleton.get();
             entities.push_back(std::move(skeleton));
@@ -324,7 +385,7 @@ void Game::updateOverworld(float dt) {
         if (randomSkeletonPtr == nullptr && skeletonSpawnTimer <= 0.f &&
             (std::rand() % 3000 < 5)) {
             auto randomSkeleton = std::make_unique<Enemy>(
-                sf::Vector2f{ controller->getPlayer().getPosition().x + 15.f,
+                jo::Vector2f{ controller->getPlayer().getPosition().x + 15.f,
                               controller->getPlayer().getPosition().y },
                 Enemy::EnemyType::Skeleton
             );
@@ -425,76 +486,99 @@ void Game::render(float dt) {
 }
 
 void Game::renderOverworld(float dt) {
-    // Lazy resize check
-    if (postProc.getRenderTexture().getSize() !=
-        windowManager.getWindow().getSize()) {
-        postProc.resize(
-            windowManager.getWindow().getSize().x,
-            windowManager.getWindow().getSize().y
-        );
-    }
-
     if (!controller) {
         return;
     }
 
-    controller->getPlayerView().setViewport(
-        windowManager.getMainView().getViewport()
-    );
+    // High performance rendering strategy:
+    // 1. Render the visible game world to a low-resolution texture (matching
+    // zoom).
+    // 2. Clear only once.
+    // 3. Stretch-blit the texture to the screen in a single pass.
 
+    jo::Vector2f viewSize = controller->getPlayerView().getSize();
+    unsigned int pw = static_cast<unsigned int>(viewSize.x);
+    unsigned int ph = static_cast<unsigned int>(viewSize.y);
+
+    // Ensure our intermediate buffer matches the needed resolution
+    if (postProc.getRenderTexture().getSize().x != pw ||
+        postProc.getRenderTexture().getSize().y != ph) {
+        postProc.resize(pw, ph);
+    }
+
+    // The RenderEngine will now target the low-res texture
     postProc.drawScene(
-        [&](sf::RenderTarget& target, const sf::View& view) {
+        [&](jo::RenderTarget& target, const jo::View& view) {
             if (controller->isMapOverviewActive()) {
-                sf::View& mapView = windowManager.getMapOverviewView();
+                jo::View& mapView = windowManager.getMapOverviewView();
                 target.setView(mapView);
             } else {
                 target.setView(controller->getPlayerView());
             }
 
+            // We must set the viewport of the target view to full (0,0,1,1)
+            // since we are drawing to an offscreen buffer that is precisely the
+            // right size.
+            jo::View currentView = target.getView();
+            currentView.setViewport(jo::FloatRect({ 0.f, 0.f }, { 1.f, 1.f }));
+            target.setView(currentView);
+
             renderEngine.render(
                 target, controller->getPlayer(), tileManager, entities,
                 sharedDialogueBox, dt
             );
-
-            // minimap
-            if (!controller->isMapOverviewActive()) {
-                target.setView(windowManager.getMiniMapView());
-                renderEngine.render(
-                    target, controller->getPlayer(), tileManager, entities,
-                    sharedDialogueBox, dt
-                );
-
-                // ui
-                target.setView(windowManager.getUiView());
-                if (controller->renderInventory()) {
-                    controller->getPlayer().getInventory().displayInventory(
-                        target, tileManager
-                    );
-                }
-                controller->getPlayer().displayHealthBar(target, tileManager);
-                controller->getPlayer().getStats().draw(
-                    target, fontRenderer.getFont(),
-                    controller->getPlayer().getCurrentExp(),
-                    controller->getPlayer().getExpToNextLevel()
-                );
-            }
         },
         nullptr
     );
-    sf::View fullView(sf::FloatRect(
-        { 0.f, 0.f },
-        { static_cast<float>(windowManager.getWindow().getSize().x),
-          static_cast<float>(windowManager.getWindow().getSize().y) }
+
+    jo::RenderWindow& window = windowManager.getWindow();
+
+    // Reset window to default view for stretching the result back to full
+    // screen
+    jo::View stretchView(jo::FloatRect(
+        { 0.f, 0.f }, { static_cast<float>(pw), static_cast<float>(ph) }
     ));
-    windowManager.getWindow().setView(fullView);
-    postProc.apply(
-        windowManager.getWindow(), clock.getElapsedTime().asSeconds()
+    window.setView(stretchView);
+    postProc.apply(window, clock.getElapsedTime().asSeconds());
+
+    // UI elements should be drawn directly to the window at full resolution
+    window.setView(windowManager.getUiView());
+
+    // Draw Health Bar
+    controller->getPlayer().displayHealthBar(window, tileManager);
+
+    // Draw Stats
+    controller->getPlayer().getStats().draw(
+        window, fontRenderer.getFont(), controller->getPlayer().getCurrentExp(),
+        controller->getPlayer().getExpToNextLevel()
     );
+
+    if (controller->renderInventory()) {
+        controller->getPlayer().getInventory().displayInventory(
+            window, tileManager
+        );
+    }
+
+    if (sharedDialogueBox && sharedDialogueBox->isActive()) {
+        sharedDialogueBox->render(window);
+    }
+
+    // Minimap is currently disabled to boost FPS (it triggered heavy scaling
+    // operations)
+    /*
+    if (!controller->isMapOverviewActive()) {
+        window.setView(windowManager.getMiniMapView());
+        renderEngine.render(
+            window, controller->getPlayer(), tileManager, entities,
+            sharedDialogueBox, dt
+        );
+    }
+    */
 }
 
 void Game::resize(
-    const sf::Vector2u size, float targetAspectRatio, sf::View& camera,
-    sf::RenderWindow& window, PostProcessing& postProc
+    const jo::Vector2u size, float targetAspectRatio, jo::View& camera,
+    jo::RenderWindow& window, PostProcessing& postProc
 ) {
     // Current aspect ratio
     const float as = static_cast<float>(size.x) / static_cast<float>(size.y);
@@ -503,17 +587,17 @@ void Game::resize(
         // window is wider than target
         const float width = targetAspectRatio / as;
         const float x = (1.f - width) / 2.f;
-        camera.setViewport(sf::FloatRect({ x, 0.f }, { width, 1.f }));
+        camera.setViewport(jo::FloatRect({ x, 0.f }, { width, 1.f }));
     } else {
         // window is taller than target
         const float height = as / targetAspectRatio;
         const float y = (1.f - height) / 2.f;
-        camera.setViewport(sf::FloatRect({ 0.f, y }, { 1.f, height }));
+        camera.setViewport(jo::FloatRect({ 0.f, y }, { 1.f, height }));
     }
 
-    if constexpr (IMGUI_ENABLED) {
-        // update ImGui if needed (handled by processEvent mostly)
-    }
+#if IMGUI_ENABLED
+    // update ImGui if needed (handled by processEvent mostly)
+#endif
 
     postProc.resize(size.x, size.y);
     window.setView(camera
@@ -531,34 +615,21 @@ void Game::renderCombat() {
     }
 
     // combat view (using main view viewport for correct pillarboxing)
-    sf::View combatView(sf::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
+    jo::View combatView(jo::FloatRect({ 0.f, 0.f }, { 900.f, 900.f }));
     combatView.setViewport(windowManager.getMainView().getViewport());
 
-    postProc.drawScene(
-        [&](sf::RenderTarget& target, const sf::View& view) {
-            target.setView(combatView);
-            combatSystem.render(target, tileManager, fontRenderer.getFont());
+    jo::RenderWindow& window = windowManager.getWindow();
+    jo::RenderTarget& target = window;
 
-            // ui
-            target.setView(windowManager.getUiView());
-            controller->getPlayer().displayHealthBar(target, tileManager);
-            controller->getPlayer().getStats().draw(
-                target, fontRenderer.getFont(),
-                controller->getPlayer().getCurrentExp(),
-                controller->getPlayer().getExpToNextLevel()
-            );
-        },
-        nullptr
-    );
+    target.setView(combatView);
+    combatSystem.render(target, tileManager, fontRenderer.getFont());
 
-    sf::View fullView(sf::FloatRect(
-        { 0.f, 0.f },
-        { static_cast<float>(windowManager.getWindow().getSize().x),
-          static_cast<float>(windowManager.getWindow().getSize().y) }
-    ));
-    windowManager.getWindow().setView(fullView);
-    postProc.apply(
-        windowManager.getWindow(), clock.getElapsedTime().asSeconds()
+    // ui
+    target.setView(windowManager.getUiView());
+    controller->getPlayer().displayHealthBar(target, tileManager);
+    controller->getPlayer().getStats().draw(
+        target, fontRenderer.getFont(), controller->getPlayer().getCurrentExp(),
+        controller->getPlayer().getExpToNextLevel()
     );
 }
 

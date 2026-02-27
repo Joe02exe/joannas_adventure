@@ -8,7 +8,8 @@
 #include "joanna/systems/audiomanager.h"
 #include "joanna/world/tilemanager.h"
 
-#include <SFML/Graphics.hpp>
+#include "joanna/core/graphics.h"
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -16,7 +17,7 @@ class Player: public Entity {
   public:
     Player(
         const std::string& idlePath, const std::string& walkPath,
-        const std::string& runPath, const sf::Vector2f& startPos
+        const std::string& runPath, const jo::Vector2f& startPos
     );
 
     void
@@ -31,12 +32,12 @@ class Player: public Entity {
         return currentFrame;
     }
 
-    void draw(sf::RenderTarget& target) const;
+    void draw(jo::RenderTarget& target) const;
     void addItemToInventory(const Item& item, std::uint32_t quantity = 1);
     void takeDamage(int amount);
     bool applyItem(const std::string& itemId);
     void
-    displayHealthBar(sf::RenderTarget& target, TileManager& tileManager) const;
+    displayHealthBar(jo::RenderTarget& target, TileManager& tileManager) const;
 
     int getHealth() const {
         return health;
@@ -130,4 +131,10 @@ class Player: public Entity {
     void switchState(State newState);
     void applyFrame();
     std::unordered_set<std::string> visitedInteractions;
+
+    // Cached heart sprites for displayHealthBar (lazy init, mutable for const
+    // method)
+    mutable bool m_heartCached = false;
+    mutable std::optional<jo::Sprite> m_heartSprite;
+    mutable std::optional<jo::Sprite> m_halfHeartSprite;
 };

@@ -4,7 +4,7 @@
 #include "joanna/core/renderengine.h"
 #include "joanna/core/windowmanager.h"
 
-#include <SFML/Graphics.hpp>
+#include "joanna/core/graphics.h"
 
 class Game;
 
@@ -16,12 +16,12 @@ class Menu {
     Game* game;
     std::list<std::unique_ptr<Entity>>* entities;
 
-    sf::Font font;
-    sf::Sprite mouseSprite;
+    const jo::Font* font;
+    jo::Sprite mouseSprite;
 
     std::vector<std::string> options;
-    std::vector<sf::Text> menuTexts;
-    std::vector<sf::RectangleShape> menuBackgrounds;
+    std::vector<jo::Text> menuTexts;
+    std::vector<jo::RectangleShape> menuBackgrounds;
     GameState stateToSave;
 
     int selectedIndex = 1; // Start at 1 to skip title
@@ -32,23 +32,24 @@ class Menu {
     bool showAbout = false;
     std::string aboutTextContent;
 
-    void handleInput(sf::Window& window);
+    void handleInput(jo::Window& window);
     void updateSelection(int direction); // -1 for up, 1 for down
     GameState createGameState(Player& player);
     void resetNewGame() const;
     void loadEntityStates(const GameState& state);
-    bool loadGameState(const std::string& choice, const std::string& slotNumStr);
+    bool
+    loadGameState(const std::string& choice, const std::string& slotNumStr);
     void executeSelection();
     void render(
         RenderEngine& render_engine, TileManager& tileManager,
         std::list<std::unique_ptr<Entity>>& entities,
         const std::shared_ptr<DialogueBox>& dialogueBox
     );
-    void renderMenuOptions(sf::RenderTarget& target);
-    void renderAboutOverlay(sf::RenderTarget& target) const;
+    void renderMenuOptions(jo::RenderTarget& target);
+    void renderAboutOverlay(jo::RenderTarget& target) const;
     void rebuildUI();
-    sf::Vector2f getMouseWorldPos() const;
-    void handleHover(const sf::Vector2f& mousePos);
+    jo::Vector2f getMouseWorldPos() const;
+    void handleHover(const jo::Vector2f& mousePos);
     void resetToDefaultMenu();
 
   public:

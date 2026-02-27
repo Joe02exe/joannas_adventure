@@ -11,12 +11,12 @@
 class Enemy: public Entity {
   public:
     enum class EnemyType { Goblin, Skeleton };
-    Enemy(const sf::Vector2f& startPos, EnemyType type);
+    Enemy(const jo::Vector2f& startPos, EnemyType type);
 
     static bool shouldTriggerCombat(float distToPlayer);
 
     void update(float dt, State state);
-    void draw(sf::RenderTarget& target) const;
+    void draw(jo::RenderTarget& target) const;
 
     void takeDamage(int amount);
 
@@ -44,9 +44,9 @@ class Enemy: public Entity {
     int updateOverworld(float dt, Player& player, TileManager& tileManager);
 
   private:
-    void updateAIState(float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos, float distToPlayer, TileManager& tileManager);
-    State handleIdleBehavior(float dt, const sf::Vector2f& myPos);
-    State handlePursuingBehavior(float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos, float distToPlayer);
+    void updateAIState(float dt, const jo::Vector2f& myPos, const jo::Vector2f& playerPos, float distToPlayer, TileManager& tileManager);
+    State handleIdleBehavior(float dt, const jo::Vector2f& myPos);
+    State handlePursuingBehavior(float dt, const jo::Vector2f& myPos, const jo::Vector2f& playerPos, float distToPlayer);
     void switchState(State newState);
     void applyFrame();
 
@@ -60,11 +60,11 @@ class Enemy: public Entity {
     int maxHealth = 100;
 
     // AI movement variables
-    static float getDistance(const sf::Vector2f& p1, const sf::Vector2f& p2);
+    static float getDistance(const jo::Vector2f& p1, const jo::Vector2f& p2);
 
     OverworldState aiState = OverworldState::Idle;
-    sf::Vector2f homePoint;
-    sf::Vector2f patrolTarget;
+    jo::Vector2f homePoint;
+    jo::Vector2f patrolTarget;
     float patrolTimer = 0.f;
     float reactionTimer = 0.f;
     float speed = 38.f;

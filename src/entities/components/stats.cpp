@@ -1,38 +1,37 @@
 #include "joanna/entities/stats.h"
+#include "joanna/core/graphics.h"
 #include <string>
-#include <SFML/Graphics.hpp>
 
 Stats::Stats() : attack(0), defense(0) {}
 
 Stats::Stats(int attack, int defense) : attack(attack), defense(defense) {}
 
-void Stats::draw(sf::RenderTarget& target, const sf::Font& font, int currentExp, int expToNextLevel) const {
-    const float startX = -440.f;
-    const float startY = -415.f;
-    const float lineHeight = 18.f;
-    const float labelWidth = 40.f;
-    const sf::Vector2f segmentSize(8.f, 12.f);
-    const float gap = 0.f;
-    auto drawRow = [&](const std::string& label, int current, int max, sf::Color activeColor, sf::Color emptyColor, float y) {
-        sf::Text text(font);
-        text.setString(label);
-        text.setCharacterSize(15);
-        text.setPosition({startX, y});
-        text.setFillColor(sf::Color::White);
-        text.setOutlineColor(sf::Color::Black);
-        text.setOutlineThickness(1.f);
-        target.draw(text);
+void Stats::draw(
+    jo::RenderTarget& target, const jo::Font& font, int currentExp,
+    int expToNextLevel
+) const {
+    // Match health bar alignment logic from view bounding
+    const auto size = target.getView().getSize();
+    const float startX =
+        (-size.x / 2.f) + 40.f; // Base margin pad to align with health
+    const float startY =
+        (-size.y / 2.f) + 110.f; // Safely below doubled health height
+    const float lineHeight = 40.f;
+    const jo::Vector2f segmentSize(14.f, 28.f);
+    const float gap = 4.f;
 
-        float x = startX + labelWidth;
+    auto drawRow = [&](int current, int max, jo::Color activeColor,
+                       jo::Color emptyColor, float y) {
+        float x = startX;
         int count = (max > 0) ? max : current;
 
-        sf::RectangleShape rect(segmentSize);
+        jo::RectangleShape rect(segmentSize);
 
-        rect.setOutlineColor(sf::Color::Black);
+        rect.setOutlineColor(jo::Color::Black);
         rect.setOutlineThickness(-1.f);
 
         for (int i = 0; i < count; ++i) {
-            rect.setPosition({x, y + 4.f});
+            rect.setPosition({ x, y + 4.f });
             if (i < current) {
                 rect.setFillColor(activeColor);
             } else {
@@ -43,7 +42,13 @@ void Stats::draw(sf::RenderTarget& target, const sf::Font& font, int currentExp,
         }
     };
 
-    drawRow("ATK", attack, 0, sf::Color(230, 50, 50), sf::Color::Transparent, startY);
-    drawRow("DEF", defense, 0, sf::Color(50, 230, 50), sf::Color::Transparent, startY + lineHeight);
-    drawRow("EXP", currentExp, expToNextLevel, sf::Color(50, 100, 255), sf::Color(60, 60, 60), startY + lineHeight * 2);
+    drawRow(attack, 0, jo::Color(230, 50, 50), jo::Color::Transparent, startY);
+    drawRow(
+        defense, 0, jo::Color(50, 230, 50), jo::Color::Transparent,
+        startY + lineHeight
+    );
+    drawRow(
+        currentExp, expToNextLevel, jo::Color(50, 100, 255),
+        jo::Color(60, 60, 60), startY + lineHeight * 2
+    );
 }

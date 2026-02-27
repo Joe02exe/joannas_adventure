@@ -1,6 +1,8 @@
 #include "joanna/core/game.h"
 
 #include "joanna/utils/logger.h"
+#include <exception>
+#include <iostream>
 
 int main() {
 
@@ -16,7 +18,12 @@ int main() {
     Logger::info("Infinite resources enabled");
 #endif
 
-    Game game;
-    game.run();
+    try {
+        Game game;
+        game.run();
+    } catch (const std::exception& e) {
+        fprintf(stderr, "FATAL ERROR: %s\n", e.what());
+        return 1;
+    }
     return 0;
 }

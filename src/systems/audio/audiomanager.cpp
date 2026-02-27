@@ -1,11 +1,11 @@
 #include "joanna/systems/audiomanager.h"
 #include "joanna/utils/logger.h"
 #include "joanna/utils/resourcemanager.h"
-#include <SFML/Audio.hpp>
+#include "joanna/core/audio.h"
 
 AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(30.0f) {
 
-    auto* buffer_manager = ResourceManager<sf::SoundBuffer>::getInstance();
+    auto* buffer_manager = ResourceManager<jo::SoundBuffer>::getInstance();
 
     constexpr std::array<SfxId, 9> all_sfx = { SfxId::Hit,     SfxId::Footstep,
                                                SfxId::Dead,    SfxId::Surprise,
@@ -15,9 +15,9 @@ AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(30.0f) {
 
     for (size_t i = 0; i < all_sfx.size(); ++i) {
         try {
-            sf::SoundBuffer& buffer =
+            jo::SoundBuffer& buffer =
                 buffer_manager->get(get_sfx_path(all_sfx.at(i)));
-            sounds_.at(i) = std::make_unique<sf::Sound>(buffer);
+            sounds_.at(i) = std::make_unique<jo::Sound>(buffer);
             sounds_.at(i)->setVolume(sfx_volume_);
         } catch (const std::exception& e) {
             Logger::error("Failed to load sound effect: {}", e.what());
@@ -77,18 +77,18 @@ void AudioManager::play_sfx(SfxId sfx_id) {
 }
 
 void AudioManager::set_current_music(MusicId music_id) {
-    if (current_music_.getStatus() == sf::Music::Status::Playing) {
+    if (current_music_.getStatus() == jo::Music::Status::Playing) {
         current_music_.stop();
     }
     Logger::info("Setting current music to ID: {}", static_cast<int>(music_id));
     try {
         if (!current_music_.openFromFile(get_music_path(music_id))) {
-            throw sf::Exception("Failed to open music file");
+            throw jo::Exception("Failed to open music file");
         }
         current_music_.setVolume(music_volume_);
         current_music_.setLooping(true);
         current_music_.play();
-    } catch (const sf::Exception&) {
+    } catch (const jo::Exception&) {
         Logger::error("Failed to load music: {}", get_music_path(music_id));
     }
 }
@@ -108,13 +108,13 @@ void AudioManager::set_music_volume(float volume) {
 }
 
 void AudioManager::pause_music() {
-    if (current_music_.getStatus() == sf::Music::Status::Playing) {
+    if (current_music_.getStatus() == jo::Music::Status::Playing) {
         current_music_.pause();
     }
 }
 
 void AudioManager::resume_music() {
-    if (current_music_.getStatus() == sf::Music::Status::Paused) {
+    if (current_music_.getStatus() == jo::Music::Status::Paused) {
         current_music_.play();
     }
 }
@@ -124,5 +124,5 @@ void AudioManager::stop_music() {
 }
 
 bool AudioManager::is_music_playing() const {
-    return current_music_.getStatus() == sf::Music::Status::Playing;
+    return current_music_.getStatus() == jo::Music::Status::Playing;
 }

@@ -1,17 +1,17 @@
 #include "joanna/entities/entity.h"
 
 Entity::Entity(
-    const sf::FloatRect& box, const sf::Texture& texture,
-    const std::optional<sf::FloatRect>& collisionBox, Direction direction
+    const jo::FloatRect& box, const jo::Texture& texture,
+    const std::optional<jo::FloatRect>& collisionBox, Direction direction
 )
-    : id(NEXT_ID++), boundingBox(box), texture(texture), direction(direction),
+    : id(NEXT_ID++), boundingBox(box), texture(&texture), direction(direction),
       collisionBox(collisionBox) {
 
-    sprite = std::make_unique<sf::Sprite>(texture);
+    sprite = std::make_unique<jo::Sprite>(texture);
     sprite->setPosition(box.position);
 }
 
-void Entity::render(sf::RenderTarget& target) const {
+void Entity::render(jo::RenderTarget& target) const {
     target.draw(*sprite);
 }
 
@@ -19,13 +19,14 @@ uint32_t Entity::getId() const {
     return id;
 }
 
-void Entity::setTexture(const sf::Texture& texture) {
-    sprite->setTexture(texture);
+void Entity::setTexture(const jo::Texture& newTexture) {
+    texture = &newTexture;
+    sprite->setTexture(*texture);
 }
 
-void Entity::setFrame(const sf::IntRect& textureRect) {
+void Entity::setFrame(const jo::IntRect& textureRect) {
     currentTextureRect = textureRect;
-    sf::IntRect rect = textureRect;
+    jo::IntRect rect = textureRect;
     if (direction == Direction::Left) {
         rect.position.x += rect.size.x;
         rect.size.x = -rect.size.x;
@@ -33,38 +34,38 @@ void Entity::setFrame(const sf::IntRect& textureRect) {
     sprite->setTextureRect(rect);
 }
 
-std::optional<sf::FloatRect> Entity::getCollisionBox() const {
+std::optional<jo::FloatRect> Entity::getCollisionBox() const {
     return collisionBox;
 }
 
-std::optional<sf::Vector2f> Entity::getCollisionBoxCenter() const {
+std::optional<jo::Vector2f> Entity::getCollisionBoxCenter() const {
     if (!collisionBox) {
         return std::nullopt;
     }
 
     const auto& cb = *collisionBox;
-    return sf::Vector2f{ cb.position.x + (cb.size.x / 2),
+    return jo::Vector2f{ cb.position.x + (cb.size.x / 2),
                          cb.position.y + (cb.size.y / 2) };
 }
 
-sf::Vector2f Entity::getPosition() const {
+jo::Vector2f Entity::getPosition() const {
     const auto& boundingBox = getBoundingBox();
     return { boundingBox.position.x + (boundingBox.size.x / 2),
              boundingBox.position.y + (boundingBox.size.y / 2) };
 }
 
-void Entity::setPosition(const sf::Vector2f& position) {
+void Entity::setPosition(const jo::Vector2f& position) {
 
-    const sf::Vector2f delta = position - getPosition();
+    const jo::Vector2f delta = position - getPosition();
     sprite->setPosition(getBoundingBox().position + delta);
     if (!collisionBox) { // if entity has no collision, we don't want to set it
         return;
     }
     this->collisionBox =
-        sf::FloatRect({ collisionBox->position + delta }, collisionBox->size);
+        jo::FloatRect({ collisionBox->position + delta }, collisionBox->size);
 }
 
-sf::FloatRect Entity::getBoundingBox() const {
+jo::FloatRect Entity::getBoundingBox() const {
     return { sprite->getPosition(), boundingBox.size };
 }
 
@@ -78,13 +79,13 @@ Direction Entity::getFacing() const {
     return direction.value_or(Direction::Right);
 }
 
-void Entity::setScale(const sf::Vector2f& scale) {
+void Entity::setScale(const jo::Vector2f& scale) {
     currentScale = scale;
     sprite->setScale(scale);
     // re-apply facing to update scale and origin
     setFacing(getFacing());
 }
 
-sf::Vector2f Entity::getScale() const {
+jo::Vector2f Entity::getScale() const {
     return currentScale;
 }

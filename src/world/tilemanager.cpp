@@ -1,16 +1,13 @@
 #include "joanna/world/tilemanager.h"
+#include "joanna/core/graphics.h"
 #include "joanna/utils/logger.h"
 #include "joanna/utils/resourcemanager.h"
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
 #include <algorithm>
 #include <cmath>
 #include <random>
 #include <string>
 
-TileManager::TileManager(sf::RenderWindow& renderWindow)
+TileManager::TileManager(jo::RenderWindow& renderWindow)
     : window(&renderWindow), m_currentMap(nullptr) {
     if (!loadMap("./assets/environment/map/newmap.json")) {
         Logger::error("Failed to load map!");
@@ -60,21 +57,20 @@ bool TileManager::loadMap(const std::string& path) {
 }
 
 bool TileManager::checkLineOfSight(
-    sf::Vector2f start, sf::Vector2f end, float stepSize
+    jo::Vector2f start, jo::Vector2f end, float stepSize
 ) const {
-    const sf::Vector2f direction = end - start;
-    const float distance = std::sqrt(
-        (direction.x * direction.x) + (direction.y * direction.y)
-    );
+    const jo::Vector2f direction = end - start;
+    const float distance =
+        std::sqrt((direction.x * direction.x) + (direction.y * direction.y));
 
     if (distance <= stepSize) {
         return true; // too close to have obstacles
-}
+    }
 
-    const sf::Vector2f step = (direction / distance) * stepSize;
+    const jo::Vector2f step = (direction / distance) * stepSize;
     const int steps = static_cast<int>(distance / stepSize);
 
-    sf::Vector2f current = start;
+    jo::Vector2f current = start;
     for (int i = 0; i < steps; ++i) {
         current += step;
         for (const auto& rect : m_collisionRects) {
@@ -90,46 +86,46 @@ bool TileManager::checkLineOfSight(
 void TileManager::renderProgressBar(const std::string& message) const {
     auto center = window->getView().getCenter();
 
-    sf::Vector2f barSize(400.f, 40.f);
-    sf::Vector2f barPos(center.x - 200, center.y - 20);
+    jo::Vector2f barSize(400.f, 40.f);
+    jo::Vector2f barPos(center.x - 200, center.y - 20);
 
-    sf::RectangleShape barBackground(barSize);
+    jo::RectangleShape barBackground(barSize);
     barBackground.setPosition(barPos);
-    barBackground.setFillColor(sf::Color(50, 50, 50)); // Dark Grey
+    barBackground.setFillColor(jo::Color(50, 50, 50)); // Dark Grey
     barBackground.setOutlineThickness(2.f);
-    barBackground.setOutlineColor(sf::Color::White);
+    barBackground.setOutlineColor(jo::Color::White);
 
-    sf::RectangleShape barProgress(barSize);
+    jo::RectangleShape barProgress(barSize);
     barProgress.setPosition(barPos);
-    barProgress.setFillColor(sf::Color::Green);
+    barProgress.setFillColor(jo::Color::Green);
 
     float percent = progress / 1.0f;
     float currentWidth = barSize.x * percent;
 
     // Update the size of the progress bar
-    barProgress.setSize(sf::Vector2f(currentWidth, barSize.y));
+    barProgress.setSize(jo::Vector2f(currentWidth, barSize.y));
 
-    sf::Font font = ResourceManager<sf::Font>::getInstance()->get(
+    const jo::Font& font = ResourceManager<jo::Font>::getInstance()->get(
         "assets/font/minecraft.ttf"
     );
-    sf::Text text(font);
-    sf::Text title(font);
+    jo::Text text(font);
+    jo::Text title(font);
     text.setString(message.empty() ? "Loading..." : message);
     title.setString("Joanna's Adventure");
     text.setCharacterSize(18);
     title.setCharacterSize(24);
-    text.setFillColor(sf::Color::White);
-    title.setFillColor(sf::Color::White);
-    title.setStyle(sf::Text::Bold);
-    sf::FloatRect textBounds = text.getLocalBounds();
-    sf::FloatRect titleBounds = title.getLocalBounds();
+    text.setFillColor(jo::Color::White);
+    title.setFillColor(jo::Color::White);
+    title.setStyle(jo::Text::Bold);
+    jo::FloatRect textBounds = text.getLocalBounds();
+    jo::FloatRect titleBounds = title.getLocalBounds();
     text.setOrigin({ textBounds.size.x / 2.f, textBounds.size.y / 2.f });
     text.setPosition({ center.x, center.y + 40.f });
 
     title.setOrigin({ titleBounds.size.x / 2.f, titleBounds.size.y / 2.f });
     title.setPosition({ center.x, center.y - 75.f });
 
-    window->clear(sf::Color::Black);
+    window->clear(jo::Color::Black);
 
     window->draw(barBackground);
     window->draw(barProgress);
@@ -139,10 +135,9 @@ void TileManager::renderProgressBar(const std::string& message) const {
     window->display();
 }
 
-sf::FloatRect calculatePixelRect(
-    const sf::Texture& tex, const sf::IntRect& texRect, const sf::Vector2f& pos
+jo::FloatRect calculatePixelRect(
+    const jo::Texture& tex, const jo::IntRect& texRect, const jo::Vector2f& pos
 ) {
-    sf::Image img = tex.copyToImage();
 
     int left = texRect.size.x;
     int right = 0;
@@ -152,7 +147,7 @@ sf::FloatRect calculatePixelRect(
 
     for (int y = 0; y < texRect.size.y; ++y) {
         for (int x = 0; x < texRect.size.x; ++x) {
-            sf::Color c = img.getPixel(
+            jo::Color c = tex.getPixel(
                 { static_cast<unsigned int>(texRect.position.x + x),
                   static_cast<unsigned int>(texRect.position.y + y) }
             );
@@ -205,6 +200,11 @@ void TileManager::processLayer(const std::string& layerName) {
     }
 
     tson::Layer* layer = m_currentMap->getLayer(layerName);
+    if (layer == nullptr) {
+        Logger::error("Layer NOT found: {}", layerName);
+        return;
+    }
+
     if (layer->getType() == tson::LayerType::ObjectGroup) {
 
         // TODO : refactor this if more items are needed
@@ -236,7 +236,7 @@ void TileManager::processLayer(const std::string& layerName) {
 
         randomlySelectItems(carrots, 4);
         randomlySelectItems(swords, 1);
-        //randomlySelectItems(pickaxes, 1);
+        // randomlySelectItems(pickaxes, 1);
         randomlySelectItems(mushrooms, 1);
         randomlySelectItems(healPotions, 1);
     }
@@ -258,25 +258,26 @@ void TileManager::processLayer(const std::string& layerName) {
 
         // Store tile rendering info
         TileRenderInfo info;
-        info.texturePath = imagePath;
-        info.textureRect = sf::IntRect(
+        info.texture = m_textures[imagePath].get();
+        info.textureRect = jo::IntRect(
             { drawingRect.x, drawingRect.y },
             { drawingRect.width, drawingRect.height }
         );
 
         // Round position to integers to prevent sub-pixel bleeding gaps
-        info.position = sf::Vector2f(std::round(position.x), std::round(position.y));
+        info.position =
+            jo::Vector2f(std::round(position.x), std::round(position.y));
 
         if (layerName == "decorations" || layerName == "decoration_overlay") {
-            sf::FloatRect pixelRect = calculatePixelRect(
-                *m_textures[imagePath], info.textureRect, info.position
+            jo::FloatRect pixelRect = calculatePixelRect(
+                *info.texture, info.textureRect, info.position
             );
             if (pixelRect.size.x > 0.f && pixelRect.size.y > 0.f &&
                 isCollidable) {
                 m_collisionRects.push_back(pixelRect);
-                while (const std::optional<sf::Event> event =
+                while (const std::optional<jo::Event> event =
                            window->pollEvent()) {
-                    if (event->is<sf::Event::Closed>()) {
+                    if (event->is<jo::Event::Closed>()) {
                         window->close();
                     }
                 }
@@ -287,10 +288,24 @@ void TileManager::processLayer(const std::string& layerName) {
             }
             info.collisionBox = pixelRect;
             m_collidables.push_back(info);
-        } else if (layerName == "overlay") {
-            m_overlayTiles.push_back(info);
         } else {
-            m_tiles.push_back(info);
+            if (isCollidable) {
+                jo::FloatRect rect(
+                    { info.position.x, info.position.y },
+                    { static_cast<float>(info.textureRect.size.x),
+                      static_cast<float>(info.textureRect.size.y) }
+                );
+                m_collisionRects.push_back(rect);
+                info.collisionBox = rect;
+            } else {
+                info.collisionBox = std::nullopt;
+            }
+
+            if (layerName == "overlay") {
+                m_overlayTiles.push_back(info);
+            } else {
+                m_tiles.push_back(info);
+            }
         }
     }
 }
@@ -307,7 +322,7 @@ void TileManager::loadTexture(const std::string& imagePath) {
         return;
     }
 
-    auto tex = std::make_unique<sf::Texture>();
+    auto tex = std::make_unique<jo::Texture>();
     if (!tex->loadFromFile(path.generic_string())) {
         Logger::error("Failed to load texture: {}", path.generic_string());
         return;
@@ -326,9 +341,9 @@ void TileManager::clear() {
     m_currentMap.reset();
 }
 
-sf::Sprite TileManager::getTextureById(const int id) {
-    const sf::Texture& texture =
-        ResourceManager<sf::Texture>::getInstance()->get(
+jo::Sprite TileManager::getTextureById(const int id) {
+    const jo::Texture& texture =
+        ResourceManager<jo::Texture>::getInstance()->get(
             "assets/environment/map/tileset.png"
         );
 
@@ -336,15 +351,18 @@ sf::Sprite TileManager::getTextureById(const int id) {
     const int TILE_H = 16;
 
     const int tilesPerRow = static_cast<int>(texture.getSize().x / TILE_W);
+    if (tilesPerRow == 0) {
+        return jo::Sprite(texture);
+    }
 
     int tx = (id % tilesPerRow) * TILE_W;
     int ty = (id / tilesPerRow) * TILE_H;
 
     // sprite from tileset
-    sf::Sprite icon(texture);
-    icon.setTextureRect(sf::IntRect({ tx, ty }, { TILE_W, TILE_H }));
-    sf::Vector2f size = icon.getLocalBounds().size;
-    icon.setOrigin({ size.x / 2, size.y / 2 });
+    jo::Sprite icon(texture);
+    icon.setTextureRect(jo::IntRect({ tx, ty }, { TILE_W, TILE_H }));
+    jo::Vector2f size = icon.getLocalBounds().size;
+    icon.setOrigin({ size.x / 2.f, size.y / 2.f });
     return icon;
 }
 

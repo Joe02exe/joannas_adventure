@@ -4,16 +4,16 @@
 #include "joanna/entities/player.h"
 #include "joanna/entities/entityutils.h"
 #include "joanna/entities/interactionbutton.h"
-#include <SFML/Graphics.hpp>
+#include "joanna/core/graphics.h"
 #include <optional>
 
 class Interactable: public Entity {
 
   public:
     Interactable(
-        const sf::FloatRect& box, const std::string& buttonTexturePath,
+        const jo::FloatRect& box, const std::string& buttonTexturePath,
         const std::string& spriteTexturePath,
-        const std::optional<sf::FloatRect>& collisionBox = std::nullopt,
+        const std::optional<jo::FloatRect>& collisionBox = std::nullopt,
         Direction direction = Direction::Right
     );
 
@@ -21,9 +21,9 @@ class Interactable: public Entity {
 
     virtual void interact(Player& player) = 0;
 
-    void renderButton(sf::RenderTarget& target);
+    void renderButton(jo::RenderTarget& target);
 
-    bool canPlayerInteract(const sf::Vector2f& playerPos);
+    bool canPlayerInteract(const jo::Vector2f& playerPos);
 
   private:
     InteractionButton button;

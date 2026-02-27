@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <SFML/Graphics.hpp>
+#include "joanna/core/graphics.h"
 
 #include "joanna/core/savegamemanager.h"
 
@@ -56,7 +56,7 @@ class Inventory {
 
     void setCapacity(std::size_t cap);
 
-    void draw(sf::RenderTarget& target) const;
+    void draw(jo::RenderTarget& target) const;
 
     void selectNext();
 
@@ -67,34 +67,34 @@ class Inventory {
     int getSelectedSlotIndex() const;
 
     void drawSlot(
-        sf::RenderTarget& target, float slotSize, float padding,
-        sf::Vector2f startPos, std::size_t i, std::size_t col, std::size_t row,
-        sf::Vector2f& slotPos, bool isSelected
+        jo::RenderTarget& target, float slotSize, float padding,
+        jo::Vector2f startPos, std::size_t i, std::size_t col, std::size_t row,
+        jo::Vector2f& slotPos, bool isSelected
     ) const;
 
     void drawItemName(
-        sf::RenderTarget& target, float slotSize, sf::Vector2f slotPos,
+        jo::RenderTarget& target, float slotSize, jo::Vector2f slotPos,
         const StoredItem& st
     ) const;
 
     void drawItemQuantity(
-        sf::RenderTarget& target, float slotSize, sf::Vector2f slotPos,
+        jo::RenderTarget& target, float slotSize, jo::Vector2f slotPos,
         const StoredItem& st
     ) const;
 
     void drawItemSprite(
-        sf::RenderTarget& target, TileManager& tileManager, float slotSize,
-        sf::Vector2f slotPos, const StoredItem& st
+        jo::RenderTarget& target, TileManager& tileManager, float slotSize,
+        jo::Vector2f slotPos, const StoredItem& st
     ) const;
 
     void drawItems(
-        sf::RenderTarget& target, TileManager& tileManager,
+        jo::RenderTarget& target, TileManager& tileManager,
         std::vector<StoredItem> vec, std::size_t columns, float slotSize,
-        float padding, std::size_t itemCount, sf::Vector2f startPos
+        float padding, std::size_t itemCount, jo::Vector2f startPos
     ) const;
 
     void
-    displayInventory(sf::RenderTarget& target, TileManager& tileManager) const;
+    displayInventory(jo::RenderTarget& target, TileManager& tileManager) const;
 
     std::size_t capacity() const;
 
@@ -109,7 +109,7 @@ class Inventory {
 
     std::size_t selectedSlotIndex = 0;
 
-    sf::Font font;
+    const jo::Font* font;
     std::vector<StoredItem> items_;
     std::size_t capacity_;
     std::vector<int> invisibleItemIds = { 3056, 3055 };

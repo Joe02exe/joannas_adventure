@@ -5,66 +5,97 @@
 RenderEngine::RenderEngine() = default;
 
 void RenderEngine::render(
-    sf::RenderTarget& target, Player& player, TileManager& tileManager,
+    jo::RenderTarget& target, Player& player, TileManager& tileManager,
     std::list<std::unique_ptr<Entity>>& entities,
     const std::shared_ptr<DialogueBox>& dialogueBox, float dt
 ) {
-    const auto& m_textures = tileManager.getGroundTextures();
-    const auto& m_tiles = tileManager.getTiles();
-    const auto& m_collidables = tileManager.getCollidableTiles();
-    const auto& m_overlayTiles = tileManager.getOverlayTiles();
-    const auto& m_objects = tileManager.getRenderObjects();
+    auto view = target.getView();
+    auto center = view.getCenter();
+    auto size = view.getSize();
+    // Expand the view rect slightly to prevent pop-in (tightened to 16px to
+    // save rendering overhead)
+    jo::FloatRect viewRect(
+        { center.x - size.x / 2.f - 16.f, center.y - size.y / 2.f - 16.f },
+        { size.x + 32.f, size.y + 32.f }
+    );
 
     auto drawTile = [&](const TileRenderInfo& tile) {
-        auto it = m_textures.find(tile.texturePath);
-        if (it != m_textures.end()) {
-            sf::Sprite sprite(*it->second);
+        if (tile.texture &&
+            viewRect.intersects(jo::FloatRect(tile.position, { 16.f, 16.f }))) {
+            jo::Sprite sprite(*tile.texture);
             sprite.setTextureRect(tile.textureRect);
             sprite.setPosition(tile.position);
-            // fix subpixel bleeding by adding an epsilon
-            sprite.setScale(sf::Vector2f(1.005f, 1.005f));
             target.draw(sprite);
         }
     };
 
     // draw background and ground tiles
-    for (const auto& tile : m_tiles) {
+    for (const auto& tile : tileManager.getTiles()) {
         drawTile(tile);
     }
 
-    // Explicitly draw stones early so they are behind the player/pickaxe
-    for (const auto& entity : entities) {
-        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
-            entity->render(target);
-        }
+    // Pre-compute player bottom for depth sorting
+    float playerBottom = 0.f;
+    if (player.getCollisionBox().has_value()) {
+        playerBottom = player.getCollisionBox().value().position.y +
+                       player.getCollisionBox().value().size.y;
     }
-
-    // draw collidable/decorative tiles with player sorting
-    float playerBottom = player.getCollisionBox().value().position.y +
-                         player.getCollisionBox().value().size.y;
     bool playerDrawn = false;
 
-    // draw iteractables below player
-    for (auto& entity : entities) {
-        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
-            continue;
-        }
+    // --- Single-pass entity classification ---
+    // Classify each visible entity once to avoid repeated dynamic_cast calls.
+    struct EntityInfo {
+        Entity* ptr;
+        bool isStone;
+        Interactable* interactable; // nullptr if not interactable
+        float bottom;               // bottom of collision box, or 0
+    };
 
+    std::vector<EntityInfo> visibleEntities;
+    visibleEntities.reserve(entities.size());
+
+    for (auto& entity : entities) {
+        if (!viewRect.contains(entity->getPosition()))
+            continue;
+        EntityInfo info;
+        info.ptr = entity.get();
+        info.isStone = (dynamic_cast<Stone*>(entity.get()) != nullptr);
+        info.interactable = dynamic_cast<Interactable*>(entity.get());
         if (entity->getCollisionBox().has_value()) {
-            float middleEntity = entity->getCollisionBox().value().position.y +
-                                 entity->getCollisionBox().value().size.y;
-            if (middleEntity < playerBottom) {
-                entity->render(target);
-            }
+            // Use collision box bottom for depth sorting
+            info.bottom = entity->getCollisionBox().value().position.y +
+                          entity->getCollisionBox().value().size.y;
         } else {
-            entity->render(target);
+            // No collision box: use sprite position Y as depth reference.
+            // We add a fixed offset (16px) to approximate foot-level.
+            info.bottom = entity->getPosition().y + 16.f;
+        }
+        visibleEntities.push_back(info);
+    }
+
+    // Draw stones first (they are always behind everything)
+    for (auto& info : visibleEntities) {
+        if (info.isStone) {
+            info.ptr->render(target);
         }
     }
 
-    // draw collidables
-    for (const auto& tile : m_collidables) {
-        float middleTile = tile.collisionBox.value().position.y +
-                           tile.collisionBox.value().size.y;
+    // Draw entities below the player (foot-position y-sort)
+    for (auto& info : visibleEntities) {
+        if (info.isStone)
+            continue;
+        if (info.bottom <= playerBottom) {
+            info.ptr->render(target);
+        }
+    }
+
+    // Draw collidable/decorative tiles with player sorting
+    for (const auto& tile : tileManager.getCollidableTiles()) {
+        float middleTile = 0.f;
+        if (tile.collisionBox.has_value()) {
+            middleTile = tile.collisionBox.value().position.y +
+                         tile.collisionBox.value().size.y;
+        }
         if (!playerDrawn && middleTile >= playerBottom) {
             player.draw(target);
             playerDrawn = true;
@@ -72,18 +103,13 @@ void RenderEngine::render(
         drawTile(tile);
     }
 
-    // draw entities above player
-    for (auto& entity : entities) {
-        if (dynamic_cast<Stone*>(entity.get()) != nullptr) {
+    // Draw entities above the player (larger bottom y = further down = in front
+    // of player)
+    for (auto& info : visibleEntities) {
+        if (info.isStone)
             continue;
-        }
-
-        if (entity->getCollisionBox().has_value()) {
-            float middleEntity = entity->getCollisionBox().value().position.y +
-                                 entity->getCollisionBox().value().size.y;
-            if (middleEntity >= playerBottom) {
-                entity->render(target);
-            }
+        if (info.bottom > playerBottom) {
+            info.ptr->render(target);
         }
     }
 
@@ -92,38 +118,46 @@ void RenderEngine::render(
         player.draw(target);
     }
 
-    for (auto& entity : entities) {
-        if (auto* interactable = dynamic_cast<Interactable*>(entity.get())) {
-            if (dynamic_cast<Stone*>(entity.get()) != nullptr &&
-                !player.getInventory().hasItemByName("pickaxe")) {
-                continue;
-            }
-            if (interactable->canPlayerInteract(player.getPosition())) {
-                if (dynamic_cast<Chest*>(entity.get()) != nullptr &&
-                    dynamic_cast<Chest*>(entity.get())->isChestOpen()) {
+    // Draw interact buttons for nearby interactables
+    for (auto& info : visibleEntities) {
+        if (info.interactable == nullptr)
+            continue;
+        if (info.isStone && !player.getInventory().hasItemByName("pickaxe")) {
+            continue;
+        }
+        if (info.interactable->canPlayerInteract(player.getPosition())) {
+            if (auto* chest = dynamic_cast<Chest*>(info.ptr)) {
+                if (chest->isChestOpen())
                     continue;
-                }
-                interactable->renderButton(target);
             }
+            info.interactable->renderButton(target);
         }
     }
 
     // draw overlay tiles
-    for (const auto& tile : m_overlayTiles) {
+    for (const auto& tile : tileManager.getOverlayTiles()) {
         drawTile(tile);
     }
 
-    if (dialogueBox->isActive()) {
-        dialogueBox->render(target);
+    // Cache the pick-up indicator sprite once
+    if (!m_indicatorCached) {
+        m_indicatorSprite = tileManager.getTextureById(2919);
+        m_indicatorCached = true;
     }
 
     // draw objects with floating effect
     frameTimer += dt;
-    for (const auto& item : m_objects) {
-        sf::Sprite i = tileManager.getTextureById(static_cast<int>(item.gid));
-        i.setPosition(sf::Vector2f({ static_cast<float>(item.position.x),
-                                     static_cast<float>(item.position.y) +
-                                         offset }));
+    auto playerPos = player.getPosition();
+    for (const auto& item : tileManager.getRenderObjects()) {
+        // Simple culling for objects too
+        if (!viewRect.contains(jo::Vector2f(item.position))) {
+            continue;
+        }
+
+        jo::Sprite sprite = item.sprite;
+        sprite.setPosition(jo::Vector2f({ static_cast<float>(item.position.x),
+                                          static_cast<float>(item.position.y) +
+                                              offset }));
         if (offset > 5.f) {
             dir = -1.f;
         }
@@ -134,19 +168,16 @@ void RenderEngine::render(
             frameTimer = 0.f;
             offset += dir * 0.5f;
         }
-        target.draw(i);
+        target.draw(sprite);
 
-        auto playerPos = player.getPosition();
-        auto itemPos = item.position;
-        float dx = playerPos.x - static_cast<float>(itemPos.x);
-        float dy = playerPos.y - static_cast<float>(itemPos.y);
-        if (dx * dx + dy * dy <= 16.f * 16.f) {
-            sf::Sprite indicator = tileManager.getTextureById(2919);
-            indicator.setPosition(
-                sf::Vector2f({ static_cast<float>(item.position.x),
+        float dx = playerPos.x - static_cast<float>(item.position.x);
+        float dy = playerPos.y - static_cast<float>(item.position.y);
+        if (dx * dx + dy * dy <= 16.f * 16.f && m_indicatorSprite.has_value()) {
+            m_indicatorSprite->setPosition(
+                jo::Vector2f({ static_cast<float>(item.position.x),
                                static_cast<float>(item.position.y) - 10.f })
             );
-            target.draw(indicator);
+            target.draw(*m_indicatorSprite);
         }
     }
 }

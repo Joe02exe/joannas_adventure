@@ -7,8 +7,7 @@
 #include "joanna/entities/player.h"
 #include "joanna/utils/dialogue_box.h"
 
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/View.hpp>
+#include "joanna/core/graphics.h"
 #include <list>
 
 class Game;
@@ -20,16 +19,16 @@ class Controller {
     );
 
     bool getInput(
-        float dt, sf::RenderWindow& window,
-        const std::vector<sf::FloatRect>& collisions,
+        float dt, jo::RenderWindow& window,
+        const std::vector<jo::FloatRect>& collisions,
         std::list<std::unique_ptr<Entity>>& entities,
         const std::shared_ptr<DialogueBox>& sharedDialogueBox,
         TileManager& tileManager, RenderEngine& renderEngine
     );
 
     bool updateStep(
-        float dt, sf::RenderWindow& window,
-        std::vector<sf::FloatRect>& collisions,
+        float dt, jo::RenderWindow& window,
+        std::vector<jo::FloatRect>& collisions,
         std::list<std::unique_ptr<Entity>>& entities,
         const std::shared_ptr<DialogueBox>& sharedDialogueBox,
         TileManager& tileManager, RenderEngine& renderEngine
@@ -40,11 +39,11 @@ class Controller {
         return showMapOverview;
     }
 
-    sf::View& getPlayerView() const {
+    jo::View& getPlayerView() const {
         return playerView;
     }
 
-    sf::View& getMiniMapView() const {
+    jo::View& getMiniMapView() const {
         return miniMapView;
     }
 
@@ -61,8 +60,8 @@ class Controller {
     AudioManager& audioManager;
     Game& game;
     Player player;
-    sf::View& playerView;
-    sf::View& miniMapView;
+    jo::View& playerView;
+    jo::View& miniMapView;
     bool facingLeft = false;
     bool keyPressed = false;
     bool displayInventory = true;

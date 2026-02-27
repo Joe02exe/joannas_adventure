@@ -1,29 +1,30 @@
-#include "joanna/game/combat/combat_system.h"
+#include "joanna/game/combat/.h"
+#include "joanna/core/graphics.h"
 #include "joanna/utils/resourcemanager.h"
-#include <SFML/Graphics/RectangleShape.hpp>
-#include <SFML/Window/Event.hpp>
 #include <iostream>
 
 CombatSystem::CombatSystem()
-    : caveBackground(ResourceManager<sf::Texture>::getInstance()->get(
+    : caveBackground(&ResourceManager<jo::Texture>::getInstance()->get(
           "assets/images/combat_background_cave.png"
       )),
-      beachBackground(ResourceManager<sf::Texture>::getInstance()->get(
+      beachBackground(&ResourceManager<jo::Texture>::getInstance()->get(
           "assets/images/combat_background_beach.png"
       )),
-      attackButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
+      attackButtonTexture(&ResourceManager<jo::Texture>::getInstance()->get(
           "assets/buttons/attack.png"
       )),
-      attackButtonRollTexture(ResourceManager<sf::Texture>::getInstance()->get(
+      attackButtonRollTexture(&ResourceManager<jo::Texture>::getInstance()->get(
           "assets/buttons/attack_roll.png"
       )),
-      counterButtonTexture(ResourceManager<sf::Texture>::getInstance()->get(
+      counterButtonTexture(&ResourceManager<jo::Texture>::getInstance()->get(
           "assets/buttons/attack_punch.png"
       )),
-      counterButtonGoodTexture(ResourceManager<sf::Texture>::getInstance()->get(
-          "assets/buttons/attack_punch_good.png"
-      )),
-      counterButtonBadTexture(ResourceManager<sf::Texture>::getInstance()->get(
+      counterButtonGoodTexture(
+          &ResourceManager<jo::Texture>::getInstance()->get(
+              "assets/buttons/attack_punch_good.png"
+          )
+      ),
+      counterButtonBadTexture(&ResourceManager<jo::Texture>::getInstance()->get(
           "assets/buttons/attack_punch_bad.png"
       )) {
     audioManager = AudioManager();
@@ -35,9 +36,9 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     std::cout << "Combat Started!\n";
 
     if (enemy->getType() == Enemy::EnemyType::Skeleton) {
-        currentBackground = &beachBackground;
+        currentBackground = beachBackground;
     } else {
-        currentBackground = &caveBackground;
+        currentBackground = caveBackground;
     }
 
     // Save state
@@ -49,17 +50,18 @@ void CombatSystem::startCombat(Player& p, Enemy& e) {
     enemyState.scale = enemy->getScale();
     enemyState.facing = enemy->getFacing();
 
-    // Assuming screen size 900x900 and player on left, enemy on right
-    // Assuming screen size 900x900 and player on left, enemy on right
-    sf::Vector2f pPos(-100.f, 340);
-    sf::Vector2f ePos(430.f, 340);
+    // Combat view is a 900x900 virtual space (see renderCombat).
+    // At 4x scale, 56x32 sprites = 224x128px visual each.
+    // Player on the left, enemy on the right.
+    jo::Vector2f pPos(0.f, 400.f);   // player left
+    jo::Vector2f ePos(500.f, 400.f); // enemy right
 
     player->setPosition(pPos);
     enemy->setPosition(ePos);
     player->setFacing(Direction::Right);
     enemy->setFacing(Direction::Left);
-    player->setScale({ 7.f, 7.f });
-    enemy->setScale({ 7.f, 7.f });
+    player->setScale({ 8.f, 8.f });
+    enemy->setScale({ 8.f, 8.f });
 
     phase = TurnPhase::Input;
     currentState = CombatState::PlayerTurn;
@@ -119,11 +121,11 @@ void CombatSystem::update(float dt) {
 }
 
 void CombatSystem::processApproach(
-    float dt, Entity* actor, sf::Vector2f target, float speed, float threshold,
+    float dt, Entity* actor, jo::Vector2f target, float speed, float threshold,
     State& actorState
 ) {
     actorState = State::Running;
-    sf::Vector2f dir = target - actor->getPosition();
+    jo::Vector2f dir = target - actor->getPosition();
 
     // move if distance is greater than threshold (considering direction)
     bool shouldMove =
@@ -131,7 +133,7 @@ void CombatSystem::processApproach(
 
     if (shouldMove) {
         actor->setPosition(
-            actor->getPosition() + sf::Vector2f(speed * dt, 0.f)
+            actor->getPosition() + jo::Vector2f(speed * dt, 0.f)
         );
     } else {
         phase = TurnPhase::Attacking;
@@ -140,20 +142,20 @@ void CombatSystem::processApproach(
 }
 
 void CombatSystem::processReturn(
-    float dt, Entity* actor, sf::Vector2f startPos, float speed,
+    float dt, Entity* actor, jo::Vector2f startPos, float speed,
     float threshold, State& actorState, Direction moveFacing,
     Direction endFacing
 ) {
     actor->setFacing(moveFacing);
     actorState = State::Running;
-    sf::Vector2f dir = startPos - actor->getPosition();
+    jo::Vector2f dir = startPos - actor->getPosition();
 
     bool shouldMove =
         (speed > 0 && dir.x > threshold) || (speed < 0 && dir.x < -threshold);
 
     if (shouldMove) {
         actor->setPosition(
-            actor->getPosition() + sf::Vector2f(speed * dt, 0.f)
+            actor->getPosition() + jo::Vector2f(speed * dt, 0.f)
         );
     } else {
         actor->setPosition(startPos);
@@ -164,13 +166,13 @@ void CombatSystem::processReturn(
 }
 
 void CombatSystem::updateAttackMovement(
-    float dt, Entity* attacker, const sf::Vector2f& targetPos,
+    float dt, Entity* attacker, const jo::Vector2f& targetPos,
     const Attack& attack
 ) {
     if (attack.moveSpeed != 0.f) {
-        sf::Vector2f target = targetPos;
+        jo::Vector2f target = targetPos;
         target.x += attack.targetOffset;
-        sf::Vector2f dir = target - attacker->getPosition();
+        jo::Vector2f dir = target - attacker->getPosition();
 
         bool shouldMove =
             (attack.moveSpeed > 0 && dir.x > attack.moveThreshold) ||
@@ -179,7 +181,7 @@ void CombatSystem::updateAttackMovement(
         if (shouldMove) {
             attacker->setPosition(
                 attacker->getPosition() +
-                sf::Vector2f(attack.moveSpeed * dt, 0.f)
+                jo::Vector2f(attack.moveSpeed * dt, 0.f)
             );
         }
     }
@@ -334,12 +336,12 @@ void CombatSystem::processCounter(float dt) {
 }
 
 void CombatSystem::render(
-    sf::RenderTarget& target, TileManager& tileManager, const sf::Font& font
+    jo::RenderTarget& target, TileManager& tileManager, const jo::Font& font
 ) {
 
     // currently set statically... because viewport is set to 900x900
 
-    sf::Sprite backgroundSprite(*currentBackground);
+    jo::Sprite backgroundSprite(*currentBackground);
     backgroundSprite.setPosition({ 0.f, 0.f });
     target.draw(backgroundSprite);
 
@@ -354,14 +356,14 @@ void CombatSystem::render(
 
     if (currentState == CombatState::PlayerTurn && phase == TurnPhase::Input) {
         if (player->getInventory().hasItemByName("sword")) {
-            sf::Sprite attackButtonSprite(attackButtonTexture);
-            attackButtonSprite.setScale({ 3, 3 });
-            attackButtonSprite.setPosition({ 95.f, 330.f });
+            jo::Sprite attackButtonSprite(*attackButtonTexture);
+            attackButtonSprite.setScale({ 4, 4 });
+            attackButtonSprite.setPosition({ 85.f, 320.f });
             target.draw(attackButtonSprite);
         } else {
-            sf::Sprite attackButtonSprite(attackButtonRollTexture);
-            attackButtonSprite.setScale({ 3, 3 });
-            attackButtonSprite.setPosition({ 95.f, 330.f });
+            jo::Sprite attackButtonSprite(*attackButtonRollTexture);
+            attackButtonSprite.setScale({ 4, 4 });
+            attackButtonSprite.setPosition({ 85.f, 320.f });
             target.draw(attackButtonSprite);
         }
     }
@@ -369,17 +371,17 @@ void CombatSystem::render(
     if (currentAttack.counterable && currentState == CombatState::EnemyTurn &&
         (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching) &&
         player->getInventory().hasItemByName("counterAttack")) {
-        sf::Sprite counterButtonSprite(counterButtonTexture);
+        jo::Sprite counterButtonSprite(*counterButtonTexture);
 
         if (phase == TurnPhase::Attacking &&
             turnTimer >= currentAttack.counterWindowStart &&
             turnTimer <= currentAttack.counterWindowEnd) {
-            counterButtonSprite.setTexture(counterButtonGoodTexture);
+            counterButtonSprite.setTexture(*counterButtonGoodTexture);
         } else if (phase == TurnPhase::Attacking &&
                    turnTimer > currentAttack.counterWindowEnd) {
-            counterButtonSprite.setTexture(counterButtonBadTexture);
+            counterButtonSprite.setTexture(*counterButtonBadTexture);
         } else {
-            counterButtonSprite.setTexture(counterButtonTexture);
+            counterButtonSprite.setTexture(*counterButtonTexture);
         }
 
         counterButtonSprite.setScale({ 3, 3 });
@@ -387,22 +389,23 @@ void CombatSystem::render(
         target.draw(counterButtonSprite);
     }
     if (!damageTexts.empty()) {
-        sf::Text tempText(font);
+        jo::Text tempText(font);
 
         tempText.setCharacterSize(32);
-        tempText.setOutlineColor(sf::Color::Black);
+        tempText.setOutlineColor(jo::Color::Black);
         tempText.setOutlineThickness(1.5f);
-        tempText.setStyle(sf::Text::Bold);
+        tempText.setStyle(jo::Text::Bold);
 
         for (const auto& ind : damageTexts) {
             tempText.setString(ind.text);
 
-            sf::FloatRect bounds = tempText.getLocalBounds();
-            tempText.setOrigin({ bounds.size.x / 2.f, bounds.size.y / 2.f });
+            jo::FloatRect bounds = tempText.getLocalBounds();
+            tempText.setOrigin({ bounds.size.x / 2.f,
+                                 bounds.size.y / 2.f - 50.f });
 
             tempText.setPosition(ind.position);
 
-            sf::Color c = ind.color;
+            jo::Color c = ind.color;
             float alphaRatio = ind.lifeTime / ind.maxLifeTime;
 
             c.a = static_cast<std::uint8_t>(255 * alphaRatio);
@@ -413,24 +416,22 @@ void CombatSystem::render(
     }
 }
 
-void CombatSystem::handleInput(sf::Event& event) {
+void CombatSystem::handleInput(jo::Event& event) {
     if (currentState == CombatState::PlayerTurn && phase == TurnPhase::Input) {
-        if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
+        if (const auto* keyEvent = event.getIf<jo::Event::KeyPressed>()) {
             startPos = player->getPosition();
             targetPos = enemy->getPosition();
-            if (keyEvent->code == sf::Keyboard::Key::A) {
+            // Miyoo Y = Attack, Miyoo X = Roll
+            if (keyEvent->code == jo::Keyboard::Key::ButtonY) {
                 if (player->getInventory().hasItemByName("sword")) {
                     currentAttack = { "Attack", 2, State::Attack, 0.3f, 0.8f };
-                    targetPos.x -= 120.f; // close range attack, but still a bit
-                                          // away from the enemy
+                    targetPos.x -= 60.f;
                     phase = TurnPhase::Approaching;
                 }
-            } else if (keyEvent->code == sf::Keyboard::Key::D) {
+            } else if (keyEvent->code == jo::Keyboard::Key::ButtonX) {
                 currentAttack = { "Roll", 1,     State::Roll, 0.2f,
-                                  0.85f,  800.f, -90.f,       5.f };
-                targetPos.x -=
-                    340.f; // start roll from further away, therefore our
-                           // targetPos is a bit away from the enemy
+                                  0.85f,  200.f, -30.f,       5.f };
+                targetPos.x -= 100.f;
                 phase = TurnPhase::Approaching;
             }
         }
@@ -438,8 +439,8 @@ void CombatSystem::handleInput(sf::Event& event) {
                (phase == TurnPhase::Attacking || phase == TurnPhase::Approaching
                ) &&
                currentAttack.counterable) {
-        if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
-            if (keyEvent->code == sf::Keyboard::Key::D) {
+        if (const auto* keyEvent = event.getIf<jo::Event::KeyPressed>()) {
+            if (keyEvent->code == jo::Keyboard::Key::ButtonX) {
                 // Check if player has the Counter Attack ability
                 if (!player->getInventory().hasItemByName("counterAttack")) {
                     return;
@@ -491,8 +492,8 @@ template void CombatSystem::updateAttackTimeline<
     Player, Enemy>(float, Player*, State&, const Attack&, Enemy*);
 
 void CombatSystem::spawnDamageText(Entity* target, int amount) {
-    sf::FloatRect box = target->getBoundingBox();
-    sf::Vector2f scale = target->getScale();
+    jo::FloatRect box = target->getBoundingBox();
+    jo::Vector2f scale = target->getScale();
 
     float visualWidth = box.size.x * scale.x;
 
@@ -500,10 +501,10 @@ void CombatSystem::spawnDamageText(Entity* target, int amount) {
     float topY = box.position.y;
 
     DamageIndicator indicator;
-    indicator.position = sf::Vector2f{ centerX, topY + 150.f };
+    indicator.position = jo::Vector2f{ centerX, topY + 150.f };
 
     indicator.text = std::to_string(amount * -1);
-    indicator.color = sf::Color::White;
+    indicator.color = jo::Color::White;
     indicator.lifeTime = 1.0f;
     indicator.maxLifeTime = 1.0f;
     indicator.speed = 100.f;

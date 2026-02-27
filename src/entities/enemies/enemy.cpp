@@ -6,12 +6,12 @@
 #include <algorithm>
 #include <cstdlib> // for rand
 
-Enemy::Enemy(const sf::Vector2f& startPos, EnemyType type)
+Enemy::Enemy(const jo::Vector2f& startPos, EnemyType type)
     : Entity(
-          sf::FloatRect(
-              { startPos.x - 48.f, startPos.y - 32.f }, { 96.f, 64.f }
+          jo::FloatRect(
+              { startPos.x - 28.f, startPos.y - 16.f }, { 56.f, 32.f }
           ),
-          ResourceManager<sf::Texture>::getInstance()->get(
+          ResourceManager<jo::Texture>::getInstance()->get(
               type == EnemyType::Goblin
                   ? "assets/player/enemies/goblin/idle.png"
                   : "assets/player/enemies/skeleton/idle.png"
@@ -27,36 +27,36 @@ Enemy::Enemy(const sf::Vector2f& startPos, EnemyType type)
 
     if (type == EnemyType::Goblin) {
         animations[State::Idle] =
-            Animation(basePath + "idle.png", { 96, 64 }, 8);
+            Animation(basePath + "idle.png", { 56, 32 }, 8);
         animations[State::Walking] =
-            Animation(basePath + "run.png", { 96, 64 }, 8);
+            Animation(basePath + "run.png", { 56, 32 }, 8);
         animations[State::Running] =
-            Animation(basePath + "run.png", { 96, 64 }, 8);
+            Animation(basePath + "run.png", { 56, 32 }, 8);
         animations[State::Attack] =
-            Animation(basePath + "attack.png", { 96, 64 }, 9);
+            Animation(basePath + "attack.png", { 56, 32 }, 9);
         animations[State::Hurt] =
-            Animation(basePath + "hurt.png", { 96, 64 }, 8);
+            Animation(basePath + "hurt.png", { 56, 32 }, 8);
         animations[State::Dead] =
-            Animation(basePath + "dead.png", { 96, 64 }, 9);
+            Animation(basePath + "dead.png", { 56, 32 }, 9);
 
         animations[State::Roll] =
-            Animation(basePath + "roll.png", { 96, 64 }, 10);
+            Animation(basePath + "roll.png", { 56, 32 }, 10);
         animations[State::Mining] =
-            Animation(basePath + "mining.png", { 96, 64 }, 10);
+            Animation(basePath + "mining.png", { 56, 32 }, 10);
     } else {
         // Skeleton
         animations[State::Idle] =
-            Animation(basePath + "idle.png", { 96, 64 }, 6);
+            Animation(basePath + "idle.png", { 56, 32 }, 6);
         animations[State::Walking] =
-            Animation(basePath + "walk.png", { 96, 64 }, 8);
+            Animation(basePath + "walk.png", { 56, 32 }, 8);
         animations[State::Running] =
-            Animation(basePath + "walk.png", { 96, 64 }, 8);
+            Animation(basePath + "walk.png", { 56, 32 }, 8);
         animations[State::Attack] =
-            Animation(basePath + "attack.png", { 96, 64 }, 7);
+            Animation(basePath + "attack.png", { 56, 32 }, 7);
         animations[State::Hurt] =
-            Animation(basePath + "hurt.png", { 96, 64 }, 8);
+            Animation(basePath + "hurt.png", { 56, 32 }, 8);
         animations[State::Dead] =
-            Animation(basePath + "dead.png", { 96, 64 }, 10);
+            Animation(basePath + "dead.png", { 56, 32 }, 10);
     }
 
     // Set initial texture
@@ -106,7 +106,7 @@ void Enemy::update(float dt, State state) {
     }
 }
 
-void Enemy::draw(sf::RenderTarget& target) const {
+void Enemy::draw(jo::RenderTarget& target) const {
     Entity::render(target);
 }
 
@@ -121,7 +121,7 @@ void Enemy::switchState(State newState) {
 
 void Enemy::applyFrame() {
     const auto& anim = animations[currentState];
-    setTexture(anim.texture);
+    setTexture(*anim.texture);
     setFrame(anim.frames[currentFrame]);
 }
 
@@ -130,8 +130,8 @@ void Enemy::takeDamage(int amount) {
 }
 
 int Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
-    const sf::Vector2f playerPos = player.getPosition();
-    const sf::Vector2f myPos = getPosition();
+    const jo::Vector2f playerPos = player.getPosition();
+    const jo::Vector2f myPos = getPosition();
     const auto distToPlayer = getDistance(playerPos, myPos);
 
     if (shouldTriggerCombat(distToPlayer)) {
@@ -154,7 +154,7 @@ int Enemy::updateOverworld(float dt, Player& player, TileManager& tileManager) {
 }
 
 void Enemy::updateAIState(
-    float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos,
+    float dt, const jo::Vector2f& myPos, const jo::Vector2f& playerPos,
     float distToPlayer, TileManager& tileManager
 ) {
     const float torchRadius = 100.f; // player "brightness"
@@ -183,25 +183,25 @@ void Enemy::updateAIState(
     }
 }
 
-State Enemy::handleIdleBehavior(float dt, const sf::Vector2f& myPos) {
+State Enemy::handleIdleBehavior(float dt, const jo::Vector2f& myPos) {
     patrolTimer -= dt;
     if (patrolTimer <= 0.f) {
         const float radius = 30.f;
         const float angle = static_cast<float>(rand() % 360) * 3.14159f / 180.f;
         const float dist = static_cast<float>(rand() % 100) / 100.f * radius;
-        sf::Vector2f potentialTarget =
+        jo::Vector2f potentialTarget =
             homePoint +
-            sf::Vector2f(std::cos(angle) * dist, std::sin(angle) * dist);
+            jo::Vector2f(std::cos(angle) * dist, std::sin(angle) * dist);
         patrolTarget = potentialTarget;
         patrolTimer = 10.f;
     }
 
-    sf::Vector2f dir = patrolTarget - myPos;
+    jo::Vector2f dir = patrolTarget - myPos;
     const float distToTarget = getDistance(myPos, patrolTarget);
 
     if (distToTarget > 5.f) {
         dir /= distToTarget;
-        const sf::Vector2f move = dir * speed * dt * 0.5f;
+        const jo::Vector2f move = dir * speed * dt * 0.5f;
 
         setPosition(myPos + move);
         setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
@@ -211,7 +211,7 @@ State Enemy::handleIdleBehavior(float dt, const sf::Vector2f& myPos) {
     return State::Idle;
 }
 
-float Enemy::getDistance(const sf::Vector2f& p1, const sf::Vector2f& p2) {
+float Enemy::getDistance(const jo::Vector2f& p1, const jo::Vector2f& p2) {
     return static_cast<float>(
         std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2))
     );
@@ -222,23 +222,23 @@ bool Enemy::shouldTriggerCombat(float distToPlayer) {
 }
 
 State Enemy::handlePursuingBehavior(
-    float dt, const sf::Vector2f& myPos, const sf::Vector2f& playerPos,
+    float dt, const jo::Vector2f& myPos, const jo::Vector2f& playerPos,
     float distToPlayer
 ) {
-    sf::Vector2f dir = playerPos - myPos;
+    jo::Vector2f dir = playerPos - myPos;
     setFacing(dir.x > 0 ? Direction::Right : Direction::Left);
     dir /= distToPlayer;
-    const sf::Vector2f move = dir * speed * dt;
-    const sf::Vector2f nextPos = myPos + move;
+    const jo::Vector2f move = dir * speed * dt;
+    const jo::Vector2f nextPos = myPos + move;
     const auto distNextToHome = getDistance(nextPos, homePoint);
 
-    sf::Vector2f actualNextPos = myPos;
+    jo::Vector2f actualNextPos = myPos;
     // move only if the new position is within max radius
     if (distNextToHome <= 60.f) {
         actualNextPos = nextPos;
     } else {
         // slide along the border
-        sf::Vector2f homeToNext = nextPos - homePoint;
+        jo::Vector2f homeToNext = nextPos - homePoint;
         float dist = std::sqrt(
             (homeToNext.x * homeToNext.x) + (homeToNext.y * homeToNext.y)
         );

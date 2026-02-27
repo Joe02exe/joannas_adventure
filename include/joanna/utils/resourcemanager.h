@@ -2,7 +2,7 @@
 
 #include "joanna/utils/logger.h"
 
-#include <SFML/Graphics/Font.hpp>
+#include "joanna/core/graphics.h"
 #include <memory>
 #include <mutex>
 #include <string>
@@ -65,21 +65,21 @@ ResourceManager<Resource>* ResourceManager<Resource>::instance = nullptr;
 
 template <typename Resource> std::mutex ResourceManager<Resource>::mtx;
 
-// specialization for sf::Font, because it uses openFromFile
+// specialization for jo::Font, because it uses openFromFile
 template <>
-inline sf::Font& ResourceManager<sf::Font>::get(const std::string& filename) {
+inline jo::Font& ResourceManager<jo::Font>::get(const std::string& filename) {
     auto it = resources.find(filename);
     if (it != resources.end()) {
         return *(it->second);
     }
 
-    auto res = std::make_unique<sf::Font>();
+    auto res = std::make_unique<jo::Font>();
     if (!res->openFromFile(filename)) {
         Logger::error("Failed to load resource: {}", filename);
         throw std::runtime_error("Failed to open font: " + filename);
     }
 
-    sf::Font& ref = *res;
+    jo::Font& ref = *res;
     resources[filename] = std::move(res);
     return ref;
 }

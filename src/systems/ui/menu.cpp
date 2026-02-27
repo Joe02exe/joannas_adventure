@@ -5,10 +5,9 @@
 #include "joanna/utils/logger.h"
 #include "joanna/utils/resourcemanager.h"
 
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Window.hpp>
+#include "joanna/core/graphics.h"
 #include <cmath>
+#include <spdlog/spdlog.h>
 #include <utility>
 
 #include "joanna/core/game.h"
@@ -17,10 +16,10 @@
 #include "joanna/entities/npc.h"
 
 namespace {
-constexpr sf::Color COLOR_TEXT_NORMAL = sf::Color::Black;
-constexpr sf::Color COLOR_TEXT_SELECTED =
-    sf::Color(50, 200, 50); // Greenish highlight
-constexpr sf::Color COLOR_BG_NORMAL = sf::Color(50, 50, 50, 200);
+const jo::Color COLOR_TEXT_NORMAL = jo::Color::Black;
+const jo::Color COLOR_TEXT_SELECTED =
+    jo::Color(50, 200, 50); // Greenish highlight
+const jo::Color COLOR_BG_NORMAL = jo::Color(50, 50, 50, 200);
 constexpr float MENU_SPACING = 20.f;
 constexpr unsigned int FONT_SIZE_TITLE = 60;
 constexpr unsigned int FONT_SIZE_ITEM = 40;
@@ -34,18 +33,16 @@ Menu::Menu(
     : windowManager(&windowManager), controller(&controller),
       tileManager(&tileManager), audioManager(&audioManager),
       entities(&entities), game(&game),
-      mouseSprite(
-          ResourceManager<sf::Texture>::getInstance()->get(
-              "assets/buttons/cursor.png"
-          )
-      ) {
+      mouseSprite(ResourceManager<jo::Texture>::getInstance()->get(
+          "assets/buttons/cursor.png"
+      )) {
     mouseSprite.setOrigin({ 0.f, 0.f });
     mouseSprite.setScale({ 3.f, 3.f });
 
-    font = ResourceManager<sf::Font>::getInstance()->get(
+    font = &ResourceManager<jo::Font>::getInstance()->get(
         "assets/font/minecraft.ttf"
     );
-    font.setSmooth(false);
+    font->setSmooth(false);
 
     // Initialize Default Menu
     resetToDefaultMenu();
@@ -89,7 +86,7 @@ void Menu::rebuildUI() {
     }
     totalHeight -= MENU_SPACING; // Remove trailing spacing
 
-    const sf::View& view = windowManager->getUiView();
+    const jo::View& view = windowManager->getUiView();
     const float startY = view.getCenter().y - (totalHeight / 2.f);
     float currentY = startY;
 
@@ -99,17 +96,17 @@ void Menu::rebuildUI() {
             (i == 0) ? FONT_SIZE_TITLE : FONT_SIZE_ITEM;
 
         // Text Setup
-        sf::Text text(font);
+        jo::Text text(*font);
         text.setString(options.at(i));
         text.setCharacterSize(charSize);
         text.setFillColor(COLOR_TEXT_NORMAL);
-        text.setStyle(sf::Text::Regular);
+        text.setStyle(jo::Text::Regular);
         text.setOutlineThickness(2.0f);
-        text.setOutlineColor(sf::Color::White);
+        text.setOutlineColor(jo::Color::White);
         text.setLetterSpacing(2.f);
 
         // Center Horizontally
-        const sf::FloatRect bounds = text.getLocalBounds();
+        const jo::FloatRect bounds = text.getLocalBounds();
         text.setOrigin({ bounds.size.x / 2.f, 0.f });
         text.setPosition({ view.getCenter().x, std::floor(currentY) });
         menuTexts.push_back(std::move(text));
@@ -117,13 +114,13 @@ void Menu::rebuildUI() {
     }
 }
 
-sf::Vector2f Menu::getMouseWorldPos() const {
+jo::Vector2f Menu::getMouseWorldPos() const {
     auto& window = windowManager->getWindow();
-    const sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+    const jo::Vector2i pixelPos = jo::Mouse::getPosition(window);
     return window.mapPixelToCoords(pixelPos, windowManager->getUiView());
 }
 
-void Menu::handleHover(const sf::Vector2f& mousePos) {
+void Menu::handleHover(const jo::Vector2f& mousePos) {
     if (showAbout) {
         return;
     }
@@ -139,50 +136,52 @@ void Menu::handleHover(const sf::Vector2f& mousePos) {
     }
 }
 
-void Menu::handleInput(sf::Window& window) {
-    while (const std::optional<sf::Event> event = window.pollEvent()) {
+void Menu::handleInput(jo::Window& window) {
+    while (const std::optional<jo::Event> event = window.pollEvent()) {
 
         if (!isMenuOpen) {
             break;
         }
 
-        if (event->is<sf::Event::Closed>()) {
+        if (event->is<jo::Event::Closed>()) {
             window.close();
             isMenuOpen = false;
         }
 
-        if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-            windowManager->handleResizeEvent(resized->size);
+        if (const auto* resized = event->getIf<jo::Event::Resized>()) {
+            windowManager->handleResizeEvent(
+                jo::Vector2u(resized->size.x, resized->size.y)
+            );
             rebuildUI();
         }
 
         // --- About Overlay Inputs ---
         if (showAbout) {
-            if (event->is<sf::Event::KeyPressed>() &&
-                    (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape) ||
-                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter)) ||
-                (event->is<sf::Event::MouseButtonPressed>())) {
+            if (event->is<jo::Event::KeyPressed>() &&
+                    (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Escape) ||
+                     jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Enter)) ||
+                (event->is<jo::Event::MouseButtonPressed>())) {
                 showAbout = false;
             }
             continue; // Skip standard menu inputs
         }
 
         // --- Standard Menu Inputs ---
-        if (event->is<sf::Event::KeyPressed>()) {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) ||
-                sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
+        if (event->is<jo::Event::KeyPressed>()) {
+            if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::W) ||
+                jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Up)) {
                 updateSelection(-1);
-            } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) ||
-                       sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
+            } else if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::S) ||
+                       jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Down)) {
                 updateSelection(1);
-            } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
-                       sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter)) {
+            } else if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Space) ||
+                       jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Enter)) {
                 executeSelection();
-            } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+            } else if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Escape)) {
                 isMenuOpen = false;
             }
-        } else if (event->is<sf::Event::MouseButtonPressed>()) {
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+        } else if (event->is<jo::Event::MouseButtonPressed>()) {
+            if (jo::Mouse::isButtonPressed(jo::Mouse::Button::Left)) {
                 // Check if we are clicking the currently hovered item
                 if (selectedIndex >= 1 &&
                     selectedIndex < static_cast<int>(menuTexts.size())) {
@@ -229,22 +228,34 @@ GameState Menu::createGameState(Player& player) {
     }
 
     for (const auto& object : tileManager->getRenderObjects()) {
-        state.map.items.push_back(
-            { object.id, object.gid, object.position.x, object.position.y }
-        );
+        state.map.items.push_back({ object.id, object.gid, object.position.x,
+                                    object.position.y });
     }
     return state;
 }
 
 void Menu::resetNewGame() const {
+    spdlog::info("Menu::resetNewGame - Starting reset logic...");
+
+    spdlog::info("Reloading objects from Tileson...");
     tileManager->reloadObjectsFromTileson();
+
+    spdlog::info("Clearing inventory...");
     controller->getPlayer().getInventory().clear();
+
+    spdlog::info("Resetting player entity...");
     controller->getPlayer().setHealth(200);
     controller->getPlayer().setPosition({ 150.f, 400.f });
     controller->getPlayer().resetInteractions();
     controller->getPlayer().resetStats();
+
+    spdlog::info("Resetting viewport center...");
     windowManager->setCenter({ 150.f, 400.f });
+
+    spdlog::info("Resetting game entities...");
     game->resetEntities();
+
+    spdlog::info("Menu::resetNewGame - Complete!");
 }
 
 void Menu::loadEntityStates(const GameState& state) {
@@ -279,11 +290,11 @@ void Menu::loadEntityStates(const GameState& state) {
         if (auto* npc = dynamic_cast<NPC*>(p)) {
             if (npc->getUniqueSpriteId() == "assets/player/npc/guard1.png" &&
                 guard1Reset) {
-                npc->setPosition(npc->getPosition() - sf::Vector2f(50.f, 50.f));
+                npc->setPosition(npc->getPosition() - jo::Vector2f(50.f, 50.f));
             }
             if (npc->getUniqueSpriteId() == "assets/player/npc/guard2.png" &&
                 guard2Reset) {
-                npc->setPosition(npc->getPosition() - sf::Vector2f(50.f, 50.f));
+                npc->setPosition(npc->getPosition() - jo::Vector2f(50.f, 50.f));
             }
         }
 
@@ -336,13 +347,13 @@ bool Menu::loadGameState(
     GameState state = manager.loadGame(slotNumStr);
 
     controller->getPlayer().setPosition(
-        sf::Vector2f(state.player.x, state.player.y)
+        jo::Vector2f(state.player.x, state.player.y)
     );
     controller->getPlayerView().setCenter(
-        sf::Vector2f(state.player.x, state.player.y)
+        jo::Vector2f(state.player.x, state.player.y)
     );
     controller->getMiniMapView().setCenter(
-        sf::Vector2f(state.player.x, state.player.y)
+        jo::Vector2f(state.player.x, state.player.y)
     );
     controller->getPlayer().getInventory().loadState(state.inventory);
     controller->getPlayer().setHealth(state.player.health);
@@ -474,8 +485,8 @@ void Menu::render(
     );
 
     // draw background
-    sf::RectangleShape blackScreen(sf::Vector2f(window.getSize()));
-    blackScreen.setFillColor(sf::Color(0, 0, 0, 153));
+    jo::RectangleShape blackScreen(jo::Vector2f(window.getSize()));
+    blackScreen.setFillColor(jo::Color(0, 0, 0, 153));
     window.draw(blackScreen);
 
     // draw menu options
@@ -493,7 +504,7 @@ void Menu::render(
     window.display();
 }
 
-void Menu::renderMenuOptions(sf::RenderTarget& target) {
+void Menu::renderMenuOptions(jo::RenderTarget& target) {
     for (size_t i = 0; i < menuTexts.size(); ++i) {
         // Visual Logic: Highlight selected item
         if (static_cast<int>(i) == selectedIndex && !showAbout) {
@@ -502,13 +513,13 @@ void Menu::renderMenuOptions(sf::RenderTarget& target) {
                 "> " + options.at(i) + " <"
             ); // Optional stylistic choice
             // Re-center if the string length changed
-            const sf::FloatRect bounds = menuTexts.at(i).getLocalBounds();
+            const jo::FloatRect bounds = menuTexts.at(i).getLocalBounds();
             menuTexts.at(i).setOrigin({ bounds.size.x / 2.f, 0.f });
         } else {
             menuTexts.at(i).setFillColor(COLOR_TEXT_NORMAL);
             menuTexts.at(i).setString(options.at(i));
             // Re-center
-            const sf::FloatRect bounds = menuTexts.at(i).getLocalBounds();
+            const jo::FloatRect bounds = menuTexts.at(i).getLocalBounds();
             menuTexts.at(i).setOrigin({ bounds.size.x / 2.f, 0.f });
         }
 
@@ -516,20 +527,20 @@ void Menu::renderMenuOptions(sf::RenderTarget& target) {
     }
 }
 
-void Menu::renderAboutOverlay(sf::RenderTarget& target) const {
-    const sf::View& view = windowManager->getUiView();
-    const sf::Vector2f center = view.getCenter();
+void Menu::renderAboutOverlay(jo::RenderTarget& target) const {
+    const jo::View& view = windowManager->getUiView();
+    const jo::Vector2f center = view.getCenter();
 
-    sf::Text textObj(font);
+    jo::Text textObj(*font);
     textObj.setString(aboutTextContent);
     textObj.setCharacterSize(30);
-    textObj.setFillColor(sf::Color::White);
+    textObj.setFillColor(jo::Color::White);
     textObj.setLetterSpacing(1.f);
     textObj.setLineSpacing(1.2f);
 
-    const sf::FloatRect textBounds = textObj.getLocalBounds();
+    const jo::FloatRect textBounds = textObj.getLocalBounds();
     constexpr float padding = 20.f;
-    const sf::Vector2f boxSize(
+    const jo::Vector2f boxSize(
         (textBounds.size.x + padding) * 2.f, (textBounds.size.y + padding) * 2.f
     );
 
@@ -537,12 +548,12 @@ void Menu::renderAboutOverlay(sf::RenderTarget& target) const {
     textObj.setOrigin({ textBounds.size.x / 2.f, 0.f });
     textObj.setPosition({ view.getCenter().x, startY });
 
-    sf::RectangleShape box;
+    jo::RectangleShape box;
     box.setSize(boxSize);
     box.setOrigin(boxSize / 2.f);
     box.setPosition(center);
-    box.setFillColor(sf::Color(20, 20, 30, 220));
-    box.setOutlineColor(sf::Color(200, 200, 200, 180));
+    box.setFillColor(jo::Color(20, 20, 30, 220));
+    box.setOutlineColor(jo::Color(200, 200, 200, 180));
     box.setOutlineThickness(2.f);
 
     target.draw(box);
@@ -564,7 +575,7 @@ void Menu::show(
     while (windowManager->getWindow().isOpen() && isMenuOpen) {
 
         // 1. Update Input
-        sf::Vector2f mousePos = getMouseWorldPos();
+        jo::Vector2f mousePos = getMouseWorldPos();
         mouseSprite.setPosition(mousePos);
         handleHover(mousePos);
         handleInput(windowManager->getWindow());
@@ -575,8 +586,8 @@ void Menu::show(
 
     // Wait for keys to be released to prevent immediate re-triggering
     while (windowManager->getWindow().isOpen() &&
-           (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P))) {
+           (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Escape) ||
+            jo::Keyboard::isKeyPressed(jo::Keyboard::Key::P))) {
         windowManager->pollEvents();
     }
 

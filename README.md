@@ -1,4 +1,5 @@
 # Advanced CPP Project
+![joanna](./assets/images/joanna.png)
 
 ## Playthrough
 

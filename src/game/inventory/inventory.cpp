@@ -15,12 +15,10 @@ StoredItem::StoredItem(Item item, const std::uint32_t q)
     : item(std::move(item)), quantity(q) {}
 
 Inventory::Inventory(const std::size_t capacity) : capacity_(capacity) {
-    font = ResourceManager<sf::Font>::getInstance()->get(
+    font = &ResourceManager<jo::Font>::getInstance()->get(
         "assets/font/minecraft.ttf"
     );
 }
-
-
 
 /**
  * Adds an item to the inventory. If the item is stackable and already exists,
@@ -28,7 +26,8 @@ Inventory::Inventory(const std::size_t capacity) : capacity_(capacity) {
  * is capacity. Returns the quantity added (which may be less than requested if
  * capacity is exceeded).
  *
- * For invisible items, they are added but will not be displayed in the inventory UI.
+ * For invisible items, they are added but will not be displayed in the
+ * inventory UI.
  */
 std::uint32_t
 Inventory::addItem(const Item& item, const std::uint32_t quantity) {
@@ -79,8 +78,8 @@ Inventory::addItem(const Item& item, const std::uint32_t quantity) {
 
 /**
  * Removes a specified quantity of an item from the inventory. If the quantity
- * to remove exceeds what's available, it will remove as much as possible. Returns
- * the actual quantity removed.
+ * to remove exceeds what's available, it will remove as much as possible.
+ * Returns the actual quantity removed.
  */
 std::uint32_t
 Inventory::removeItem(const std::string& id, const std::uint32_t quantity) {
@@ -127,7 +126,8 @@ bool Inventory::hasItem(const std::string& id) const {
 }
 
 /**
- * Checks if the inventory contains at least one unit of the specified item name.
+ * Checks if the inventory contains at least one unit of the specified item
+ * name.
  */
 bool Inventory::hasItemByName(const std::string& name) const {
     const auto it =
@@ -151,8 +151,8 @@ std::uint32_t Inventory::getQuantity(const std::string& id) const {
 }
 
 /**
- * Returns the number of occupied slots (visible + invisible) in the inventory. This counts each unique
- * item entry, regardless of quantity.
+ * Returns the number of occupied slots (visible + invisible) in the inventory.
+ * This counts each unique item entry, regardless of quantity.
  */
 std::size_t Inventory::slotsUsed() const {
     return items_.size();
@@ -193,7 +193,7 @@ std::size_t Inventory::capacity() const {
 /**
   @deprecated Debugging UI for the initial project phase
  */
-void Inventory::draw(sf::RenderTarget& target) const {
+void Inventory::draw(jo::RenderTarget& target) const {
 
     const auto items = listItems();
 
@@ -209,10 +209,10 @@ void Inventory::draw(sf::RenderTarget& target) const {
         }
     }
 
-    sf::Text text(font);
+    jo::Text text(*font);
     text.setString(inventoryText);
     text.setCharacterSize(14);
-    text.setFillColor(sf::Color::White);
+    text.setFillColor(jo::Color::White);
     text.setPosition({ 0, 0 });
     const auto view = target.getView();
     target.setView(target.getDefaultView());
@@ -221,64 +221,65 @@ void Inventory::draw(sf::RenderTarget& target) const {
 }
 
 void Inventory::drawSlot(
-    sf::RenderTarget& target, const float slotSize, const float padding,
-    const sf::Vector2f startPos, std::size_t i, std::size_t col,
-    const std::size_t row, sf::Vector2f& slotPos, bool isSelected
+    jo::RenderTarget& target, const float slotSize, const float padding,
+    const jo::Vector2f startPos, std::size_t i, std::size_t col,
+    const std::size_t row, jo::Vector2f& slotPos, bool isSelected
 ) const {
     slotPos = { startPos.x + (static_cast<float>(col) * (slotSize + padding)),
                 startPos.y + (static_cast<float>(row) * (slotSize + padding)) };
 
-    sf::RectangleShape slot({ slotSize, slotSize });
+    jo::RectangleShape slot({ slotSize, slotSize });
     slot.setPosition(slotPos);
 
     // Highlight selected slot
     if (isSelected) {
-        slot.setFillColor(sf::Color(70, 70, 70, 220));
+        slot.setFillColor(jo::Color(70, 70, 70, 220));
         slot.setOutlineThickness(2.f);
-        slot.setOutlineColor(sf::Color(200, 200, 50, 220));
+        slot.setOutlineColor(jo::Color(200, 200, 50, 220));
     } else {
-        slot.setFillColor(sf::Color(40, 40, 40, 200));
+        slot.setFillColor(jo::Color(40, 40, 40, 200));
         slot.setOutlineThickness(1.f);
-        slot.setOutlineColor(sf::Color(120, 120, 120, 200));
+        slot.setOutlineColor(jo::Color(120, 120, 120, 200));
     }
     target.draw(slot);
 }
 
 void Inventory::drawItemName(
-    sf::RenderTarget& target, const float slotSize, const sf::Vector2f slotPos,
+    jo::RenderTarget& target, const float slotSize, const jo::Vector2f slotPos,
     const StoredItem& st
 ) const {
-    sf::Text name(font);
+    jo::Text name(*font);
     name.setString(st.item.name);
     name.setCharacterSize(14);
-    name.setFillColor(sf::Color::White);
+    name.setFillColor(jo::Color::White);
 
-    sf::FloatRect tb = name.getLocalBounds();
+    jo::FloatRect tb = name.getLocalBounds();
     name.setOrigin({ tb.position.x + (tb.size.x / 2.f), tb.position.y });
     name.setPosition({ slotPos.x + (slotSize / 2.f), slotPos.y + 4.f });
 
-    target.draw(name);
+    // target.draw(name);
 }
 
 void Inventory::drawItemQuantity(
-    sf::RenderTarget& target, const float slotSize, const sf::Vector2f slotPos,
+    jo::RenderTarget& target, const float slotSize, const jo::Vector2f slotPos,
     const StoredItem& st
 ) const {
     if (st.quantity > 1) {
-        sf::Text qText(font);
+        jo::Text qText(*font);
         qText.setString(std::to_string(st.quantity));
         qText.setCharacterSize(16);
-        sf::Text shadow = qText;
+        jo::Text shadow = qText;
 
-        qText.setFillColor(sf::Color::White);
-        shadow.setFillColor(sf::Color(0, 0, 0, 200));
+        qText.setFillColor(jo::Color::White);
+        shadow.setFillColor(jo::Color(0, 0, 0, 200));
 
-        const sf::FloatRect qb = qText.getLocalBounds();
-        const sf::Vector2f pos({ slotPos.x + slotSize - qb.size.y - 6.f -
-                               qb.position.y,
-                           slotPos.y + slotSize - qb.size.x - 6.f });
+        const jo::FloatRect qb = qText.getLocalBounds();
+        const jo::Vector2f pos(
+            { slotPos.x + slotSize - qb.size.x - 6.f - qb.position.x,
+              slotPos.y + slotSize - qb.size.y - 20.f - qb.position.y }
+        );
 
-        shadow.setPosition(pos + sf::Vector2f(1.f, 1.f));
+        shadow.setPosition(pos + jo::Vector2f(1.f, 1.f));
         qText.setPosition(pos);
 
         target.draw(shadow);
@@ -287,26 +288,26 @@ void Inventory::drawItemQuantity(
 }
 
 void Inventory::drawItemSprite(
-    sf::RenderTarget& target, TileManager& tileManager, const float slotSize,
-    const sf::Vector2f slotPos, const StoredItem& st
+    jo::RenderTarget& target, TileManager& tileManager, const float slotSize,
+    const jo::Vector2f slotPos, const StoredItem& st
 ) const {
-    sf::Sprite icon = tileManager.getTextureById(std::stoi(st.item.id));
+    jo::Sprite icon = tileManager.getTextureById(std::stoi(st.item.id));
 
     const auto bounds = icon.getLocalBounds();
-    const float targetSize = slotSize * 0.5f;
+    const float targetSize = slotSize * 0.8f;
     float scale = targetSize / bounds.size.x; // assuming square icon
 
     icon.setScale({ scale, scale });
-    icon.setPosition({ slotPos.x + ((slotSize - (scale)) / 2.f),
-                       slotPos.y + ((slotSize - (scale)) / 2.f) + 8.f });
+    icon.setPosition({ slotPos.x + ((slotSize - targetSize) / 2.f),
+                       slotPos.y + ((slotSize - targetSize) / 2.f) });
     target.draw(icon);
 }
 
 void Inventory::drawItems(
-    sf::RenderTarget& target, TileManager& tileManager,
+    jo::RenderTarget& target, TileManager& tileManager,
     std::vector<StoredItem> vec, const std::size_t columns,
     const float slotSize, const float padding, const std::size_t itemCount,
-    const sf::Vector2f startPos
+    const jo::Vector2f startPos
 ) const {
     for (std::size_t i = 0; i < itemCount; ++i) {
         const std::size_t col = i % columns;
@@ -316,7 +317,7 @@ void Inventory::drawItems(
             continue;
         }
 
-        sf::Vector2f slotPos;
+        jo::Vector2f slotPos;
         StoredItem& st = vec.at(i);
         const bool isSelected = (i == this->selectedSlotIndex);
 
@@ -324,20 +325,20 @@ void Inventory::drawItems(
             target, slotSize, padding, startPos, i, col, row, slotPos,
             isSelected
         );
+        drawItemSprite(target, tileManager, slotSize, slotPos, st);
         drawItemName(target, slotSize, slotPos, st);
         drawItemQuantity(target, slotSize, slotPos, st);
-        drawItemSprite(target, tileManager, slotSize, slotPos, st);
     }
 }
 
 void Inventory::displayInventory(
-    sf::RenderTarget& target, TileManager& tileManager
+    jo::RenderTarget& target, TileManager& tileManager
 ) const {
 
     const auto& vec = items_;
 
     constexpr std::size_t columns = 8;
-    constexpr float slotSize = 64.f;
+    constexpr float slotSize = 80.f;
     constexpr float padding = 6.f;
     // Outer background
     const std::size_t itemCount =
@@ -349,17 +350,17 @@ void Inventory::displayInventory(
     constexpr float totalWidth =
         (columns * slotSize) + (padding * (columns - 1)) + (2 * padding);
     const float totalHeight = (static_cast<float>(rows) * slotSize) +
-                        (padding * (static_cast<float>(rows) - 1)) +
-                        (2 * padding);
+                              (padding * (static_cast<float>(rows) - 1)) +
+                              (2 * padding);
 
     const auto center = target.getView().getCenter();
-    const sf::Vector2f startPos(center.x - (totalWidth / 2.f), 360.f);
+    const jo::Vector2f startPos(center.x - (totalWidth / 2.f), 360.f);
 
-    sf::RectangleShape bg({ totalWidth, totalHeight });
-    bg.setPosition(startPos - sf::Vector2f(padding, padding));
-    bg.setFillColor(sf::Color(25, 25, 25, 200));
+    jo::RectangleShape bg({ totalWidth, totalHeight });
+    bg.setPosition(startPos - jo::Vector2f(padding, padding));
+    bg.setFillColor(jo::Color(25, 25, 25, 200));
     bg.setOutlineThickness(1.f);
-    bg.setOutlineColor(sf::Color(180, 180, 180, 120));
+    bg.setOutlineColor(jo::Color(180, 180, 180, 120));
     target.draw(bg);
 
     drawItems(

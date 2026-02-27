@@ -98,7 +98,7 @@
             ]
         },
         {   
-            "priority": 2,
+            "priority": 3,
             "text": [
                 "Nice key!",
                 "This surely could have opened a gate...",
@@ -112,7 +112,7 @@
         },
         {   
             "id": "Bring key",
-            "priority": 3,
+            "priority": 2,
             "text": [
                 "KEY!!!"
             ],

@@ -2,42 +2,39 @@
 
 #include "joanna/utils/debug.h"
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/View.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "joanna/core/graphics.h"
 
 class WindowManager {
   public:
     explicit WindowManager(
         unsigned width = 900, unsigned height = 900,
         const std::string& title = "Game",
-        sf::Vector2f initialPos = { 150.f, 165.f }
+        jo::Vector2f initialPos = { 150.f, 165.f }
     );
-    void setView(const sf::View& v);
+    void setView(const jo::View& v);
     void clear();
     void display();
-    void setCenter(const sf::Vector2f& center);
+    void setCenter(const jo::Vector2f& center);
 
-    void handleResizeEvent(sf::Vector2u newSize);
+    void handleResizeEvent(jo::Vector2u newSize);
 
-    sf::RenderWindow& getWindow() {
+    jo::RenderWindow& getWindow() {
         return window;
     }
 
-    sf::View& getMainView() {
+    jo::View& getMainView() {
         return mainView;
     }
 
-    sf::View& getMiniMapView() {
+    jo::View& getMiniMapView() {
         return miniMapView;
     }
 
-    sf::View& getUiView() {
+    jo::View& getUiView() {
         return uiView;
     }
 
-    sf::View& getMapOverviewView() {
+    jo::View& getMapOverviewView() {
         return mapOverviewView;
     }
 
@@ -45,7 +42,7 @@ class WindowManager {
         return debug_ui;
     }
 
-    const sf::View& getDefaultView() {
+    const jo::View& getDefaultView() {
         return window.getDefaultView();
     }
 
@@ -53,14 +50,14 @@ class WindowManager {
     void render();
 
   private:
-    sf::RenderWindow window;
-    sf::View mainView;
-    sf::View miniMapView;
-    sf::View mapOverviewView;
-    sf::View uiView;
+    jo::RenderWindow window;
+    jo::View mainView;
+    jo::View miniMapView;
+    jo::View mapOverviewView;
+    jo::View uiView;
     float targetAspectRatio;
     static constexpr float MINI_MAP_SIZE = 0.25f;
     DebugUI debug_ui;
 
-    sf::FloatRect computeMainViewPort(sf::Vector2u newSize) const;
+    jo::FloatRect computeMainViewPort(jo::Vector2u newSize) const;
 };

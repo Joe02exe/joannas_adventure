@@ -4,19 +4,19 @@
 #include "joanna/entities/enemy.h"
 #include "joanna/entities/player.h"
 #include "joanna/game/combat/combat_system.h"
-#include <SFML/Graphics/RenderWindow.hpp>
+#include "joanna/core/graphics.h"
 
 class Controller;
 class DebugUI {
   public:
-    static void init(sf::RenderWindow& window);
-    void processEvent(const sf::Window& window, const sf::Event& event) const;
+    static void init(jo::RenderWindow& window);
+    void processEvent(const jo::Window& window, const jo::Event& event) const;
     void update(
-        float dt, sf::RenderWindow& window, Player& player,
+        float dt, jo::RenderWindow& window, Player& player,
         GameStatus& gameStatus, CombatSystem& combatSystem, Enemy& testEnemy,
         Controller& controller
     ) const;
-    void render(sf::RenderWindow& window) const;
+    void render(jo::RenderWindow& window) const;
     static void shutdown();
 
     void toggle() { enabled = !enabled; }

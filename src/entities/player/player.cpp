@@ -4,35 +4,36 @@
 #include "joanna/systems/audiomanager.h"
 #include "joanna/utils/resourcemanager.h"
 #include "joanna/world/tilemanager.h"
+#include <spdlog/spdlog.h>
 
 Player::Player(
     const std::string& idlePath, const std::string& walkPath,
-    const std::string& runPath, const sf::Vector2f& startPos
+    const std::string& runPath, const jo::Vector2f& startPos
 )
     : Entity(
-          sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
-          ResourceManager<sf::Texture>::getInstance()->get(idlePath),
-          sf::FloatRect({ startPos.x - 5.f, startPos.y - 2.f }, { 10.f, 9.f }),
+          jo::FloatRect({ startPos.x - 28, startPos.y - 16 }, { 56, 32 }),
+          ResourceManager<jo::Texture>::getInstance()->get(idlePath),
+          jo::FloatRect({ startPos.x - 5.f, startPos.y - 2.f }, { 9.6f, 6.5f }),
           Direction::Right
       ),
       health(200), maxHealth(200), inventory(20) {
-    this->animations[State::Idle] = Animation(idlePath, { 96, 64 }, 9);
-    this->animations[State::Walking] = Animation(walkPath, { 96, 64 }, 8);
-    this->animations[State::Running] = Animation(runPath, { 96, 64 }, 8);
+    this->animations[State::Idle] = Animation(idlePath, { 56, 32 }, 9);
+    this->animations[State::Walking] = Animation(walkPath, { 56, 32 }, 8);
+    this->animations[State::Running] = Animation(runPath, { 56, 32 }, 8);
 
     // Load combat animations
     this->animations[State::Attack] =
-        Animation("assets/player/main/attack.png", { 96, 64 }, 10);
+        Animation("assets/player/main/attack.png", { 56, 32 }, 10);
     this->animations[State::Roll] =
-        Animation("assets/player/main/roll.png", { 96, 64 }, 10);
+        Animation("assets/player/main/roll.png", { 56, 32 }, 10);
     this->animations[State::Hurt] =
-        Animation("assets/player/main/hurt.png", { 96, 64 }, 8);
+        Animation("assets/player/main/hurt.png", { 56, 32 }, 8);
     this->animations[State::Dead] =
-        Animation("assets/player/main/dead.png", { 96, 64 }, 13);
+        Animation("assets/player/main/dead.png", { 56, 32 }, 13);
     this->animations[State::Mining] =
-        Animation("assets/player/main/mining.png", { 96, 64 }, 10);
+        Animation("assets/player/main/mining.png", { 56, 32 }, 10);
     this->animations[State::Counter] =
-        Animation("assets/player/main/punch.png", { 96, 64 }, 3);
+        Animation("assets/player/main/punch.png", { 56, 32 }, 3);
 
     // Initialize attacks
     attacks.push_back({ "Attack", 10, State::Attack });
@@ -84,8 +85,9 @@ void Player::update(
 
 void Player::applyFrame() {
     const auto& anim = animations[this->currentState];
-    setTexture(anim.texture);
-    setFrame(anim.frames[this->currentFrame]);
+    setTexture(*anim.texture);
+    const auto& rect = anim.frames[this->currentFrame];
+    setFrame(rect);
 }
 
 void Player::switchState(State newState) {
@@ -101,7 +103,7 @@ void Player::startMining() {
     switchState(State::Mining);
 }
 
-void Player::draw(sf::RenderTarget& target) const {
+void Player::draw(jo::RenderTarget& target) const {
     this->render(target);
 }
 
@@ -124,12 +126,19 @@ void Player::takeDamage(int amount) {
 }
 
 void Player::displayHealthBar(
-    sf::RenderTarget& target, TileManager& tileManager
+    jo::RenderTarget& target, TileManager& tileManager
 ) const {
-    auto heartIcon = tileManager.getTextureById(3052);
-    auto halfHeartIcon = tileManager.getTextureById(3054);
+    // Cache heart sprites — look up tile IDs only once
+    if (!m_heartCached) {
+        m_heartSprite = tileManager.getTextureById(3052);
+        m_halfHeartSprite = tileManager.getTextureById(3054);
+        m_heartCached = true;
+    }
+    auto heartIcon = *m_heartSprite;
+    auto halfHeartIcon = *m_halfHeartSprite;
+
     const auto size = target.getView().getSize();
-    const sf::Vector2f startPos(
+    const jo::Vector2f startPos(
         (-size.x / 2) + heartIcon.getLocalBounds().size.x,
         (-size.y / 2) + heartIcon.getLocalBounds().size.y
     );
@@ -138,17 +147,17 @@ void Player::displayHealthBar(
         (this->health % 20) >= 10 || (this->health > 0 && fullHearts == 0);
 
     for (int i = 0; i < fullHearts; ++i) {
-        heartIcon.setPosition({ startPos.x + (static_cast<float>(i) * 32.f),
+        heartIcon.setPosition({ startPos.x + (static_cast<float>(i) * 60.f),
                                 startPos.y });
-        heartIcon.setScale({ 3.f, 3.f });
+        heartIcon.setScale({ 6.f, 6.f });
         target.draw(heartIcon);
     }
 
     if (showHalfHeart) {
         halfHeartIcon.setPosition(
-            { startPos.x + (static_cast<float>(fullHearts) * 32.f), startPos.y }
+            { startPos.x + (static_cast<float>(fullHearts) * 60.f), startPos.y }
         );
-        halfHeartIcon.setScale({ 3.f, 3.f });
+        halfHeartIcon.setScale({ 6.f, 6.f });
         target.draw(halfHeartIcon);
     }
 }

@@ -2,15 +2,15 @@
 
 #include "joanna/entities/interactables/stone.h"
 
-Stone::Stone(const sf::Vector2f& position, std::string id)
+Stone::Stone(const jo::Vector2f& position, std::string id)
     : Interactable(
-          sf::FloatRect(position, { 16.f, 16.f }),
+          jo::FloatRect(position, { 16.f, 16.f }),
           "assets/buttons/interact_T.png", "assets/interactables/stone.png",
-          sf::FloatRect(position, { 16.f, 16.f }) // Collision box
+          jo::FloatRect(position, { 16.f, 16.f }) // Collision box
       ),
       id(std::move(id)) {
     // Initial frame
-    setFrame(sf::IntRect({ 0, 0 }, { 16, 16 }));
+    setFrame(jo::IntRect({ 0, 0 }, { 16, 16 }));
 }
 
 void Stone::interact(Player& player) {
@@ -44,7 +44,7 @@ void Stone::update(float dt, Player& player) {
         stage++;
 
         if (stage < 3) {
-            setFrame(sf::IntRect({ stage * 16, 0 }, { 16, 16 }));
+            setFrame(jo::IntRect({ stage * 16, 0 }, { 16, 16 }));
         }
     }
 }

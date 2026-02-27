@@ -4,13 +4,12 @@
 DialogueBox::DialogueBox(FontRenderer& fontRenderer)
     : fontRenderer(fontRenderer) {
 
-    bubbleBackground.setFillColor(sf::Color(255, 255, 255, 240));
-    bubbleBackground.setOutlineColor(sf::Color(50, 50, 50));
+    bubbleBackground.setFillColor(jo::Color(255, 255, 255, 240));
+    bubbleBackground.setOutlineColor(jo::Color(50, 50, 50));
     bubbleBackground.setOutlineThickness(2.0f);
-
 }
 
-static const float TEXT_MAX_WIDTH = 200.0f;
+static const float TEXT_MAX_WIDTH = 460.0f;
 
 void DialogueBox::setDialogue(
     const std::vector<std::string>& messages, const void* owner
@@ -62,9 +61,9 @@ void DialogueBox::nextLine() {
 
         currentDialogue = wrapText(rawMessage, TEXT_MAX_WIDTH);
 
-        sf::Text measuringText(fontRenderer.getFont(), currentDialogue);
-        measuringText.setCharacterSize(16);
-        
+        jo::Text measuringText(fontRenderer.getFont(), currentDialogue);
+        measuringText.setCharacterSize(20);
+
         currentTextHeight = measuringText.getLocalBounds().size.y;
 
         visibleCharCount = 0;
@@ -95,17 +94,16 @@ std::string DialogueBox::wrapText(const std::string& text, float maxWidth) {
             std::string testLine =
                 currentLine.empty() ? word : currentLine + " " + word;
 
-            sf::Text tempText(fontRenderer.getFont(), testLine);
-            tempText.setCharacterSize(16);
-            float lineWidth = tempText.getLocalBounds().size.x;
-
-            if (lineWidth > maxWidth && !currentLine.empty()) {
+            // Enforce max 42 characters per line
+            if (testLine.length() > 42 && !currentLine.empty()) {
                 wrappedText += currentLine + "\n";
                 currentLine = word;
             } else {
                 currentLine = testLine;
             }
 
+            // If the original string had an explicit newline mid-dialogue,
+            // respect it
             if (c == '\n') {
                 wrappedText += currentLine + "\n";
                 currentLine.clear();
@@ -141,45 +139,46 @@ void DialogueBox::updateTypewriter(float dt) {
     visibleText = currentDialogue.substr(0, visibleCharCount);
 }
 
-void DialogueBox::update(float dt, const sf::Vector2f& targetPosition) {
+void DialogueBox::update(float dt, const jo::Vector2f& targetPosition) {
     if (!active)
         return;
 
     updateTypewriter(dt);
 }
 
-void DialogueBox::render(sf::RenderTarget& target) {
+void DialogueBox::render(jo::RenderTarget& target) {
     if (!active || !fontRenderer.isLoaded())
         return;
 
-    sf::View oldView = target.getView();
+    jo::View oldView = target.getView();
 
     target.setView(target.getDefaultView());
-    sf::Vector2f viewSize = target.getDefaultView().getSize();
+    jo::Vector2f viewSize = target.getDefaultView().getSize();
 
     float bubbleHeight = currentTextHeight + 30.0f;
-    bubbleBackground.setSize(sf::Vector2f(BUBBLE_WIDTH, bubbleHeight * 2.0f));
+    bubbleBackground.setSize(jo::Vector2f(500.0f, bubbleHeight * 2.0f));
 
-    bubbleBackground.setPosition({ (viewSize.x - BUBBLE_WIDTH) / 2.0f,
-                                   (viewSize.y / 1.4f) -
-                                       bubbleBackground.getSize().y - 20.0f });
+    bubbleBackground.setPosition(jo::Vector2f(
+        (viewSize.x - 510.0f) / 2.0f,
+        viewSize.y - bubbleBackground.getSize().y - 60.0f
+    ));
 
-    textPosition = bubbleBackground.getPosition() + sf::Vector2f(15.0f, 25.0f);
+    textPosition = bubbleBackground.getPosition() + jo::Vector2f(15.0f, 25.0f);
 
     target.draw(bubbleBackground);
 
     fontRenderer.drawText(
-        target, visibleText, textPosition, 24, sf::Color::Black, 0
+        target, visibleText, textPosition, 20, jo::Color::Black, 0
     );
 
     if (!isTyping()) {
         std::string indicator = "< Space >";
-        sf::Vector2f indicatorPos = bubbleBackground.getPosition() +
+        jo::Vector2f indicatorPos = bubbleBackground.getPosition() +
                                     bubbleBackground.getSize() -
-                                    sf::Vector2f(100.0f, 25.0f);
+                                    jo::Vector2f(120.0f, 30.0f);
 
         fontRenderer.drawText(
-            target, indicator, indicatorPos, 16, sf::Color(100, 100, 100), 0
+            target, indicator, indicatorPos, 16, jo::Color(100, 100, 100), 0
         );
     }
 

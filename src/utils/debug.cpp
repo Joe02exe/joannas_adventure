@@ -1,12 +1,15 @@
 #include "joanna/utils/debug.h"
 #include "joanna/entities/player.h"
 #include "joanna/systems/controller.h"
-#include <fmt/format.h>
-
+#include <iomanip>
+#include <sstream>
+#if IMGUI_ENABLED
 #include <imgui-SFML.h>
 #include <imgui.h>
+#endif
 
-void DebugUI::init(sf::RenderWindow& window) {
+#if IMGUI_ENABLED
+void DebugUI::init(jo::RenderWindow& window) {
     ImGui::CreateContext();
     bool res = ImGui::SFML::Init(window);
     if (!res) {
@@ -15,7 +18,7 @@ void DebugUI::init(sf::RenderWindow& window) {
     ImGui::GetIO().FontGlobalScale = 2.5f;
 }
 
-void DebugUI::processEvent(const sf::Window& window, const sf::Event& event)
+void DebugUI::processEvent(const jo::Window& window, const jo::Event& event)
     const {
     if constexpr (IMGUI_ENABLED) {
         ImGui::SFML::ProcessEvent(window, event);
@@ -23,7 +26,7 @@ void DebugUI::processEvent(const sf::Window& window, const sf::Event& event)
 }
 
 void DebugUI::update(
-    const float dt, sf::RenderWindow& window, Player& player,
+    const float dt, jo::RenderWindow& window, Player& player,
     GameStatus& gameStatus, CombatSystem& combatSystem, Enemy& testEnemy,
     Controller& controller
 ) const {
@@ -32,10 +35,11 @@ void DebugUI::update(
     }
     ImGui::Begin("Debug Window");
     ImGui::PushItemWidth(200.0f);
-    std::string text = fmt::format(
-        "Player pos: {:.2f}, {:.2f}", player.getPosition().x,
-        player.getPosition().y
-    );
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2);
+    ss << "Player pos: " << player.getPosition().x << ", "
+       << player.getPosition().y;
+    std::string text = ss.str();
 
     ImGui::TextUnformatted(text.c_str());
 
@@ -95,7 +99,7 @@ void DebugUI::update(
     ImGui::End();
 }
 
-void DebugUI::render(sf::RenderWindow& window) const {
+void DebugUI::render(jo::RenderWindow& window) const {
     if constexpr (IMGUI_ENABLED) {
         window.setView(window.getDefaultView());
     }
@@ -105,3 +109,19 @@ void DebugUI::render(sf::RenderWindow& window) const {
 void DebugUI::shutdown() {
     ImGui::SFML::Shutdown();
 }
+#else
+void DebugUI::init(jo::RenderWindow& window) {}
+
+void DebugUI::processEvent(const jo::Window& window, const jo::Event& event)
+    const {}
+
+void DebugUI::update(
+    const float dt, jo::RenderWindow& window, Player& player,
+    GameStatus& gameStatus, CombatSystem& combatSystem, Enemy& testEnemy,
+    Controller& controller
+) const {}
+
+void DebugUI::render(jo::RenderWindow& window) const {}
+
+void DebugUI::shutdown() {}
+#endif

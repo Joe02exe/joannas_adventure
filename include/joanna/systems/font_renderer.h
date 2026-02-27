@@ -1,12 +1,8 @@
 #pragma once
 
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <string>
+#include "joanna/core/graphics.h"
 #include <cstdint>
+#include <string>
 
 class FontRenderer {
   public:
@@ -27,49 +23,45 @@ class FontRenderer {
 
     // Draw text to any render target (window, texture, etc.)
     void drawText(
-        sf::RenderTarget& target,
-        const std::string& text,
-        const sf::Vector2f& position,
-        unsigned int size,
-        const sf::Color& color = sf::Color::White,
-        uint32_t options = NONE
+        jo::RenderTarget& target, const std::string& text,
+        const jo::Vector2f& position, unsigned int size,
+        const jo::Color& color = jo::Color::White, uint32_t options = NONE
     );
 
     // Draw text in screen space (UI) - temporarily sets default view
     void drawTextUI(
-        sf::RenderTarget& target,
-        const std::string& text,
-        const sf::Vector2f& position,
-        unsigned int size,
-        const sf::Color& color = sf::Color::White,
-        uint32_t options = NONE
+        jo::RenderTarget& target, const std::string& text,
+        const jo::Vector2f& position, unsigned int size,
+        const jo::Color& color = jo::Color::White, uint32_t options = NONE
     );
 
     // Get the font for direct access if needed
-    const sf::Font& getFont() const;
+    const jo::Font& getFont() const;
 
   private:
-    sf::Font font;
+    const jo::Font* font;
     bool loaded;
     static constexpr float letterSpacing = 1.5f;
 
     // Helper to apply centering
-    void applyAlignment(sf::Text& text, const sf::Vector2f& position, uint32_t options);
+    void applyAlignment(
+        jo::Text& text, const jo::Vector2f& position, uint32_t options
+    );
 
     // Internal draw implementation
     void drawTextImpl(
-        sf::RenderTarget& target,
-        const std::string& text,
-        const sf::Vector2f& position,
-        unsigned int size,
-        const sf::Color& color,
+        jo::RenderTarget& target, const std::string& text,
+        const jo::Vector2f& position, unsigned int size, const jo::Color& color,
         uint32_t options
     );
 };
 
 // Bitwise operators for Options enum
-inline FontRenderer::Options operator|(FontRenderer::Options a, FontRenderer::Options b) {
-    return static_cast<FontRenderer::Options>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+inline FontRenderer::Options
+operator|(FontRenderer::Options a, FontRenderer::Options b) {
+    return static_cast<FontRenderer::Options>(
+        static_cast<uint32_t>(a) | static_cast<uint32_t>(b)
+    );
 }
 
 inline uint32_t operator|(uint32_t a, FontRenderer::Options b) {

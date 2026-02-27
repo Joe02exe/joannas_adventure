@@ -1,10 +1,8 @@
 #pragma once
 
 #include "extern/tileson.hpp"
+#include "joanna/core/graphics.h"
 #include "joanna/entities/player.h"
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/System/Vector2.hpp>
 #include <map>
 #include <memory>
 #include <string>
@@ -14,44 +12,44 @@
 namespace fs = std::filesystem;
 
 struct TileRenderInfo {
-    std::string texturePath;
-    sf::IntRect textureRect;
-    sf::Vector2f position;
-    std::optional<sf::FloatRect> collisionBox;
+    const jo::Texture* texture = nullptr;
+    jo::IntRect textureRect;
+    jo::Vector2f position;
+    std::optional<jo::FloatRect> collisionBox;
 };
 
 struct RenderObject {
     uint32_t id = 0;
     uint32_t gid = 0;
-    sf::Vector2i position;
-    sf::Sprite sprite; // renamed from 'texture' for clarity
+    jo::Vector2i position;
+    jo::Sprite sprite; // renamed from 'texture' for clarity
 
     // Explicit default constructor
     RenderObject(
-        const uint32_t id, uint32_t gid, const sf::Vector2i pos,
-        sf::Sprite sprite
+        const uint32_t id, uint32_t gid, const jo::Vector2i pos,
+        jo::Sprite sprite
     )
         : id(id), gid(gid), position(pos), sprite(std::move(sprite)) {
-        // sf::Sprite is automatically default constructed here
+        // jo::Sprite is automatically default constructed here
     }
 };
 
 class TileManager {
   public:
-    TileManager(sf::RenderWindow& window);
+    TileManager(jo::RenderWindow& window);
 
     bool loadMap(const std::string& path);
     [[nodiscard]] bool checkLineOfSight(
-        sf::Vector2f start, sf::Vector2f end, float stepSize = 10.f
+        jo::Vector2f start, jo::Vector2f end, float stepSize = 10.f
     ) const;
-    // void render(sf::RenderTarget& target, Player& player);
+    // void render(jo::RenderTarget& target, Player& player);
     void clear();
 
-    std::vector<sf::FloatRect>& getCollisionRects() {
+    std::vector<jo::FloatRect>& getCollisionRects() {
         return m_collisionRects;
     }
 
-    [[nodiscard]] const std::map<std::string, std::unique_ptr<sf::Texture>>&
+    [[nodiscard]] const std::map<std::string, std::unique_ptr<jo::Texture>>&
     getGroundTextures() const {
         return m_textures;
     }
@@ -73,7 +71,7 @@ class TileManager {
         return m_overlayTiles;
     }
 
-    sf::Sprite getTextureById(int id);
+    jo::Sprite getTextureById(int id);
 
     bool removeObjectById(int id);
 
@@ -90,12 +88,12 @@ class TileManager {
     void renderProgressBar(const std::string& message) const;
 
     float progress = 0.0f;
-    sf::RenderWindow* window;
+    jo::RenderWindow* window;
     tson::Tileson tsonParser;
-    std::vector<sf::FloatRect> m_collisionRects;
+    std::vector<jo::FloatRect> m_collisionRects;
     std::unique_ptr<tson::Map> m_currentMap = nullptr;
     ;
-    std::map<std::string, std::unique_ptr<sf::Texture>> m_textures;
+    std::map<std::string, std::unique_ptr<jo::Texture>> m_textures;
     std::vector<TileRenderInfo> m_tiles;
     std::vector<TileRenderInfo> m_collidables;
     std::vector<TileRenderInfo> m_overlayTiles;

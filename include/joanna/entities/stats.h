@@ -1,5 +1,5 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include "joanna/core/graphics.h"
 
 class Stats {
     public:
@@ -9,5 +9,5 @@ class Stats {
         int attack;
         int defense;
 
-        void draw(sf::RenderTarget& target, const sf::Font& font, int currentExp, int expToNextLevel) const;
+        void draw(jo::RenderTarget& target, const jo::Font& font, int currentExp, int expToNextLevel) const;
 };

@@ -2,36 +2,36 @@
 
 #include "joanna/utils/debug.h"
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "joanna/core/graphics.h"
+#if IMGUI_ENABLED
 #include <imgui-SFML.h>
+#endif
 
 WindowManager::WindowManager(
     unsigned width, unsigned height, const std::string& title,
-    sf::Vector2f initialPos
+    jo::Vector2f initialPos
 )
-    : window(sf::VideoMode({ width, height }), title),
+    : window(jo::VideoMode({ width, height }), title),
       targetAspectRatio(
           static_cast<float>(width) / static_cast<float>(height)
       ) {
 
     mainView.setSize({ static_cast<float>(width), static_cast<float>(height) });
-    mainView.zoom(0.2f);
+    mainView.zoom(0.15f);
     mainView.setCenter({ 0.f, 0.f });
 
     miniMapView.setSize({ 250.f, 250.f });
     miniMapView.setCenter({ 0.f, 0.f });
     miniMapView.setViewport(
-        sf::FloatRect({ 0.75f, 0.f }, { MINI_MAP_SIZE, MINI_MAP_SIZE })
+        jo::FloatRect({ 0.75f, 0.f }, { MINI_MAP_SIZE, MINI_MAP_SIZE })
     );
 
     uiView.setCenter({ 0, 0 });
-    uiView.setSize({ static_cast<float>(width), static_cast<float>(height) });
+    uiView.setSize({ 900.f, 900.f });
 
     mapOverviewView.setSize({ static_cast<float>(width),
                               static_cast<float>(height) });
-    mapOverviewView.zoom(.5f);
+    mapOverviewView.zoom(.175f);
     mapOverviewView.setCenter({ 0.f, 0.f });
 
     window.setMouseCursorVisible(false);
@@ -41,18 +41,18 @@ WindowManager::WindowManager(
         DebugUI::init(window);
     }
     setCenter(initialPos);
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(30);
 }
 
-void WindowManager::setCenter(const sf::Vector2f& center) {
+void WindowManager::setCenter(const jo::Vector2f& center) {
     mainView.setCenter(center);
     miniMapView.setCenter(center);
 }
 
-void WindowManager::handleResizeEvent(sf::Vector2u newSize) {
-    sf::FloatRect mainViewport = computeMainViewPort(newSize);
+void WindowManager::handleResizeEvent(jo::Vector2u newSize) {
+    jo::FloatRect mainViewport = computeMainViewPort(newSize);
 
-    sf::FloatRect miniViewport;
+    jo::FloatRect miniViewport;
     miniViewport.position = { mainViewport.position.x + mainViewport.size.x -
                                   (MINI_MAP_SIZE * mainViewport.size.x),
                               mainViewport.position.y };
@@ -67,26 +67,26 @@ void WindowManager::handleResizeEvent(sf::Vector2u newSize) {
 
 void WindowManager::pollEvents() {
 
-    while (const std::optional<sf::Event> event = window.pollEvent()) {
+    while (const std::optional<jo::Event> event = window.pollEvent()) {
         if constexpr (IMGUI_ENABLED) {
             debug_ui.processEvent(window, *event);
         }
-        if (event->is<sf::Event::Closed>()) {
+        if (event->is<jo::Event::Closed>()) {
             window.close();
         }
-        if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-            sf::Vector2u newSize(resized->size.x, resized->size.y);
+        if (const auto* resized = event->getIf<jo::Event::Resized>()) {
+            jo::Vector2u newSize(resized->size.x, resized->size.y);
 
             handleResizeEvent(newSize);
         }
     }
 }
 
-sf::FloatRect WindowManager::computeMainViewPort(sf::Vector2u newSize) const {
+jo::FloatRect WindowManager::computeMainViewPort(jo::Vector2u newSize) const {
     float newAspectRatio =
         static_cast<float>(newSize.x) / static_cast<float>(newSize.y);
 
-    sf::FloatRect mainViewport;
+    jo::FloatRect mainViewport;
     if (newAspectRatio > targetAspectRatio) {
         float width = targetAspectRatio / newAspectRatio;
         mainViewport = { { (1.f - width) / 2.f, 0.f }, { width, 1.f } };
@@ -97,12 +97,12 @@ sf::FloatRect WindowManager::computeMainViewPort(sf::Vector2u newSize) const {
     return mainViewport;
 }
 
-void WindowManager::setView(const sf::View& view) {
+void WindowManager::setView(const jo::View& view) {
     window.setView(view);
 }
 
 void WindowManager::clear() {
-    window.clear(sf::Color::Black);
+    window.clear(jo::Color::Black);
 }
 
 void WindowManager::display() {

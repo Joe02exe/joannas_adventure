@@ -5,3 +5,8 @@ vcpkg_installed/**
 .idea/**
 .cache/**
 imgui.ini
+build_miyoo
+build_miyoo_clean
+build_pc
+toolchain
+    

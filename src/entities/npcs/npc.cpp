@@ -5,21 +5,21 @@
 json NPC::jsonData;
 
 NPC::NPC(
-    const sf::Vector2f& startPos, const std::string& npcIdlePath,
+    const jo::Vector2f& startPos, const std::string& npcIdlePath,
     const std::string& npcWalkingPath, const std::string& buttonTexturePath,
     std::shared_ptr<DialogueBox> dialogueBox, std::string dialogId
 )
     : Interactable(
-          sf::FloatRect({ startPos.x - 48, startPos.y - 32 }, { 96, 64 }),
+          jo::FloatRect({ startPos.x - 28, startPos.y - 16 }, { 56, 32 }),
           buttonTexturePath, npcIdlePath,
-          sf::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 10 }),
+          jo::FloatRect({ startPos.x - 6, startPos.y - 5 }, { 12, 10 }),
           Direction::Left
       ),
       dialogueBox(dialogueBox), dialogId(dialogId) {
     this->uniqueSpriteId = npcIdlePath;
-    animations[State::Idle] = Animation(npcIdlePath, { 96, 64 }, 8);
+    animations[State::Idle] = Animation(npcIdlePath, { 56, 32 }, 8);
     if (!npcWalkingPath.empty()) {
-        animations[State::Walking] = Animation(npcWalkingPath, { 96, 64 }, 8);
+        animations[State::Walking] = Animation(npcWalkingPath, { 56, 32 }, 8);
     } else {
         animations[State::Walking] = animations[State::Idle];
     }
@@ -33,12 +33,12 @@ NPC::NPC(
 }
 
 NPC::NPC(
-        const sf::Vector2f& startPos, 
-        const std::string& npcIdlePath,
-        const std::string& buttonTexturePath,
-        std::shared_ptr<DialogueBox> dialogueBox, 
-        std::string dialogId
-    ) : NPC(startPos, npcIdlePath, "", buttonTexturePath, dialogueBox, dialogId) {}
+    const jo::Vector2f& startPos, const std::string& npcIdlePath,
+    const std::string& buttonTexturePath,
+    std::shared_ptr<DialogueBox> dialogueBox, std::string dialogId
+)
+    : NPC(startPos, npcIdlePath, "", buttonTexturePath, dialogueBox, dialogId) {
+}
 
 void NPC::setDialogue(const std::vector<std::string>& messages) {
     if (dialogueBox) {
@@ -132,18 +132,18 @@ void NPC::update(float dt, Player& player) {
             return;
         }
 
-        sf::Vector2f target = movementQueue.front();
+        jo::Vector2f target = movementQueue.front();
 
-        sf::Vector2f currentPos = getPosition();
-        sf::Vector2f diff = target - currentPos;
+        jo::Vector2f currentPos = getPosition();
+        jo::Vector2f diff = target - currentPos;
         float dist = std::hypot(diff.x, diff.y);
 
         if (dist < 2.0f) {
             setPosition(target);
             movementQueue.pop_front();
         } else {
-            sf::Vector2f dir = diff / dist;
-            sf::Vector2f velocity = dir * moveSpeed * dt;
+            jo::Vector2f dir = diff / dist;
+            jo::Vector2f velocity = dir * moveSpeed * dt;
 
             setPosition(currentPos + velocity);
             switchState(State::Walking);
@@ -208,14 +208,14 @@ void NPC::triggerMove(const std::string& actionId) {
 
 void NPC::applyFrame() {
     const auto& anim = animations[currentState];
-    setTexture(anim.texture);
+    setTexture(*anim.texture);
     setFrame(anim.frames[currentFrame]);
 }
 
 void NPC::move(const json& moveData) {
     if (!moveData.is_array())
         return;
-    sf::Vector2f futurePos = getPosition();
+    jo::Vector2f futurePos = getPosition();
 
     for (const auto& step : moveData) {
         float x = 0.f;
@@ -229,7 +229,7 @@ void NPC::move(const json& moveData) {
             y = step["y"].get<float>();
         }
 
-        futurePos += sf::Vector2f(x, y);
+        futurePos += jo::Vector2f(x, y);
         movementQueue.push_back(futurePos);
     }
     isMoving = true;

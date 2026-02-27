@@ -8,9 +8,8 @@
 #include "joanna/utils/logger.h"
 
 #include "joanna/core/game.h"
+#include "joanna/core/graphics.h"
 #include "joanna/entities/interactables/stone.h"
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/View.hpp>
 #include <algorithm>
 #include <joanna/entities/npc.h>
 #include <limits>
@@ -21,7 +20,7 @@ Controller::Controller(
     : windowManager(windowManager), audioManager(audioManager), game(game),
       player(
           "assets/player/main/idle.png", "assets/player/main/walk.png",
-          "assets/player/main/run.png", sf::Vector2f{ 150.f, 400.f }
+          "assets/player/main/run.png", jo::Vector2f{ 150.f, 400.f }
       ),
       playerView(windowManager.getMainView()),
       miniMapView(windowManager.getMiniMapView()) {
@@ -32,16 +31,16 @@ Controller::Controller(
 // clang-format on
 
 bool Controller::getInput(
-    float dt, sf::RenderWindow& window,
-    const std::vector<sf::FloatRect>& collisions,
+    float dt, jo::RenderWindow& window,
+    const std::vector<jo::FloatRect>& collisions,
     std::list<std::unique_ptr<Entity>>& entities,
     const std::shared_ptr<DialogueBox>& sharedDialogueBox,
     TileManager& tileManager, RenderEngine& renderEngine
 ) {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::M)) {
+    if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::M)) {
         if (!mPressed) {
             showMapOverview = !showMapOverview;
-            sf::View& mapView = windowManager.getMapOverviewView();
+            jo::View& mapView = windowManager.getMapOverviewView();
             mapView.setCenter(this->getPlayer().getPosition());
             mPressed = true;
         }
@@ -52,28 +51,28 @@ bool Controller::getInput(
     float factor = 30.0f;
 
     State state = State::Idle;
-    sf::Vector2f dir{ 0.f, 0.f };
+    jo::Vector2f dir{ 0.f, 0.f };
 
     if (player.getState() != State::Mining) {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-            dir.x -= 1.f * factor * dt;
+        if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::A)) {
+            dir.x -= factor * dt;
             facingLeft = true;
             state = State::Walking;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-            dir.x += 1.f * factor * dt;
+        if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::D)) {
+            dir.x += factor * dt;
             facingLeft = false;
             state = State::Walking;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-            dir.y -= 1.f * factor * dt;
+        if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::W)) {
+            dir.y -= factor * dt;
             state = State::Walking;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-            dir.y += 1.f * factor * dt;
+        if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::S)) {
+            dir.y += factor * dt;
             state = State::Walking;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
+        if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::LShift)) {
             dir *= 1.5f;
             state = State::Running;
         }
@@ -86,33 +85,17 @@ bool Controller::getInput(
         return false;
     }
 
-    // Inventory toggle
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) {
-        player.getInventory().selectSlot(0);
+    // Miyoo L1/R1 Inventory toggle (Debounced)
+    bool lDown = jo::Keyboard::isKeyPressed(jo::Keyboard::Key::L);
+    bool rDown = jo::Keyboard::isKeyPressed(jo::Keyboard::Key::R);
+    if (lDown && !keyPressed) {
+        player.getInventory().selectPrevious();
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2)) {
-        player.getInventory().selectSlot(1);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3)) {
-        player.getInventory().selectSlot(2);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4)) {
-        player.getInventory().selectSlot(3);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5)) {
-        player.getInventory().selectSlot(4);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num6)) {
-        player.getInventory().selectSlot(5);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num7)) {
-        player.getInventory().selectSlot(6);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num8)) {
-        player.getInventory().selectSlot(7);
+    if (rDown && !keyPressed) {
+        player.getInventory().selectNext();
     }
 
-    bool eDown = (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E));
+    bool eDown = (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::E));
     if (eDown && !keyPressed) {
         auto id = player.getInventory().getSelectedItemId();
         if (id != "") {
@@ -123,7 +106,8 @@ bool Controller::getInput(
         }
     }
 
-    bool spaceDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+    bool spaceDown = jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Space) ||
+                     jo::Keyboard::isKeyPressed(jo::Keyboard::Key::T);
     if (spaceDown && !keyPressed) {
         for (const auto& item : tileManager.getRenderObjects()) {
             auto playerPos = player.getPosition();
@@ -145,17 +129,16 @@ bool Controller::getInput(
             }
         }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T) &&
-        !sharedDialogueBox->isActive()) {
+    if (spaceDown && !sharedDialogueBox->isActive()) {
         Interactable* closestInteractable = nullptr;
         float minDistanceSq = std::numeric_limits<float>::max();
-        sf::Vector2f playerPos = player.getPosition();
+        jo::Vector2f playerPos = player.getPosition();
 
         for (auto& entity : entities) {
             if (auto* interactable =
                     dynamic_cast<Interactable*>(entity.get())) {
                 if (interactable->canPlayerInteract(playerPos)) {
-                    sf::Vector2f entityPos = entity->getPosition();
+                    jo::Vector2f entityPos = entity->getPosition();
                     float dx = playerPos.x - entityPos.x;
                     float dy = playerPos.y - entityPos.y;
                     float distSq = dx * dx + dy * dy;
@@ -173,8 +156,8 @@ bool Controller::getInput(
         }
     }
 
-    bool pDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P) ||
-                 sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape);
+    bool pDown = jo::Keyboard::isKeyPressed(jo::Keyboard::Key::P) ||
+                 jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Escape);
     if (pDown && !keyPressed) {
         Menu menu(
             windowManager, *this, tileManager, audioManager, entities, game
@@ -186,7 +169,7 @@ bool Controller::getInput(
         return true;
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+    if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Space)) {
         if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
             sharedDialogueBox->nextLine();
         }
@@ -210,8 +193,8 @@ bool Controller::getInput(
         dir *= 0.7071f; // approx 1/sqrt(2)
     }
 
-    sf::Vector2f nextMove = moveWithCollisions(
-        dir, player.getCollisionBox().value_or(sf::FloatRect{}), collisions
+    jo::Vector2f nextMove = moveWithCollisions(
+        dir, player.getCollisionBox().value_or(jo::FloatRect{}), collisions
     );
     playerView.move(nextMove);
     windowManager.getMiniMapView().move(nextMove);
@@ -223,7 +206,7 @@ bool Controller::getInput(
 }
 
 bool Controller::updateStep(
-    float dt, sf::RenderWindow& window, std::vector<sf::FloatRect>& collisions,
+    float dt, jo::RenderWindow& window, std::vector<jo::FloatRect>& collisions,
     std::list<std::unique_ptr<Entity>>& entities,
     const std::shared_ptr<DialogueBox>& sharedDialogueBox,
     TileManager& tileManager, RenderEngine& renderEngine

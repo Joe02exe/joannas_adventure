@@ -3,27 +3,29 @@
 #include "joanna/utils/resourcemanager.h"
 
 Interactable::Interactable(
-    const sf::FloatRect& box, const std::string& buttonTexturePath,
+    const jo::FloatRect& box, const std::string& buttonTexturePath,
     const std::string& spriteTexturePath,
-    const std::optional<sf::FloatRect>& collisionBox, Direction direction
+    const std::optional<jo::FloatRect>& collisionBox, Direction direction
 
 )
     : Entity(
           box,
-          ResourceManager<sf::Texture>::getInstance()->get(spriteTexturePath),
+          ResourceManager<jo::Texture>::getInstance()->get(spriteTexturePath),
           collisionBox, direction
       ),
       button(box, buttonTexturePath) {}
 
-void Interactable::renderButton(sf::RenderTarget& target) {
-    sf::Vector2f currentPos = getPosition();
-    button.setPosition(currentPos + sf::Vector2f(0.f, 0.f));
+void Interactable::renderButton(jo::RenderTarget& target) {
+    jo::Vector2f currentPos = getPosition();
+    // Offset the button to hover above the interactable entity
+    button.setPosition(currentPos + jo::Vector2f(0.f, -16.f));
     button.render(target);
 }
 
-bool Interactable::canPlayerInteract(const sf::Vector2f& playerPos) {
-    sf::Vector2f pos = this->getPosition();
+bool Interactable::canPlayerInteract(const jo::Vector2f& playerPos) {
+    jo::Vector2f pos = this->getPosition();
     float dx = playerPos.x - pos.x;
     float dy = playerPos.y - pos.y;
-    return dx * dx + dy * dy <= interactionDistance * interactionDistance;
+    // Strict bounding radius (match zoomed camera scale bounds)
+    return dx * dx + dy * dy <= 24.f * 24.f;
 }

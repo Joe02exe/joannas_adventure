@@ -13,9 +13,10 @@
 #include "joanna/utils/dialogue_box.h"
 #include "joanna/world/tilemanager.h"
 
-#include <SFML/System/Vector2.hpp>
+#include "joanna/core/graphics.h"
 #include <list>
 #include <memory>
+#include <vector>
 
 class Game {
   public:
@@ -41,8 +42,8 @@ class Game {
     void renderGameOver();
 
     static void resize(
-        sf::Vector2u size, float targetAspectRatio, sf::View& camera,
-        sf::RenderWindow& window, PostProcessing& postProc
+        jo::Vector2u size, float targetAspectRatio, jo::View& camera,
+        jo::RenderWindow& window, PostProcessing& postProc
     );
 
     // Systems
@@ -66,7 +67,7 @@ class Game {
 
     MusicId currentMusicId = MusicId::Overworld;
     GameStatus gameStatus = GameStatus::Overworld;
-    sf::Clock clock;
+    jo::Clock clock;
 
     std::list<std::unique_ptr<Entity>> entities;
     std::shared_ptr<DialogueBox> sharedDialogueBox;
@@ -79,4 +80,8 @@ class Game {
     // Config
     static constexpr float FIXED_TIMESTEP = 0.016f;
     float skeletonSpawnTimer = 0.0f;
+
+    // Cached tile collision rects (never change after map load)
+    std::vector<jo::FloatRect> m_cachedTileCollisions;
+    bool m_tileCollisionsDirty = true;
 };

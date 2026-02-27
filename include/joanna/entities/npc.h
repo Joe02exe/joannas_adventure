@@ -6,7 +6,7 @@
 #include "joanna/entities/player.h"
 #include "joanna/utils/dialogue_box.h"
 #include "nlohmann/json.hpp"
-#include <SFML/Graphics.hpp>
+#include "joanna/core/graphics.h"
 #include <deque>
 #include <optional>
 #include <unordered_map>
@@ -16,11 +16,11 @@ using json = nlohmann::json;
 class NPC: public Interactable {
   public:
     static json jsonData;
-    NPC(const sf::Vector2f& startPos, const std::string& npcIdlePath,
+    NPC(const jo::Vector2f& startPos, const std::string& npcIdlePath,
         const std::string& npcWalkingPath, const std::string& buttonTexturePath,
         std::shared_ptr<DialogueBox> dialogueBox, std::string dialogId);
 
-    NPC(const sf::Vector2f& startPos, const std::string& npcIdlePath, 
+    NPC(const jo::Vector2f& startPos, const std::string& npcIdlePath, 
         const std::string& buttonTexturePath,
         std::shared_ptr<DialogueBox> dialogueBox, std::string dialogId);
 
@@ -46,12 +46,12 @@ class NPC: public Interactable {
     State currentState = State::Idle;
     float frameTimer = 0.f;
     int currentFrame = 0;
-    sf::Vector2f targetPosition;
+    jo::Vector2f targetPosition;
     bool isMoving = false;
     float moveSpeed = 40.0f;
     void switchState(State newState);
     std::string uniqueSpriteId;
-    std::deque<sf::Vector2f> movementQueue;
+    std::deque<jo::Vector2f> movementQueue;
     std::unordered_map<State, Animation> animations;
     std::shared_ptr<DialogueBox> dialogueBox;
     std::string dialogId;
