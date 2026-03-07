@@ -112,7 +112,7 @@
         },
         {   
             "id": "Bring key",
-            "priority": 2,
+            "priority": 4,
             "text": [
                 "KEY!!!"
             ],

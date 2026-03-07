@@ -5,7 +5,7 @@
 Stone::Stone(const jo::Vector2f& position, std::string id)
     : Interactable(
           jo::FloatRect(position, { 16.f, 16.f }),
-          "assets/buttons/interact_T.png", "assets/interactables/stone.png",
+          "assets/buttons/interact_A.png", "assets/interactables/stone.png",
           jo::FloatRect(position, { 16.f, 16.f }) // Collision box
       ),
       id(std::move(id)) {

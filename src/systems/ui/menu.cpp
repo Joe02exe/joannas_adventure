@@ -16,7 +16,7 @@
 #include "joanna/entities/npc.h"
 
 namespace {
-const jo::Color COLOR_TEXT_NORMAL = jo::Color::Black;
+const jo::Color COLOR_TEXT_NORMAL = jo::Color::White;
 const jo::Color COLOR_TEXT_SELECTED =
     jo::Color(50, 200, 50); // Greenish highlight
 const jo::Color COLOR_BG_NORMAL = jo::Color(50, 50, 50, 200);
@@ -42,7 +42,10 @@ Menu::Menu(
     font = &ResourceManager<jo::Font>::getInstance()->get(
         "assets/font/minecraft.ttf"
     );
+#ifdef MIYOO_BUILD
     font->setSmooth(false);
+#endif
+    // font->setSmooth(false); // Removed in SFML 3
 
     // Initialize Default Menu
     resetToDefaultMenu();
@@ -105,9 +108,11 @@ void Menu::rebuildUI() {
         text.setOutlineColor(jo::Color::White);
         text.setLetterSpacing(2.f);
 
-        // Center Horizontally
+        // Center Horizontally (account for SFML's internal left-padding in
+        // bounds.position.x)
         const jo::FloatRect bounds = text.getLocalBounds();
-        text.setOrigin({ bounds.size.x / 2.f, 0.f });
+        text.setOrigin({ bounds.position.x + bounds.size.x / 2.f,
+                         bounds.position.y });
         text.setPosition({ view.getCenter().x, std::floor(currentY) });
         menuTexts.push_back(std::move(text));
         currentY += static_cast<float>(charSize) + MENU_SPACING;
@@ -432,13 +437,13 @@ void Menu::executeSelection() {
         aboutTextContent = "Joanna's Adventure\n\n"
                            "A small RPG game.\n\n"
                            "Controls:\n"
-                           "WASD : navigate\n"
-                           "Shift : sprint\n"
-                           "T : Talk to opponent\n"
-                           "E : Apply items in inventory\n"
-                           "1-9 : Select inventory slot\n"
-                           "Space : pickup item / dialogue\n"
-                           "P / Escape : Menu\n\n"
+                           "up/down/left/right : navigate\n"
+                           "Y : sprint\n"
+                           "A/B : Talk / pickup item\n"
+                           "X : Apply items in inventory\n"
+                           "L/R : Switch Item in inventory\n"
+                           "Start : Menu\n"
+                           "Select : Map\n\n"
                            "Press Escape or Click to close.";
         showAbout = true;
     } else if (choice == "Quit") {
@@ -485,20 +490,22 @@ void Menu::render(
     );
 
     // draw background
-    jo::RectangleShape blackScreen(jo::Vector2f(window.getSize()));
+    auto view = window.getView();
+
+    jo::RectangleShape blackScreen(view.getSize());
+    blackScreen.setPosition(view.getCenter() - view.getSize() / 2.f);
     blackScreen.setFillColor(jo::Color(0, 0, 0, 153));
     window.draw(blackScreen);
 
     // draw menu options
     windowManager->setView(windowManager->getUiView());
-    renderMenuOptions(window);
 
-    // draw overlay if about is selected
-    if (showAbout) {
+    if (!showAbout) {
+        renderMenuOptions(window);
+    } else {
         renderAboutOverlay(window);
     }
 
-    // draw mouse cursor
     window.draw(mouseSprite);
 
     window.display();
@@ -512,15 +519,18 @@ void Menu::renderMenuOptions(jo::RenderTarget& target) {
             menuTexts.at(i).setString(
                 "> " + options.at(i) + " <"
             ); // Optional stylistic choice
-            // Re-center if the string length changed
+            // Re-center after string change (account for SFML bounds.position.x
+            // internal padding)
             const jo::FloatRect bounds = menuTexts.at(i).getLocalBounds();
-            menuTexts.at(i).setOrigin({ bounds.size.x / 2.f, 0.f });
+            menuTexts.at(i).setOrigin({ bounds.position.x + bounds.size.x / 2.f,
+                                        bounds.position.y });
         } else {
             menuTexts.at(i).setFillColor(COLOR_TEXT_NORMAL);
             menuTexts.at(i).setString(options.at(i));
             // Re-center
             const jo::FloatRect bounds = menuTexts.at(i).getLocalBounds();
-            menuTexts.at(i).setOrigin({ bounds.size.x / 2.f, 0.f });
+            menuTexts.at(i).setOrigin({ bounds.position.x + bounds.size.x / 2.f,
+                                        bounds.position.y });
         }
 
         target.draw(menuTexts.at(i));
@@ -529,35 +539,78 @@ void Menu::renderMenuOptions(jo::RenderTarget& target) {
 
 void Menu::renderAboutOverlay(jo::RenderTarget& target) const {
     const jo::View& view = windowManager->getUiView();
-    const jo::Vector2f center = view.getCenter();
+    const jo::Vector2f centre = view.getCenter() - jo::Vector2f(100.f, 0.f);
 
-    jo::Text textObj(*font);
-    textObj.setString(aboutTextContent);
-    textObj.setCharacterSize(30);
-    textObj.setFillColor(jo::Color::White);
-    textObj.setLetterSpacing(1.f);
-    textObj.setLineSpacing(1.2f);
+    constexpr unsigned int titleSz = FONT_SIZE_TITLE;
+    constexpr unsigned int charSz = 30;
+    const float titleSpacing = 40.f;
+    const float lineSpacing = 42.f; // manual line spacing
+    const float promptSpacing = 50.f;
 
-    const jo::FloatRect textBounds = textObj.getLocalBounds();
-    constexpr float padding = 20.f;
-    const jo::Vector2f boxSize(
-        (textBounds.size.x + padding) * 2.f, (textBounds.size.y + padding) * 2.f
-    );
+    // ---------------- TITLE ----------------
+    jo::Text titleObj(*font);
+    titleObj.setString("ABOUT");
+    titleObj.setCharacterSize(titleSz);
+    titleObj.setFillColor(COLOR_TEXT_NORMAL);
+    titleObj.setOutlineThickness(2.0f);
+    titleObj.setOutlineColor(jo::Color::White);
+    titleObj.setLetterSpacing(2.f);
 
-    float startY = view.getCenter().y - (boxSize.x / 2.f) + 100.f;
-    textObj.setOrigin({ textBounds.size.x / 2.f, 0.f });
-    textObj.setPosition({ view.getCenter().x, startY });
+    jo::FloatRect tBounds = titleObj.getLocalBounds();
+    titleObj.setOrigin({ tBounds.position.x + tBounds.size.x / 2.f, 0.f });
 
-    jo::RectangleShape box;
-    box.setSize(boxSize);
-    box.setOrigin(boxSize / 2.f);
-    box.setPosition(center);
-    box.setFillColor(jo::Color(20, 20, 30, 220));
-    box.setOutlineColor(jo::Color(200, 200, 200, 180));
-    box.setOutlineThickness(2.f);
+    std::vector<std::string> lines;
+    std::stringstream ss(aboutTextContent);
+    std::string line;
 
-    target.draw(box);
-    target.draw(textObj);
+    while (std::getline(ss, line)) {
+        lines.push_back(line);
+    }
+
+    jo::Text promptObj(*font);
+    promptObj.setString("[Press 'Esc' or 'A' to return]");
+    promptObj.setCharacterSize(charSz);
+    promptObj.setFillColor(COLOR_TEXT_NORMAL);
+    promptObj.setOutlineThickness(2.0f);
+    promptObj.setOutlineColor(jo::Color::White);
+    promptObj.setLetterSpacing(2.f);
+
+    jo::FloatRect pBounds = promptObj.getLocalBounds();
+    promptObj.setOrigin({ pBounds.position.x + pBounds.size.x / 2.f, 0.f });
+
+    // ---------------- CALCULATE TOTAL HEIGHT ----------------
+    float textBlockHeight = lines.size() * lineSpacing;
+
+    float totalHeight = tBounds.size.y + titleSpacing + textBlockHeight +
+                        promptSpacing + pBounds.size.y;
+
+    float currentY = centre.y - totalHeight / 2.f;
+
+    titleObj.setPosition({ centre.x, currentY });
+    target.draw(titleObj);
+
+    currentY += tBounds.size.y + titleSpacing;
+
+    for (const auto& l : lines) {
+        jo::Text lineObj(*font);
+        lineObj.setString(l);
+        lineObj.setCharacterSize(charSz);
+        lineObj.setFillColor(COLOR_TEXT_NORMAL);
+        lineObj.setOutlineThickness(2.0f);
+        lineObj.setOutlineColor(jo::Color::White);
+        lineObj.setLetterSpacing(2.f);
+
+        jo::FloatRect bounds = lineObj.getLocalBounds();
+        lineObj.setOrigin({ bounds.position.x + bounds.size.x / 2.f, 0.f });
+        lineObj.setPosition({ centre.x, currentY });
+
+        target.draw(lineObj);
+        currentY += lineSpacing;
+    }
+
+    currentY += promptSpacing - lineSpacing; // adjust spacing
+    promptObj.setPosition({ centre.x, currentY });
+    target.draw(promptObj);
 }
 
 /**

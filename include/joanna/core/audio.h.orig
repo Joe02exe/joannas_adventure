@@ -85,20 +85,19 @@ class Sound {
     int m_volume;
 };
 
-// Full Mix_Chunk-backed Music class for Miyoo (bypassing unsupported MUS
-// decoder)
+// Full Mix_Music-backed Music class for Miyoo
 class Music {
   public:
     enum class Status { Stopped, Paused, Playing };
 
     Music()
-        : m_chunk(nullptr), m_status(Status::Stopped), m_loop(true),
+        : m_music(nullptr), m_status(Status::Stopped), m_loop(true),
           m_volume(128) {}
 
     ~Music() {
-        if (m_chunk) {
-            Mix_HaltChannel(0); // Assuming channel 0 is reserved for music
-            Mix_FreeChunk(m_chunk);
+        if (m_music) {
+            Mix_HaltMusic();
+            Mix_FreeMusic(m_music);
         }
     }
 
@@ -107,52 +106,52 @@ class Music {
     Music& operator=(const Music&) = delete;
 
     Music(Music&& o) noexcept
-        : m_chunk(o.m_chunk), m_status(o.m_status), m_loop(o.m_loop),
+        : m_music(o.m_music), m_status(o.m_status), m_loop(o.m_loop),
           m_volume(o.m_volume) {
-        o.m_chunk = nullptr;
+        o.m_music = nullptr;
     }
 
     Music& operator=(Music&& o) noexcept {
         if (this != &o) {
-            if (m_chunk) {
-                Mix_HaltChannel(0);
-                Mix_FreeChunk(m_chunk);
+            if (m_music) {
+                Mix_HaltMusic();
+                Mix_FreeMusic(m_music);
             }
-            m_chunk = o.m_chunk;
+            m_music = o.m_music;
             m_status = o.m_status;
             m_loop = o.m_loop;
             m_volume = o.m_volume;
-            o.m_chunk = nullptr;
+            o.m_music = nullptr;
         }
         return *this;
     }
 
     bool openFromFile(const std::string& filename) {
-        if (m_chunk) {
-            Mix_HaltChannel(0);
-            Mix_FreeChunk(m_chunk);
-            m_chunk = nullptr;
+        if (m_music) {
+            Mix_HaltMusic();
+            Mix_FreeMusic(m_music);
+            m_music = nullptr;
         }
-        m_chunk = Mix_LoadWAV(filename.c_str());
-        return m_chunk != nullptr;
+        m_music = Mix_LoadMUS(filename.c_str());
+        return m_music != nullptr;
     }
 
     void play() {
-        if (!m_chunk)
+        if (!m_music)
             return;
         int loops = m_loop ? -1 : 0;
-        Mix_Volume(0, m_volume);
-        Mix_PlayChannel(0, m_chunk, loops);
+        Mix_VolumeMusic(m_volume);
+        Mix_PlayMusic(m_music, loops);
         m_status = Status::Playing;
     }
 
     void pause() {
-        Mix_Pause(0);
+        Mix_PauseMusic();
         m_status = Status::Paused;
     }
 
     void stop() {
-        Mix_HaltChannel(0);
+        Mix_HaltMusic();
         m_status = Status::Stopped;
     }
 
@@ -163,17 +162,17 @@ class Music {
     // volume: 0..100 mapped to 0..128
     void setVolume(float volume) {
         m_volume = static_cast<int>(volume * 128.f / 100.f);
-        Mix_Volume(0, m_volume);
+        Mix_VolumeMusic(m_volume);
     }
 
     Status getStatus() const {
-        if (m_status == Status::Playing && !Mix_Playing(0))
+        if (m_status == Status::Playing && !Mix_PlayingMusic())
             return Status::Stopped;
         return m_status;
     }
 
   private:
-    Mix_Chunk* m_chunk;
+    Mix_Music* m_music;
     Status m_status;
     bool m_loop;
     int m_volume;

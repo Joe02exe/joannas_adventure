@@ -18,8 +18,9 @@ if(MIYOO_BUILD OR SDL1_BUILD)
     # The Miyoo cross-compiler sysroot already knows where SDL2 is,
     # so we don't need find_package or PkgConfig.
 else()
-    # SFML2 uses module-mode find_package with lowercase component names
-    find_package(SFML 2 REQUIRED COMPONENTS graphics window audio system)
+    # SFML3 uses namespace targets: SFML::Graphics etc.
+    set(SFML_STATIC_LIBRARIES ON)
+    find_package(SFML 3 REQUIRED COMPONENTS Graphics Window Audio System)
 endif()
 
 if(MIYOO_BUILD OR SDL1_BUILD)
@@ -91,7 +92,7 @@ list(FILTER GAME_SOURCES EXCLUDE REGEX ".*main\\.cpp$")
 
   # define macros for main
 target_compile_definitions(main PRIVATE
-    LOGGING_ENABLED=1
+    LOGGING_ENABLED=0
     IMGUI_ENABLED=0
     GOD_MODE_ENABLED=1
     INFINITE_RESOURCES_ENABLED=1
@@ -118,8 +119,8 @@ elseif(SDL1_BUILD)
     target_link_libraries(main PRIVATE spdlog::spdlog)
     target_link_libraries(main PRIVATE nlohmann_json::nlohmann_json)
 else()
-    # SFML2: targets are sfml-graphics, sfml-audio, sfml-window, sfml-system
-    target_link_libraries(main PRIVATE sfml-graphics sfml-window sfml-audio sfml-system)
+    # SFML3 targets
+    target_link_libraries(main PRIVATE SFML::Graphics SFML::Window SFML::Audio SFML::System)
     target_link_libraries(main PRIVATE spdlog::spdlog)
     target_link_libraries(main PRIVATE nlohmann_json::nlohmann_json)
 endif()

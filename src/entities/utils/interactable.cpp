@@ -27,5 +27,5 @@ bool Interactable::canPlayerInteract(const jo::Vector2f& playerPos) {
     float dx = playerPos.x - pos.x;
     float dy = playerPos.y - pos.y;
     // Strict bounding radius (match zoomed camera scale bounds)
-    return dx * dx + dy * dy <= 24.f * 24.f;
+    return dx * dx + dy * dy <= 16.f * 16.f;
 }

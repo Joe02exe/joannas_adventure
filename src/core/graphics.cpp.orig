@@ -409,30 +409,21 @@ void Sprite::draw(RenderTarget& target, void* /*states*/) const {
                          static_cast<Uint16>(m_textureRect.size.x),
                          static_cast<Uint16>(m_textureRect.size.y) };
 
-    // Snap to exact half/quarter/integer scales if extremely close (fixes
-    // e.g. 1.f/6.f giving 5.9999f)
-    if (std::abs(scaleX - std::round(scaleX)) < 0.05f)
-        scaleX = std::round(scaleX);
-    if (std::abs(scaleY - std::round(scaleY)) < 0.05f)
-        scaleY = std::round(scaleY);
+    // Use iround to correctly snap pixels so adjacent tiles don't have gaps or
+    // overlap
+    auto iround = [](float v) {
+        return static_cast<int>(v >= 0.f ? v + 0.5f : v - 0.5f);
+    };
 
-    float scaledWidth = std::round(m_textureRect.size.x * m_scale.x * scaleX);
-    float scaledHeight = std::round(m_textureRect.size.y * m_scale.y * scaleY);
+    float left = viewportX + offsetX * scaleX;
+    float top = viewportY + offsetY * scaleY;
+    float right = left + m_textureRect.size.x * m_scale.x * scaleX;
+    float bottom = top + m_textureRect.size.y * m_scale.y * scaleY;
 
-    // Compute world projection before flipping (round coordinates exactly)
-    float rawLeft = std::round(viewportX + offsetX * scaleX);
-    float rawTop = std::round(viewportY + offsetY * scaleY);
-
-    float left = std::min(rawLeft, rawLeft + scaledWidth);
-    float right = std::max(rawLeft, rawLeft + scaledWidth);
-    float top = std::min(rawTop, rawTop + scaledHeight);
-    float bottom = std::max(rawTop, rawTop + scaledHeight);
-
-    bool effectiveFlip = m_flipHoriz ^ (m_scale.x < 0.f);
-
-    SDL_Rect dstRect = { static_cast<Sint16>(left), static_cast<Sint16>(top),
-                         static_cast<int>(std::abs(scaledWidth)),
-                         static_cast<int>(std::abs(scaledHeight)) };
+    SDL_Rect dstRect = { static_cast<Sint16>(iround(left)),
+                         static_cast<Sint16>(iround(top)),
+                         static_cast<Uint16>(iround(right) - iround(left)),
+                         static_cast<Uint16>(iround(bottom) - iround(top)) };
 
     SDL_Rect clipRect = { static_cast<Sint16>(viewportX),
                           static_cast<Sint16>(viewportY),
@@ -442,8 +433,7 @@ void Sprite::draw(RenderTarget& target, void* /*states*/) const {
 
     if (dstRect.w > 0 && dstRect.h > 0) {
         // Fast path: no scaling needed and no flip
-        if (dstRect.w == srcRect.w && dstRect.h == srcRect.h &&
-            !effectiveFlip) {
+        if (dstRect.w == srcRect.w && dstRect.h == srcRect.h && !m_flipHoriz) {
             SDL_BlitSurface(src, &srcRect, dest, &dstRect);
         } else if (src->format->BitsPerPixel == 8) {
             // ---- 8-bit paletted sprite blit (entity sprites) ----
@@ -499,8 +489,8 @@ void Sprite::draw(RenderTarget& target, void* /*states*/) const {
                     }
                     if (dx >= dest->w)
                         break;
-                    int sx_idx = effectiveFlip ? (tmpSrc.w - 1 - (curX >> 16))
-                                               : (curX >> 16);
+                    int sx_idx = m_flipHoriz ? (tmpSrc.w - 1 - (curX >> 16))
+                                             : (curX >> 16);
                     curX += stepX_fixed;
                     if (sx_idx < 0 || sx_idx >= tmp->w)
                         continue;
@@ -567,7 +557,7 @@ void Sprite::draw(RenderTarget& target, void* /*states*/) const {
                             break; // Out of bounds, rest are as well
 
                         int sx_idx = srcRect.x + (curX >> 16);
-                        if (effectiveFlip) {
+                        if (m_flipHoriz) {
                             sx_idx = srcRect.x + srcRect.w - 1 - (curX >> 16);
                         }
                         curX += stepX_fixed;

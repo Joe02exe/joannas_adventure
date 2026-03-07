@@ -11,7 +11,8 @@ InteractionButton::InteractionButton(
       texture(&ResourceManager<jo::Texture>::getInstance()->get(texturePath)) {
 
     sprite = std::make_unique<jo::Sprite>(*texture);
-    sprite->setScale({ 0.5f, 0.5f });
+    const_cast<jo::Texture*>(texture)->setSmooth(false
+    ); // Ensure pixel art remains sharp when scaled
     sprite->setPosition({ this->box.position.x, this->box.position.y });
 }
 

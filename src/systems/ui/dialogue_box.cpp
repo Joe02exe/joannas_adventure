@@ -172,7 +172,7 @@ void DialogueBox::render(jo::RenderTarget& target) {
     );
 
     if (!isTyping()) {
-        std::string indicator = "< Space >";
+        std::string indicator = "< A >";
         jo::Vector2f indicatorPos = bubbleBackground.getPosition() +
                                     bubbleBackground.getSize() -
                                     jo::Vector2f(120.0f, 30.0f);

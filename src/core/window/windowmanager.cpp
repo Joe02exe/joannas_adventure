@@ -17,7 +17,7 @@ WindowManager::WindowManager(
       ) {
 
     mainView.setSize({ static_cast<float>(width), static_cast<float>(height) });
-    mainView.zoom(0.15f);
+    mainView.zoom(1.f / 6.f); // 6x scale for perfectly crisp pixel art
     mainView.setCenter({ 0.f, 0.f });
 
     miniMapView.setSize({ 250.f, 250.f });
@@ -31,7 +31,7 @@ WindowManager::WindowManager(
 
     mapOverviewView.setSize({ static_cast<float>(width),
                               static_cast<float>(height) });
-    mapOverviewView.zoom(.175f);
+    mapOverviewView.zoom(.25f);
     mapOverviewView.setCenter({ 0.f, 0.f });
 
     window.setMouseCursorVisible(false);
@@ -40,8 +40,7 @@ WindowManager::WindowManager(
     if constexpr (IMGUI_ENABLED) {
         DebugUI::init(window);
     }
-    setCenter(initialPos);
-    window.setFramerateLimit(30);
+    window.setFramerateLimit(60);
 }
 
 void WindowManager::setCenter(const jo::Vector2f& center) {

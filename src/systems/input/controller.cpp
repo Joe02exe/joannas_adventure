@@ -113,8 +113,8 @@ bool Controller::getInput(
             auto playerPos = player.getPosition();
             auto itemPos = item.position;
             auto item_gid = item.gid;
-            float dx = playerPos.x - static_cast<float>(itemPos.x);
-            float dy = playerPos.y - static_cast<float>(itemPos.y);
+            float dx = playerPos.x - static_cast<float>(itemPos.x) - 8.f;
+            float dy = playerPos.y - static_cast<float>(itemPos.y) - 8.f;
             if (dx * dx + dy * dy <= 16.f * 16.f) {
                 if (tileManager.removeObjectById(static_cast<int>(item.id))) {
                     auto map = player.getInventory().mapGidToName();
@@ -129,7 +129,7 @@ bool Controller::getInput(
             }
         }
     }
-    if (spaceDown && !sharedDialogueBox->isActive()) {
+    if (spaceDown && !keyPressed && !sharedDialogueBox->isActive()) {
         Interactable* closestInteractable = nullptr;
         float minDistanceSq = std::numeric_limits<float>::max();
         jo::Vector2f playerPos = player.getPosition();
@@ -169,8 +169,8 @@ bool Controller::getInput(
         return true;
     }
 
-    if (jo::Keyboard::isKeyPressed(jo::Keyboard::Key::Space)) {
-        if (sharedDialogueBox->isActive() && !sharedDialogueBox->isTyping()) {
+    if (spaceDown && !keyPressed) {
+        if (sharedDialogueBox->isActive()) {
             sharedDialogueBox->nextLine();
         }
     }

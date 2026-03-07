@@ -1,0 +1,34 @@
+--- audio.h
++++ audio.h
+@@ -85,25 +85,25 @@
+     int m_volume;
+ };
+ 
+-// Full Mix_Music-backed Music class for Miyoo
++// Full Mix_Chunk-backed Music class for Miyoo (bypassing unsupported MUS decoder)
+ class Music {
+   public:
+     enum class Status { Stopped, Paused, Playing };
+ 
+     Music()
+-        : m_music(nullptr), m_status(Status::Stopped), m_loop(true),
++        : m_chunk(nullptr), m_status(Status::Stopped), m_loop(true),
+           m_volume(128) {}
+ 
+     ~Music() {
+-        if (m_music) {
+-            Mix_HaltMusic();
+-            Mix_FreeMusic(m_music);
++        if (m_chunk) {
++            Mix_HaltChannel(0); // Assuming channel 0 is reserved for music
++            Mix_FreeChunk(m_chunk);
+         }
+     }
+ 
+     // Non-copyable, but movable
+     Music(const Music&) = delete;
+     Music& operator=(const Music&) = delete;
+ 
+     Music(Music&& o) noexcept
+-        : m_music(o.m_music), m_status(o.m_status), m_loop(o.m_loop),
++        : m_chunk(o.m_chunk), m_status(o.m_status), m_loop(o.m_loop),

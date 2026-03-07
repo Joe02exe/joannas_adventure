@@ -1,4 +1,4 @@
-#include "joanna/game/combat/.h"
+#include "joanna/game/combat/combat_system.h"
 #include "joanna/core/graphics.h"
 #include "joanna/utils/resourcemanager.h"
 #include <iostream>
@@ -244,7 +244,12 @@ void CombatSystem::updatePlayerTurn(float dt, State& pState, State& eState) {
         return;
     }
     if (phase == TurnPhase::Approaching) {
-        processApproach(dt, player, targetPos, 500.f, 10.f, pState);
+        // if current attack is roll do this, if another, do other
+        if (currentAttack.name == "Roll") {
+            processApproach(dt, player, targetPos, 500.f, 100.f, pState);
+        } else {
+            processApproach(dt, player, targetPos, 500.f, 10.f, pState);
+        }
     } else if (phase == TurnPhase::Attacking) {
         processAttack(dt, player, enemy, pState, eState, currentAttack);
     } else if (phase == TurnPhase::Returning) {
@@ -416,22 +421,32 @@ void CombatSystem::render(
     }
 }
 
+// menu centered - 100px
+// roll for both: player and goblin
 void CombatSystem::handleInput(jo::Event& event) {
     if (currentState == CombatState::PlayerTurn && phase == TurnPhase::Input) {
         if (const auto* keyEvent = event.getIf<jo::Event::KeyPressed>()) {
             startPos = player->getPosition();
             targetPos = enemy->getPosition();
-            // Miyoo Y = Attack, Miyoo X = Roll
+            // Miyoo Y = Attack, Miyoo X = Roll; PC: Y key / X key
+#ifdef MIYOO_BUILD
             if (keyEvent->code == jo::Keyboard::Key::ButtonY) {
+#else
+            if (keyEvent->code == jo::Keyboard::Key::Y) {
+#endif
                 if (player->getInventory().hasItemByName("sword")) {
-                    currentAttack = { "Attack", 2, State::Attack, 0.3f, 0.8f };
-                    targetPos.x -= 60.f;
+                    currentAttack = { "Attack", 2, State::Attack, 0.4f, 1.0f };
+                    targetPos.x -= 100.f;
                     phase = TurnPhase::Approaching;
                 }
+#ifdef MIYOO_BUILD
             } else if (keyEvent->code == jo::Keyboard::Key::ButtonX) {
-                currentAttack = { "Roll", 1,     State::Roll, 0.2f,
-                                  0.85f,  200.f, -30.f,       5.f };
-                targetPos.x -= 100.f;
+#else
+            } else if (keyEvent->code == jo::Keyboard::Key::X) {
+#endif
+                currentAttack = { "Roll", 1,     State::Roll, 0.3f,
+                                  0.8f,   800.f, -100.f,      5.f };
+                targetPos.x -= 147.f;
                 phase = TurnPhase::Approaching;
             }
         }
@@ -440,7 +455,11 @@ void CombatSystem::handleInput(jo::Event& event) {
                ) &&
                currentAttack.counterable) {
         if (const auto* keyEvent = event.getIf<jo::Event::KeyPressed>()) {
+#ifdef MIYOO_BUILD
             if (keyEvent->code == jo::Keyboard::Key::ButtonX) {
+#else
+            if (keyEvent->code == jo::Keyboard::Key::X) {
+#endif
                 // Check if player has the Counter Attack ability
                 if (!player->getInventory().hasItemByName("counterAttack")) {
                     return;

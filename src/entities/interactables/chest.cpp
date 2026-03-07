@@ -6,7 +6,7 @@
 Chest::Chest(const jo::Vector2f& position, std::string id)
     : Interactable(
           jo::FloatRect(position, { 16.f, 22.f }),
-          "assets/buttons/interact_T.png", "assets/interactables/chest.png",
+          "assets/buttons/interact_A.png", "assets/interactables/chest.png",
           jo::FloatRect(position, { 16.f, 22.f }) // Collision box
       ),
       id(std::move(id)) {

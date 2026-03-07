@@ -64,9 +64,9 @@ Enemy::Enemy(const jo::Vector2f& startPos, EnemyType type)
 
     // Initialize attacks
     if (type == EnemyType::Goblin) {
-        attacks.push_back({ "Mining", 50, State::Mining, 0.4f, 0.9f, 0.f, 130.f,
+        attacks.push_back({ "Mining", 50, State::Mining, 0.6f, 1.1f, 0.f, 150.f,
                             5.f, true, 0.1f, 0.43f, 130.f });
-        attacks.push_back({ "Roll", 30, State::Roll, 0.2f, 0.8f, -800.f, 85.f,
+        attacks.push_back({ "Roll", 30, State::Roll, 0.4f, 0.8f, -800.f, 85.f,
                             -5.f, true, 0.16f, 0.23f, 280.f });
         // set healöth higher
         maxHealth = 200;

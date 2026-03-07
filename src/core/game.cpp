@@ -73,7 +73,25 @@ void Game::run() {
     int frameCount = 0;
     float fpsTimer = 0.f;
 
+#ifdef MIYOO_BUILD
+    // Cap at 60 FPS on Miyoo — at 105fps each frame is ~0.28px of movement,
+    // causing sub-pixel stutter especially when moving diagonally.
+    // At 60fps each frame is ~0.5px, giving visibly smoother movement.
+    static constexpr Uint32 FRAME_MS = 1000u / 60u; // ~16ms
+    Uint32 lastTick = SDL_GetTicks();
+#endif
+
     while (windowManager.getWindow().isOpen()) {
+#ifdef MIYOO_BUILD
+        // Frame-rate cap: sleep remaining time until next 60hz slot
+        Uint32 now = SDL_GetTicks();
+        Uint32 elapsed = now - lastTick;
+        if (elapsed < FRAME_MS) {
+            SDL_Delay(FRAME_MS - elapsed);
+        }
+        lastTick = SDL_GetTicks();
+#endif
+
         handleInput();
 
         float dt = clock.restart().asSeconds();
@@ -116,7 +134,7 @@ void Game::resetEntities() {
     spdlog::info("Game::resetEntities - Pushing NPCs");
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 220.f, 325.f }, "assets/player/npc/joe.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Joe"
+        "assets/buttons/interact_A.png", sharedDialogueBox, "Joe"
     ));
 
     std::unique_ptr<Entity> enemy = std::make_unique<Enemy>(
@@ -127,44 +145,44 @@ void Game::resetEntities() {
 
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 160.f, 110.f }, "assets/player/npc/Pirat.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Pirat"
+        "assets/buttons/interact_A.png", sharedDialogueBox, "Pirat"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 395.f, 270.f }, "assets/player/npc/guard1.png",
-        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_T.png",
+        "assets/player/npc/guard1_walking.png", "assets/buttons/interact_A.png",
         sharedDialogueBox, "Guard"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 375.f, 270.f }, "assets/player/npc/guard2.png",
-        "assets/player/npc/guard2_walking.png", "assets/buttons/interact_T.png",
+        "assets/player/npc/guard2_walking.png", "assets/buttons/interact_A.png",
         sharedDialogueBox, "Guard"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 500.f, 300.f }, "assets/player/npc/boy1.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Boy"
+        "assets/buttons/interact_A.png", sharedDialogueBox, "Boy"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 520.f, 430.f }, "assets/player/npc/miner.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Miner"
+        "assets/buttons/interact_A.png", sharedDialogueBox, "Miner"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 135.f, 500.f }, "assets/player/npc/swimmer.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Swimmer"
+        "assets/buttons/interact_A.png", sharedDialogueBox, "Swimmer"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 380.f, 455.f }, "assets/player/npc/girl1.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Girl1"
+        "assets/buttons/interact_A.png", sharedDialogueBox, "Girl1"
     ));
 
     entities.push_back(std::make_unique<NPC>(
         jo::Vector2f{ 105.f, 370.f }, "assets/player/npc/girl2.png",
-        "assets/buttons/interact_T.png", sharedDialogueBox, "Girl2"
+        "assets/buttons/interact_A.png", sharedDialogueBox, "Girl2"
     ));
 
     spdlog::info("Game::resetEntities - Pushing interactables");
@@ -496,7 +514,9 @@ void Game::renderOverworld(float dt) {
     // 2. Clear only once.
     // 3. Stretch-blit the texture to the screen in a single pass.
 
-    jo::Vector2f viewSize = controller->getPlayerView().getSize();
+    jo::Vector2f viewSize = controller->isMapOverviewActive()
+                                ? windowManager.getMapOverviewView().getSize()
+                                : controller->getPlayerView().getSize();
     unsigned int pw = static_cast<unsigned int>(viewSize.x);
     unsigned int ph = static_cast<unsigned int>(viewSize.y);
 

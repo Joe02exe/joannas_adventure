@@ -21,7 +21,13 @@ void RenderEngine::render(
 
     auto drawTile = [&](const TileRenderInfo& tile) {
         if (tile.texture &&
+#ifdef MIYOO_BUILD
             viewRect.intersects(jo::FloatRect(tile.position, { 16.f, 16.f }))) {
+#else
+            viewRect
+                .findIntersection(jo::FloatRect(tile.position, { 16.f, 16.f }))
+                .has_value()) {
+#endif
             jo::Sprite sprite(*tile.texture);
             sprite.setTextureRect(tile.textureRect);
             sprite.setPosition(tile.position);
@@ -38,7 +44,7 @@ void RenderEngine::render(
     float playerBottom = 0.f;
     if (player.getCollisionBox().has_value()) {
         playerBottom = player.getCollisionBox().value().position.y +
-                       player.getCollisionBox().value().size.y;
+                       player.getCollisionBox().value().size.y + 2.f;
     }
     bool playerDrawn = false;
 
@@ -94,7 +100,7 @@ void RenderEngine::render(
         float middleTile = 0.f;
         if (tile.collisionBox.has_value()) {
             middleTile = tile.collisionBox.value().position.y +
-                         tile.collisionBox.value().size.y;
+                         tile.collisionBox.value().size.y - 2.f;
         }
         if (!playerDrawn && middleTile >= playerBottom) {
             player.draw(target);
@@ -170,8 +176,8 @@ void RenderEngine::render(
         }
         target.draw(sprite);
 
-        float dx = playerPos.x - static_cast<float>(item.position.x);
-        float dy = playerPos.y - static_cast<float>(item.position.y);
+        float dx = playerPos.x - static_cast<float>(item.position.x) - 8.f;
+        float dy = playerPos.y - static_cast<float>(item.position.y) - 8.f;
         if (dx * dx + dy * dy <= 16.f * 16.f && m_indicatorSprite.has_value()) {
             m_indicatorSprite->setPosition(
                 jo::Vector2f({ static_cast<float>(item.position.x),

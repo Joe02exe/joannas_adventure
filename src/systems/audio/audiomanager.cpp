@@ -1,9 +1,9 @@
 #include "joanna/systems/audiomanager.h"
+#include "joanna/core/audio.h"
 #include "joanna/utils/logger.h"
 #include "joanna/utils/resourcemanager.h"
-#include "joanna/core/audio.h"
 
-AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(30.0f) {
+AudioManager::AudioManager() : sfx_volume_(100.0f), music_volume_(100.0f) {
 
     auto* buffer_manager = ResourceManager<jo::SoundBuffer>::getInstance();
 
@@ -53,15 +53,15 @@ std::string AudioManager::get_sfx_path(SfxId sfx_id) const {
 std::string AudioManager::get_music_path(MusicId music_id) const {
     switch (music_id) {
         case MusicId::Overworld:
-            return "assets/music/overworld.ogg";
+            return "assets/music/overworld.wav";
         case MusicId::Underworld:
-            return "assets/music/underworld.ogg";
+            return "assets/music/underworld.wav";
         case MusicId::Beach:
-            return "assets/music/beach.ogg";
+            return "assets/music/beach.wav";
         case MusicId::Combat:
-            return "assets/music/combat.ogg";
+            return "assets/music/combat.wav";
         case MusicId::GameOver:
-            return "assets/music/game_over.ogg";
+            return "assets/music/game_over.wav";
         default:
             throw std::invalid_argument("Invalid MusicId");
     }
@@ -76,21 +76,32 @@ void AudioManager::play_sfx(SfxId sfx_id) {
     }
 }
 
+#include <mutex>
+#include <thread>
+
+static std::mutex g_audio_mutex;
+
 void AudioManager::set_current_music(MusicId music_id) {
-    if (current_music_.getStatus() == jo::Music::Status::Playing) {
-        current_music_.stop();
-    }
-    Logger::info("Setting current music to ID: {}", static_cast<int>(music_id));
-    try {
-        if (!current_music_.openFromFile(get_music_path(music_id))) {
-            throw jo::Exception("Failed to open music file");
+    std::thread([this, music_id]() {
+        std::lock_guard<std::mutex> lock(g_audio_mutex);
+        if (current_music_.getStatus() == jo::Music::Status::Playing) {
+            current_music_.stop();
         }
-        current_music_.setVolume(music_volume_);
-        current_music_.setLooping(true);
-        current_music_.play();
-    } catch (const jo::Exception&) {
-        Logger::error("Failed to load music: {}", get_music_path(music_id));
-    }
+        const std::string path = get_music_path(music_id);
+        Logger::info("Opening music file: {}", path);
+        try {
+            if (!current_music_.openFromFile(path)) {
+                Logger::error("openFromFile returned false for: {}", path);
+                throw jo::Exception("Failed to open music file");
+            }
+            Logger::info("Music loaded successfully, starting playback.");
+            current_music_.setVolume(music_volume_);
+            current_music_.setLooping(true);
+            current_music_.play();
+        } catch (const jo::Exception& e) {
+            Logger::error("Failed to load music: {} ({})", path, e.what());
+        }
+    }).detach();
 }
 
 void AudioManager::set_sfx_volume(float volume) {

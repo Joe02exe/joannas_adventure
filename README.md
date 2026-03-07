@@ -9,6 +9,30 @@ Additionally we created a all-in-one `.exe`-file and have it ready on this [file
 
 ## Setup
 
+### Miyoo Mini Plus
+
+#### Play the game
+First you will need OnionOS on your Miyoo Mini Plus. You can find the latest version on [GitHub](https://github.com/OnionUI/Onion/releases).
+
+If you want to play the game on your Miyoo mini, go the Releases and download the latest `.zip`-file. Unpack the zip and place it on your SD card in the `App/` folder. 
+
+You should then have a folder `App/JoannasAdventure` on your SD card.
+
+Finally you can start the game by navigating to `Apps` folder and select Joannas Adventure (Normally you should find it at the bottom of the list).
+
+Enjoy! :)
+
+#### Build the game for Miyoo Mini Plus
+
+To build the project for Miyoo Mini Plus, you can use the provided script:
+
+```bash
+./build_miyoo.sh
+```
+
+It uses podman to build the project in a container with the Miyoo Mini Plus [toolchain](https://github.com/shauninman/union-miyoomini-toolchain).
+
+
 ### Pull & Update vcpkg submodule
 
 ```bash

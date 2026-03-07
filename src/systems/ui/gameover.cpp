@@ -10,11 +10,11 @@ GameOver::GameOver(WindowManager& windowManager)
       gameText(*font), overText(*font) {
 
     gameText.setString("Game");
-    gameText.setCharacterSize(120);
+    gameText.setCharacterSize(180);
     gameText.setFillColor(jo::Color::Red);
 
     overText.setString("Over");
-    overText.setCharacterSize(120);
+    overText.setCharacterSize(180);
     overText.setFillColor(jo::Color::Red);
 
     alignText();
@@ -36,8 +36,8 @@ void GameOver::alignText() {
                          overBounds.position.y + overBounds.size.y / 2.0f });
 
     jo::Vector2f center = windowManager.getMainView().getCenter();
-    gameText.setPosition({ center.x, center.y - 50.f });
-    overText.setPosition({ center.x, center.y + 50.f });
+    gameText.setPosition({ center.x - 50.f, center.y - 50.f });
+    overText.setPosition({ center.x - 50.f, center.y + 50.f });
 }
 
 void GameOver::render() {
@@ -53,8 +53,8 @@ void GameOver::render() {
 
     jo::Vector2f center(size.x / 2.0f, size.y / 2.0f);
 
-    gameText.setPosition({ center.x, center.y - 50.f });
-    overText.setPosition({ center.x, center.y + 50.f });
+    gameText.setPosition({ center.x - 35.f, center.y - 50.f });
+    overText.setPosition({ center.x - 35.f, center.y + 50.f });
 
     window.clear(jo::Color::Black);
     window.draw(gameText);

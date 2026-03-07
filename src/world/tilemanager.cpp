@@ -87,7 +87,7 @@ void TileManager::renderProgressBar(const std::string& message) const {
     auto center = window->getView().getCenter();
 
     jo::Vector2f barSize(400.f, 40.f);
-    jo::Vector2f barPos(center.x - 200, center.y - 20);
+    jo::Vector2f barPos(center.x - 220, center.y - 20);
 
     jo::RectangleShape barBackground(barSize);
     barBackground.setPosition(barPos);
@@ -120,10 +120,10 @@ void TileManager::renderProgressBar(const std::string& message) const {
     jo::FloatRect textBounds = text.getLocalBounds();
     jo::FloatRect titleBounds = title.getLocalBounds();
     text.setOrigin({ textBounds.size.x / 2.f, textBounds.size.y / 2.f });
-    text.setPosition({ center.x, center.y + 40.f });
+    text.setPosition({ center.x - 100.f, center.y + 40.f });
 
     title.setOrigin({ titleBounds.size.x / 2.f, titleBounds.size.y / 2.f });
-    title.setPosition({ center.x, center.y - 75.f });
+    title.setPosition({ center.x - 100.f, center.y - 75.f });
 
     window->clear(jo::Color::Black);
 
@@ -145,12 +145,24 @@ jo::FloatRect calculatePixelRect(
     int bottom = 0;
     bool hasOpaque = false;
 
+#ifdef MIYOO_BUILD
     for (int y = 0; y < texRect.size.y; ++y) {
         for (int x = 0; x < texRect.size.x; ++x) {
             jo::Color c = tex.getPixel(
                 { static_cast<unsigned int>(texRect.position.x + x),
                   static_cast<unsigned int>(texRect.position.y + y) }
             );
+#else
+    // SFML3: Texture::getPixel was removed. We must copy to Image first.
+    jo::Image img = tex.copyToImage();
+
+    for (int y = 0; y < texRect.size.y; ++y) {
+        for (int x = 0; x < texRect.size.x; ++x) {
+            jo::Color c = img.getPixel(
+                { static_cast<unsigned int>(texRect.position.x + x),
+                  static_cast<unsigned int>(texRect.position.y + y) }
+            );
+#endif
             if (c.a > 0) { // if pixel is not transparent
                 hasOpaque = true;
                 left = std::min(x, left);
