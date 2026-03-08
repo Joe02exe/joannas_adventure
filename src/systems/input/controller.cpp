@@ -129,6 +129,7 @@ bool Controller::getInput(
             }
         }
     }
+    bool interactedThisFrame = false;
     if (spaceDown && !keyPressed && !sharedDialogueBox->isActive()) {
         Interactable* closestInteractable = nullptr;
         float minDistanceSq = std::numeric_limits<float>::max();
@@ -153,6 +154,7 @@ bool Controller::getInput(
 
         if (closestInteractable) {
             closestInteractable->interact(player);
+            interactedThisFrame = true;
         }
     }
 
@@ -169,7 +171,7 @@ bool Controller::getInput(
         return true;
     }
 
-    if (spaceDown && !keyPressed) {
+    if (spaceDown && !keyPressed && !interactedThisFrame) {
         if (sharedDialogueBox->isActive()) {
             sharedDialogueBox->nextLine();
         }
