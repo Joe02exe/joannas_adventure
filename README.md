@@ -1,5 +1,5 @@
 # Joanna's Adventure
-![joanna](./assets/images/joanna.png)
+![joanna](./joanna.png)
 
 ## Playthrough
 
